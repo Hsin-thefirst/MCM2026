@@ -1,0 +1,18 @@
+{
+  "contract_version": "1.0",
+  "data_path": "data/SafeInvest_Synthetic_Data.csv",
+  "development_scenario_ids": [1, 120],
+  "final_scenario_ids": [121, 180],
+  "initial_wealth": 100.0,
+  "transaction_cost_rate": 0.0025,
+  "balanced_evaluation_horizon": 30,
+  "seed": 2026,
+  "candidate_portfolios": {
+    "conservative": [0.2, 0.3, 0.5],
+    "balanced": [0.5, 0.35, 0.15],
+    "growth": [0.75, 0.2, 0.05]
+  },
+  "baseline_weights": [0.3333333333333333, 0.3333333333333333, 0.3333333333333333],
+  "cost_sensitivity_rates": [0.0, 0.00125, 0.0025, 0.005],
+  "parameters_frozen": false
+}

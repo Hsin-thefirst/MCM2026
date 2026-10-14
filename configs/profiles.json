@@ -1,0 +1,7 @@
+[
+  {"profile_id": "A", "horizon": 5, "loss_tolerance": 0.10, "liquidity": "high"},
+  {"profile_id": "B", "horizon": 15, "loss_tolerance": 0.25, "liquidity": "medium"},
+  {"profile_id": "C", "horizon": 30, "loss_tolerance": 0.40, "liquidity": "low"},
+  {"profile_id": "D", "horizon": 25, "loss_tolerance": 0.15, "liquidity": "medium"},
+  {"profile_id": "E", "horizon": 6, "loss_tolerance": 0.35, "liquidity": "high"}
+]

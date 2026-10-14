@@ -1,0 +1,32 @@
+name: 建模 / 实现任务
+description: 从 docs/ISSUES.md 复制任务，补充认领信息和验收标准
+title: "[SI-XX] "
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: 负责人和交叉检查者
+      description: 填写 GitHub 用户名，认领后同步设置 Assignee。
+    validations:
+      required: false
+  - type: textarea
+    id: task
+    attributes:
+      label: 目标、范围与产物
+      description: 从 docs/ISSUES.md 复制对应任务，列明产物文件。
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: 依赖与接口
+      description: 关联实际 Issue 编号，遵循 docs/INTERFACES.md Contract v1。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准
+      description: 使用 Markdown 复选框写出可验证的完成条件。
+    validations:
+      required: true
