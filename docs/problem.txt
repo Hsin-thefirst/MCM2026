@@ -1,0 +1,119 @@
+2026 MCM Senior Group Problem A
+SafeInvest: Building a Trustworthy Robo-Advisor
+Background and Challenge
+SafeInvest is a fictional fintech company that offers investment advice through a mobile app. New
+customers complete a short digital questionnaire, and an automated system recommends one of
+three portfolios:
+• Conservative,
+• Balanced, or
+• Growth.
+Each portfolio uses equities, government bonds, and a cash-like short-term investment. After a
+customer invests, the app reviews the portfolio once per period and may retain the current holdings,
+rebalance, change the target allocation, or request review by a human adviser.
+Automation can make advice inexpensive and widely available, but it also creates new risks. A
+portfolio may be unsuitable for a customer, an algorithm may trade too often, and a recommendation
+may be difficult to explain. The system must also recognize conditions in which its model should
+not be trusted.
+In this problem, we want to develop and test an automated, explainable, and risk-aware robo-
+advisory process for SafeInvest. The process must recommend suitable portfolios, adapt them only
+when the expected benefit justifies the cost, and identify decisions that require human review.
+Customer Information
+SafeInvest’s questionnaire records investment horizon, the largest temporary loss in purchasing power
+that the customer believes they could tolerate, and liquidity need. Five representative responses are
+shown below. Loss tolerance is a customer response, not a guaranteed portfolio limit.
+Profile Horizon Loss tolerance Liquidity need
+A 5 years 10% High
+B 15 years 25% Medium
+C 30 years 40% Low
+D 25 years 15% Medium
+E 6 years 35% High
+Provided Market Data
+The file SafeInvest Synthetic Data.csv contains 180 independent synthetic market scenarios,
+each lasting 30 annual periods.
+• scenario id: Scenario number, 1–180;
+• period : Annual period within the scenario, 1–30;
+• equity return : Nominal total equity return;
+• bond return : Nominal total government-bond return;
+• bill proxy return : Nominal short-term bill proxy return;
+• inf lation: Inflation during the period.
+Returns and inflation are decimals. For example, 0 .05 means 5%. For nominal return rt and
+inflation πt, real return is
+rrealt = 1 + rt1 + πt − 1.
+1
+
+The data are synthetic and are based on historical U.S. market data. They are not historical events
+or forecasts.
+Common Conditions
+Every market scenario begins with 100 units in bills and has no later deposits or withdrawals.
+Portfolios must be long-only and fully invested. SafeInvest may review a portfolio once per period.
+Charge 0.25% of the money moved between assets. Count each amount transferred between
+assets only once when calculating transaction costs. Moving 20 units from bills to equities therefore
+costs 0.05 units. Deduct the transaction cost from portfolio wealth at the time of trading, before
+applying that period’s returns. Charge the initial allocation from bills in the same way. Ignore
+taxes, other fees, and terminal liquidation costs.
+A decision for period t may use only observations through period t − 1 of that scenario. It may
+not use period t or any later observation from that scenario.
+Questions
+Address the following tasks as one coherent investigation.
+1. Design the digital suitability process. Choose measures of investment growth and risk.
+Express the large-loss measure so that larger values mean greater loss. Your risk assessment must
+separate ordinary fluctuations from unusually large losses and must account for purchasing power.
+Recommend allocations or allocation rules for the Conservative, Balanced, and Growth portfolios.
+Then design a transparent onboarding rule that uses the questionnaire information to recommend
+one of the three portfolios or request human review. Apply the rule to Profiles A–E with a brief
+explanation.
+2. Design and evaluate the automated portfolio policy . For a customer assigned to the
+Balanced portfolio, develop a rule that decides whether to keep the current holdings, rebalance,
+change the target allocation, or request human review. Trade or change the target only when the
+estimated benefit justifies the transaction cost.
+Use an equal-weight baseline whose target remains one-third in each asset. Restore these weights
+at every review and charge the stated cost. Compare your policy with this baseline across the
+supplied scenarios. For each strategy, report the median growth and large-loss results, the 10th
+percentile of growth, and the 90th percentile of the large-loss measure. Briefly examine one severe-
+loss scenario and report the percentage of review periods in which your policy trades. Decide whether
+automated weight updates add value.
+Include one customer-facing explanation of no more than 50 words for a trade, target change, or
+request for human review.
+3. T est reliability and define safeguards. Test one important modeling assumption or the
+transaction-cost rate and state whether your main recommendation changes. Identify one important
+limitation and one condition that should trigger human review or suspension of the automated policy.
+State what the app should do while review is pending.
+Conclusion. Give a concise recommendation that defines the three portfolios, assigns Profiles A–
+E, states whether the Balanced portfolio should use automated weight updates, and identifies the
+main safeguard. When evaluating recommendations for Profiles A–E, take their stated investment
+horizons into account. You may use Scenarios 1–120 to develop and adjust your model. Evaluate
+your final policy using Scenarios 121–180 without further adjustment.
+2
+
+Instructions
+• Use of AI T ools: Teams are allowed to use AI tools, including ChatGPT, DeepSeek, and other
+AI-assisted software. However, all AI use must be clearly disclosed. In the report, please include
+a brief paragraph on Use of AI Toolsat the end of your submission, including the tools used
+and their purposes. All AI-generated content, calculations, code, and references must be carefully
+checked for correctness and plagiarism. Teams remain fully responsible for their submitted work.
+• Submission: Each team should submit a short report ( no more than 10 A4 pages, font size
+no smaller than 11pt ) in English explaining your answers and ideas. Please include the most
+important figures, tables, mathematical models, and numerical results in the report.
+Please list the names of all members in your report. Each team only has to ask the Team Leader
+to submit the files through the CMT system before October 20, 2026, 23:59 Beijing Time:
+https://cmt3.research.microsoft.com/HKUSTGZMCM2026
+– Main submission file: The report, in doc, docx, or pdf format.
+– If there are any source codes used, please submit them as Supplementary Materials in a
+ZIP file no larger than 50 MB.
+• Copyright: Each team retains the copyright of their work. We will only use your submissions to
+decide the winner.
+• Data Source and Acknowledgment : The SafeInvest Synthetic Dataset is based on selected
+United States series from the Jord` a–Schularick–Taylor Macrohistory Database, Release 6. It does
+not reproduce the historical observations. The SafeInvest Synthetic Dataset and accompanying
+problem statement are distributed for noncommercial use under the license CC BY-NC-SA 4.0.
+Redistribution or adaptation must retain the attribution, identify changes, and use the same or a
+compatible license.
+• Academic Integrity: This competition, like all other competitions, functions best when the
+participants treat one another with honesty, fairness, respect, and trust. The organizers hold all
+participants of this competition to high standards of scholarship and integrity.
+To accomplish the mission of providing an optimal educational environment, we promote the
+assumption of personal responsibility and integrity and prohibit all forms of academic dishonesty
+and misconduct. Conduct, without regard to motive, that violates the academic integrity and
+ethical standards of the University cannot be tolerated. Violations of the standards will result in
+serious consequences and disciplinary action according to the regulations by the University.
+3

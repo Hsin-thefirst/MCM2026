@@ -4,15 +4,13 @@ import unittest
 from pathlib import Path
 from safeinvest.data import COLUMNS, load_scenarios, split_scenarios
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA = ROOT / 'data' / 'SafeInvest_Synthetic_Data.csv'
-
 
 class DataTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        with DATA.open(newline='') as handle:
-            cls.raw_rows = list(csv.DictReader(handle))
+        # Test the full-grid legacy loader with generated data, never the real holdout.
+        cls.raw_rows = [dict(zip(COLUMNS, (str(sid), str(period), '0.05', '0.02', '0.01', '0.015')))
+                        for sid in range(1, 181) for period in range(1, 31)]
 
     def write_and_load(self, rows, columns=COLUMNS):
         with tempfile.TemporaryDirectory() as folder:
@@ -23,8 +21,8 @@ class DataTests(unittest.TestCase):
                 writer.writerows(rows)
             return load_scenarios(path)
 
-    def test_supplied_data_and_fixed_split(self):
-        scenarios = load_scenarios(DATA)
+    def test_generated_data_and_fixed_split(self):
+        scenarios = self.write_and_load(self.raw_rows)
         dev, final = split_scenarios(scenarios)
         self.assertEqual([s.scenario_id for s in dev], list(range(1, 121)))
         self.assertEqual([s.scenario_id for s in final], list(range(121, 181)))
@@ -32,8 +30,8 @@ class DataTests(unittest.TestCase):
             self.assertEqual([o.period for o in scenario.observations], list(range(1, 31)))
             self.assertTrue(all(o.scenario_id == scenario.scenario_id for o in scenario.observations))
         observation = scenarios[0].observations[0]
-        self.assertEqual(observation.nominal_returns, (-0.24096174, -0.01030968, 0.00709524))
-        self.assertEqual(observation.inflation, 0.03878898)
+        self.assertEqual(observation.nominal_returns, (0.05, 0.02, 0.01))
+        self.assertEqual(observation.inflation, 0.015)
 
     def test_unsorted_input_is_sorted(self):
         scenarios = self.write_and_load(list(reversed(self.raw_rows)))

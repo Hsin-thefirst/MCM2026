@@ -7,3 +7,6 @@ __pycache__/
 outputs/
 build/
 dist/
+
+# Benchmark rendering cache
+.mplconfig/

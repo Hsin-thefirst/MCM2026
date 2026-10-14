@@ -5,7 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "safeinvest"
 version = "0.1.0"
-description = "Reproducible SafeInvest MCM modeling project"
+description = "SafeInvest shared contracts and reproducible portfolio benchmarking project"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = []
 

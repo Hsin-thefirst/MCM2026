@@ -1,122 +1,83 @@
-# 统一接口
+# 代码接口与结果格式
 
-公共类型：[contracts.py](../src/safeinvest/contracts.py)。版本：v1.0。数据加载已实现，其余模块按以下接口开发。
+本文件合并公共接口与原 benchmark 扩展说明。数学口径仅在 [METHODOLOGY.md](METHODOLOGY.md) 维护，实验程序仅在 [PROTOCOL.md](PROTOCOL.md) 维护。
 
-## 基础约定
+## 模块职责
 
-- Python 3.10+；模块间传递 dataclass 和 tuple，内部可用 numpy / pandas。
-- 资产顺序：`equity, bond, bill`。权重：非负、和为 1。持仓：同顺序的名义金额。
-- 收益、通胀、风险和成本：小数，`0.05` 表示 5%。时间：年。
-- `Scenario`：一条完整情景；`MarketObservation`：一个年度的名义收益与通胀。
-- 无效数据：抛出异常；客户不适配或模型预警：返回人工复核动作及理由。
+| 位置 | 职责 |
+| --- | --- |
+| `src/safeinvest/contracts.py` | v1 公共 dataclass、Enum、Policy 协议和校验 |
+| `src/safeinvest/data.py` | 完整 180×30 网格校验/排序；兼容接口，日常测试仅用生成数据 |
+| `benchmark/safebench/data.py` | 开发分区读取、情景折划分、实际收益转换 |
+| `benchmark/safebench/engine.py` | 交易核算、因果上下文和年度模拟 |
+| `benchmark/safebench/policies.py` | 17 种策略、训练估计及策略工厂 |
+| `benchmark/safebench/metrics.py` | 路径指标、聚合、配对区间和 Pareto |
+| `benchmark/safebench/experiment.py` | 嵌套 CV、多期限/成本评价、适配、冻结/最终流程 |
+| `benchmark/safebench/validation.py` | 独立账本核验及晋级检查 |
+| `benchmark/safebench/report.py` | 中文 HTML 展示与可用于英文提交的图表 |
+| `scripts/verify_benchmark.py` | 独立市场重放和标量等权计算 |
+| `configs/benchmark.json` / `configs/profiles.json` | 唯一实验配置 / 客户问卷 |
 
-## 模块接口
+两种加载器职责不同：完整网格加载器保留既有公共 API，分区加载器为开发隔离而只解析所选数据。不要先全量读取真实 CSV 再划分来做开发。benchmark 代码复用公共类型；没有第二套 contracts。
 
-| 模块 | 责任 | 主要类型 |
-| --- | --- | --- |
-| `data.py` | 加载、验证和划分情景 | `Scenario` |
-| `engine.py` | 执行动作、计费和推进年度 | `TradeResult`, `SimulationResult` |
-| `metrics.py` | 计算路径指标和情景汇总 | `ScenarioMetrics`, `EvaluationSummary` |
-| `suitability.py` | 问卷适配及解释 | `CustomerProfile`, `SuitabilityResult` |
-| `policies/` | 根据已知信息选择动作 | `PolicyContext`, `Decision` |
-| `evaluation.py` | 批量评估及保存结果 | 上述类型 |
+## 调用约定
+
+资产顺序固定为 `equity,bond,bill`，持仓为名义金额，权重非负且和为 1，所有率使用小数。导入设置为 `PYTHONPATH=src:benchmark`；CLI 已处理源码路径。
 
 ```python
-# data.py（已实现）
-load_scenarios(path: str | Path) -> tuple[Scenario, ...]
-split_scenarios(scenarios: tuple[Scenario, ...]) -> tuple[
-    tuple[Scenario, ...], tuple[Scenario, ...]
-]
-
-# engine.py
-execute_trade(holdings: Holdings, target: Weights, cost_rate: float) -> TradeResult
-simulate(scenario: Scenario, policy: Policy,
-         initial_target: Weights, config: SimulationConfig) -> SimulationResult
-
-# metrics.py
-compute_metrics(result: SimulationResult) -> ScenarioMetrics
-summarize(metrics: tuple[ScenarioMetrics, ...]) -> EvaluationSummary
-
-# suitability.py
-class TransparentSuitabilityRule:
-    def recommend(self, profile: CustomerProfile) -> SuitabilityResult: ...
-
-# policies/
-class Policy(Protocol):
-    name: str
-    def decide(self, context: PolicyContext) -> Decision: ...
-
-# evaluation.py
-evaluate(scenarios: tuple[Scenario, ...], policy_factory: Callable[[], Policy],
-         initial_target: Weights, config: SimulationConfig
-) -> tuple[tuple[SimulationResult, ...], tuple[ScenarioMetrics, ...], EvaluationSummary]
+load_partition(path, phase='development', authorized=False) -> (tuple[Scenario, ...], partition_hash)
+execute_trade(holdings, target, cost_rate) -> TradeResult
+simulate(scenario, policy, initial_target, config) -> SimulationResult
+compute_metrics(result) -> dict
+summarize(metrics_dataframe) -> pandas.DataFrame
+fit_model(training_scenarios, config) -> serializable_model_dict
+make_policy(name, model, params, config) -> policy  # exposes initial_target
 ```
 
-加载器校验列名、完整的 180×30 网格、唯一主键及有限数值，收益和通胀均须大于 −1。返回按情景 / 年度排序的对象；划分结果为开发集、最终测试集。
+坏数据、非法动作和优化不可行明确报错；不能静默删除情景。业务不适配或模型预警可返回人工复核动作。Python API 是研究接口，不是安全沙箱；CLI 将输出/bundle 限制在 `benchmark/`。
 
-引擎模拟前 `config.horizon` 年；短路径测试可直接构造 `Scenario`。适配规则构造时接收组合、阈值和按组合 / 期限索引的开发风险表；`portfolio=None` 表示人工复核。
+## 策略接口与时序
 
-## 策略输入与动作
+`PolicyContext` 包含决策年 t、1..t−1 的历史、交易前持仓、当前目标、截至 t−1 的累计通胀、实际财富峰值、费用率和复核状态。它不暴露完整评价情景。每个情景创建新的策略实例，拟合参数固定。
 
-`PolicyContext` 包含：年度 t、1..t−1 的市场历史、交易前持仓、当前目标、截至 t−1 的累计通胀和实际财富峰值、复核状态、成本率。每条情景创建一个新的策略实例，训练参数保持固定。
-
-| action | target_weights | 行为 |
+| 动作 | target_weights | 行为 |
 | --- | --- | --- |
-| `keep` | `None` | 保持实际持仓，权重自然漂移 |
-| `rebalance` | 当前目标 | 恢复当前目标 |
-| `change_target` | 新目标 | 交易并更新目标 |
-| `human_review` | `None` | 保持持仓，进入复核状态 |
+| keep | None | 保持资产，权重自然漂移 |
+| rebalance | 当前目标 | 恢复当前目标；引擎拒绝借此修改目标 |
+| change_target | 新目标 | 交易并替换目标 |
+| human_review | None | 持仓不变，进入持续复核状态 |
 
-每个 `Decision` 附 `reason_codes` 和 `explanation`。建议原因码：`BENEFIT_BELOW_COST`、`REBALANCE_BENEFICIAL`、`TARGET_CHANGE_BENEFICIAL`、`DRAWDOWN_ALERT`、`REVIEW_PENDING`。
+决定附原因码和解释。门控策略暴露 `requires_benefit_gate=True` 与 `buffer`；交易必须提供收益/成本估计，满足定义过的门槛，引擎独立验证成本。无条件诊断策略不声称满足实际建议策略的收益门槛。
 
-Balanced 交易决策还需提供 `estimated_benefit` 和 `estimated_cost`，均为交易前财富的比例，并满足 `benefit > cost + buffer`。等权基准每年恢复目标，估计字段可为 `None`。上下文相关检查（如再平衡目标是否正确）由引擎验证。
+初始配置由引擎在第 1 年收益前完成并收费，后续才调用策略。复核待处理期间不再调用策略，继续持有和估值，不切换到 bills 或虚构顾问干预。初始交易字段同时保存在第一条年度记录中，费用不可重复累加。
 
-## 年度时序与交易核算
+## 添加未来模型
 
-第 1 年：全 bills → 初始目标 → 扣费 → 应用收益和通胀，记录 `rebalance / INITIAL_ALLOCATION`。第 2..H 年：建立 context → 策略决策 → 执行动作 → 应用当年收益和通胀。
+训练工厂仅接收训练 IDs；归一化、特征选择、专家门控、早停和强化学习训练均在内层训练边界完成。保存参数、种子、训练 IDs；`evaluate` 拒绝训练/评价 ID 重叠。
 
-转人工当期保持持仓；后续年度由引擎记录 `keep / REVIEW_PENDING`，复核状态持续到模拟结束。每个结果包含 H 条年度记录。
+当前上下文没有 horizon，策略与期限无关，所以评价可模拟 30 年再取前缀。期限相关 MPC/RL 须在工厂另传 H，并为每个期限重新实例化/模拟，不能继承该优化。增加昂贵模型时记录推理耗时、失败次数、显式回退和解释；生产回退若转人工，应按真实动作参与评价。
 
-```text
-V = Σholdings
-Q = V × 0.5 × Σ|target − holdings/V|
-F = cost_rate × Q
-post_trade_holdings = (V − F) × target
-```
+## 指标与输出映射
 
-Q 按收费前目标计算；费用在收益前从目标持仓按比例支付。保持 / 复核时 Q=F=0，持仓保持原值。例：100 单位全 bills 转 20 到 equities，Q=20、F=0.05，扣费后持仓为 `(19.99,0,79.96)`；三等分建仓费用为 `1/6`。
+公共 `ScenarioMetrics` / `EvaluationSummary` 结构仍为 v1。benchmark 为容纳额外指标返回 dict/DataFrame，`policy_name` 对应 CSV 的 `policy`；`real_cagr`、`real_max_drawdown`、`real_return_volatility`、`terminal_real_wealth`、`trade_rate`、`total_nominal_cost` 保留对应含义。
 
-`SimulationResult.initial_*` 与第一条记录的建仓信息相同。总费用只对年度记录求和一次。实际交易判定：`moved_amount > 1e-10 × initial_wealth`。
+MDD 包含每次扣费后的财富标记，替代初始文档仅明确初次费用的口径。H=1 波动及后续交易率在解析测试中为 0，正式期限至少 5 年。聚合键是策略、期限、成本，情景 ID 必须唯一。
 
-## 指标
-
-W 为实际财富，H 为期限，V₀ 为初始财富。
-
-| 字段 | 定义 |
-| --- | --- |
-| `real_cagr` | `(W_H/V₀)^(1/H)−1`，包含全部费用 |
-| `real_max_drawdown` | 期初、首次扣费后及年末财富的最大相对峰谷损失 |
-| `real_return_volatility` | `W_t/W_{t−1}−1` 的样本标准差，ddof=1，W₀=V₀ |
-| `terminal_real_wealth` | 第 H 年末实际财富 |
-| `trade_rate` | 第 2..H 年实际交易次数 / `(H−1)`；H=1 时为 0 |
-| `total_nominal_cost` | 年度记录费用之和，包含建仓 |
-
-`compute_metrics` 要求 H≥2。汇总输入须为同策略、同期限、情景 ID 互异的非空结果。分位数采用线性插值：排序后索引 `(n−1)p`，与 numpy `method="linear"` 一致。汇总报告 CAGR 中位数 / P10、MDD 中位数 / P90、波动中位数和交易率均值。
-
-## 输出
-
-运行目录：`outputs/<run_id>/`。报告图表：`report/figures/`。
+每次实验位于 `benchmark/outputs/<run_id>/`：
 
 | 文件 | 内容 |
 | --- | --- |
-| `config.json` | 执行配置、权重、估计器参数、策略门槛和冻结标记 |
-| `manifest.json` | 接口版本、phase、情景 IDs、期限、数据 / 配置 hash、代码版本及未提交状态、依赖版本、种子 |
-| `scenario_metrics.csv` | `run_id` + `ScenarioMetrics` 字段 |
-| `summary.csv` | `run_id` + `EvaluationSummary` 字段 |
-| `decisions.csv` | `run_id,scenario_id,policy_name` + `PeriodRecord` 字段 |
-| `suitability.csv` | 客户字段 + `portfolio,reason_codes,explanation` |
-| `figures/` | 比较图、严重案例、成本敏感性 |
+| config.json、manifest.json | 有效配置、分区/代码 hash、种子、环境和阶段 |
+| scenario_metrics.csv | 每个策略×情景×期限×成本的原始指标 |
+| decisions.csv.gz | 每年动作、解释、估计、费用、目标及交易前后/年末持仓 |
+| summary.csv、comparison_table.csv | 原始小数汇总 / 供人阅读的中文展示表 |
+| paired_comparisons.csv、matched_comparisons.csv | 官方等权 / 同初始 Balanced 的配对比较 |
+| promotion_screen.csv | 研究晋级筛选，不是官方评分 |
+| suitability.csv、suitability_risk.csv | 推荐与候选风险依据 |
+| splits.json、tuning_trials.csv、fitted_models.json | 所有划分、搜索和拟合参数 |
+| validation.json、independent_replay.json | 核验与独立重放证据 |
+| report.html、figures/ | 本地报告、PNG/SVG 图表 |
 
-CSV：UTF-8、无 index、百分比保留小数。三元素 tuple 展开为 `<字段名>_equity/_bond/_bill`；`reason_codes`、`scenario_ids` 为 JSON 数组。缺失估计值留空，人工复核的 portfolio 导出为 `human_review`。JSON 中 tuple 为数组、Enum 为字符串、缺失值为 null。
+CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。
 
-配置中的 `[1,120]` 等表示闭区间端点；manifest 保存完整实际 ID 列表。phase 取 `development / final / sensitivity`。
+冻结 artifact 保存训练状态、参数、代码与依赖版本、客户分配及最终比较列表；最终独占锁在读取真实最终收益前创建。目录重构后保留旧 manifest，不以新 hash 伪装旧实验；当前代码只从版本匹配的开发运行冻结。

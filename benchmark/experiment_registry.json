@@ -1,0 +1,45 @@
+[
+  {
+    "run": "development_v1",
+    "date": "2026-10-14",
+    "purpose": "Initial declared 17-policy nested-CV comparison",
+    "status": "exploratory_flagged",
+    "finding": "CVaR 8% cap infeasible under additional Balanced box in all outer folds; silent minimum-tail fallback invalidated constrained interpretation.",
+    "holdout_used": false
+  },
+  {
+    "run": "development_v2",
+    "date": "2026-10-14",
+    "purpose": "Correct infeasible CVaR handling: official simplex, unchanged cap, explicit failure",
+    "status": "financial_results_verified_superseded_audit_code",
+    "changes_after_results": "Changed defensive comparator feasible set; added annual CVaR metric, matched comparisons, promotion screen and independent ledger audit. No hyperparameter search expansion.",
+    "holdout_used": false
+  },
+  {
+    "run": "development_v3",
+    "date": "2026-10-14",
+    "purpose": "Optimize full-ledger audit and confirm reproducibility",
+    "status": "verified_historical_development",
+    "changes_after_results": "Audit vectorization and CLI default only; all financial metrics exactly identical to v2.",
+    "promotion_result": "No gated candidate meets combined exploratory growth/downside screen.",
+    "holdout_used": false
+  },
+  {
+    "run": "development_integrated",
+    "date": "2026-10-14",
+    "purpose": "Rename to benchmark and integrate project documentation, environment, dependencies and execution commands",
+    "status": "verified_historical_development",
+    "changes_after_results": "Folder paths and CLI defaults only for benchmark code; trading rules and search configuration unchanged. Shared full-grid tests now use generated fixtures.",
+    "verification": "All 18,360 metric rows exactly match development_v3; 39 tests pass; full ledger audit and independent market replay pass.",
+    "holdout_used": false
+  },
+  {
+    "run": "development_consolidated",
+    "date": "2026-10-14",
+    "purpose": "Consolidate documentation, configuration, tests and utilities at project root; localize human-facing documentation and report in Chinese",
+    "status": "current_verified_development",
+    "changes_after_results": "Configuration and utility paths, CLI defaults and report presentation only; trading rules, search space and financial computations unchanged. Historical artifacts retained without rewriting manifests.",
+    "verification": "39 tests pass; all 18,360 metric rows exactly match development_integrated; 10,200 paths audited; 306,000 market transitions replayed and 1,080 independent scalar reference checks passed. Current code hash matches manifest.",
+    "holdout_used": false
+  }
+]
