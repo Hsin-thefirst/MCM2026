@@ -16,6 +16,7 @@ from .data import load_partition, folds, real_rows
 from .engine import simulate
 from .metrics import compute_metrics, summarize, paired_comparisons, pareto_flags, binomial_upper
 from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS
+from .selection import select_trials, validate_selection_config
 
 BASE=ROOT/'benchmark'
 TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review')
@@ -70,38 +71,35 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
                     records.append(row)
     return pd.DataFrame(output),pd.DataFrame(records)
 
-def tune(scenarios,config,seed):
+def tune(scenarios,config,seed,trace_path=None):
+    rule=validate_selection_config(config)
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
-    collected=[]; audits=[]
+    collected=[]; references=[]; audits=[]
     for inner,valid_ids in enumerate(groups):
         train=[s for sid,s in by_id.items() if sid not in valid_ids]
         valid=[by_id[sid] for sid in valid_ids]
         model=fit_model(train,config)
         audits.append(dict(inner_fold=inner,train_ids=model['train_ids'],validation_ids=valid_ids))
+        if rule=='path_risk':
+            reference,_=evaluate(valid,model,{},config,names=[config['selection_reference']],
+                                 horizons=[30],fold=inner,keep_records=False)
+            reference['trial']=-1
+            references.append(reference)
         for trial,params in enumerate(config['tuning_grid']):
             metrics,_=evaluate(valid,model,{n:params for n in TUNED},config,names=list(TUNED),
-                                horizons=[30],keep_records=False)
+                                horizons=[30],fold=inner,keep_records=False)
             metrics['trial']=trial
             collected.append(metrics)
     scores=pd.concat(collected,ignore_index=True)
-    scores['utility']=scores.real_cagr-config['selection_drawdown_penalty']*scores.real_max_drawdown
-    rows=[]; chosen={}
-    for name,g in scores.groupby('policy'):
-        means=g.groupby('trial').utility.mean()
-        best=int(means.idxmax())
-        # Paired one-standard-error rule: prefer higher buffer, then higher gamma among near-best candidates.
-        pivot=g.pivot(index='scenario_id',columns='trial',values='utility')
-        eligible=[]
-        for trial in means.index:
-            diff=pivot[best]-pivot[trial]
-            se=float(diff.std(ddof=1)/np.sqrt(len(diff)))
-            ok=float(diff.mean()) <= se+1e-12
-            if ok: eligible.append(int(trial))
-            rows.append(dict(policy=name,trial=int(trial),mean_utility=float(means[trial]),
-                             best_trial=best,paired_gap_se=se,one_se_eligible=ok))
-        selected=max(eligible,key=lambda i:(config['tuning_grid'][i]['buffer'],config['tuning_grid'][i]['gamma'],-i))
-        chosen[name]=config['tuning_grid'][selected]
+    reference=pd.concat(references,ignore_index=True) if references else None
+    chosen,rows=select_trials(scores,config,reference)
+    if trace_path is not None:
+        trace=pd.concat([scores]+references,ignore_index=True)
+        trace['utility']=trace.real_cagr-config['selection_drawdown_penalty']*trace.real_max_drawdown
+        trace_path=Path(trace_path); trace_path.parent.mkdir(parents=True,exist_ok=True)
+        if trace_path.exists(): raise FileExistsError(trace_path)
+        trace.to_csv(trace_path,index=False,compression={'method':'gzip','mtime':0})
     return chosen,rows,audits
 
 def suitability(metrics,config):
@@ -132,6 +130,7 @@ def suitability(metrics,config):
     return pd.DataFrame(rows),pd.DataFrame(risk)
 
 def run_development(config,data_path,out):
+    validate_selection_config(config)
     out=Path(out); out.mkdir(parents=True,exist_ok=False)
     started=time.perf_counter()
     scenarios,data_hash=load_partition(data_path)
@@ -145,7 +144,8 @@ def run_development(config,data_path,out):
     for outer,valid_ids in enumerate(folds(ids,config['outer_folds'],config['seed'])):
         train=[s for s in scenarios if s.scenario_id not in valid_ids]
         valid=[s for s in scenarios if s.scenario_id in valid_ids]
-        params,trials,inner_audit=tune(train,config,config['seed']+outer+1)
+        params,trials,inner_audit=tune(train,config,config['seed']+outer+1,
+            trace_path=out/'tuning_metrics'/f'outer_{outer}.csv.gz')
         model=fit_model(train,config)
         print('Outer fold',outer+1,'selected',params,flush=True)
         fitted.append(dict(fold=outer,model=model,params=params))
@@ -180,10 +180,17 @@ def freeze(config,data_path,policy,output,development_run):
     prior=json.loads((Path(development_run)/'manifest.json').read_text())
     if prior['phase']!='development' or prior['code_sha256']!=code_digest() or prior['config_sha256']!=digest(config):
         raise ValueError('Development run must match current code and configuration')
+    if config.get('selection_rule')=='path_risk' and policy in TUNED:
+        selection=pd.read_csv(Path(development_run)/'tuning_trials.csv')
+        selected=selection[(selection.policy==policy)&selection.selected]
+        if len(selected)!=config['outer_folds'] or not selected.risk_feasible.all():
+            raise ValueError('Cannot freeze an infeasible path-risk diagnostic')
     scenarios,data_hash=load_partition(data_path)
     if data_hash!=prior['partition_sha256']:
         raise ValueError('Development data changed')
     params,trials,audit=tune(scenarios,config,config['seed']+1000)
+    if policy in params and params[policy].get('selection_status')=='infeasible_diagnostic':
+        raise ValueError('Full-development path-risk selection is infeasible; freeze refused')
     model=fit_model(scenarios,config)
     bundle=dict(schema=1,selected_policy=policy,config=config,model=model,params=params,
                 code_sha256=code_digest(),dependencies=versions(),development_sha256=data_hash,

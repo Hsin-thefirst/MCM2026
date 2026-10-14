@@ -1,4 +1,4 @@
-"""Offline, source-backed HTML report and publication-friendly PNG/SVG figures."""
+"""Offline, source-backed HTML report and publication-friendly PNG/SVG/PDF figures."""
 import html
 import json
 import os
@@ -28,7 +28,12 @@ def generate_report(out):
     plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False})
     def save(fig,name):
         fig.savefig(figures/(name+'.png'),dpi=170,bbox_inches='tight')
-        fig.savefig(figures/(name+'.svg'),bbox_inches='tight'); plt.close(fig)
+        fig.savefig(figures/(name+'.svg'),bbox_inches='tight')
+        # Export caption-free vector figures for the competition paper.
+        for axis in fig.axes: axis.set_title('')
+        if fig._suptitle is not None: fig._suptitle.set_text('')
+        fig.savefig(figures/(name+'.pdf'),bbox_inches='tight')
+        plt.close(fig)
     fig,ax=plt.subplots(figsize=(10,6))
     for i,r in enumerate(main.itertuples()):
         ax.scatter(100*r.p90_loss,100*r.median_growth,s=70,marker='D' if r.pareto else 'o')
@@ -112,6 +117,21 @@ def generate_report(out):
       'X 表示人工复核所在年份；此后资产继续漂移，没有虚构顾问干预。</p>'
       '<img src="figures/severe_path.png" alt="严重情景的实际财富路径">',
       '<h2>投资期限敏感性</h2><img src="figures/horizon_risk.png" alt="不同投资期限的回撤">']
+    if config.get('selection_rule')=='path_risk' and (out/'tuning_trials.csv').exists():
+        trials=pd.read_csv(out/'tuning_trials.csv')
+        selected=trials[trials.selected].copy()
+        selected['gamma']=selected.trial.map(lambda i:config['tuning_grid'][i]['gamma'])
+        selected['buffer']=selected.trial.map(lambda i:config['tuning_grid'][i]['buffer'])
+        selected=selected[['outer_fold','policy','gamma','buffer','p90_loss','reference_p90_loss',
+                           'p10_growth','reference_p10_growth','risk_feasible','selection_status']]
+        selected=selected.rename(columns={'outer_fold':'外层折','policy':'策略','gamma':'风险系数',
+            'buffer':'交易缓冲','p90_loss':'内层P90回撤','reference_p90_loss':'参照P90回撤',
+            'p10_growth':'内层P10增长','reference_p10_growth':'参照P10增长',
+            'risk_feasible':'内层约束通过','selection_status':'选择状态'})
+        parts+=['<h2>路径风险约束调参</h2><p>约束只使用各外层训练集内部的折外路径，'
+            '不是对外层评价或未来损失的保证。无可行候选时选择最小P90回撤的诊断参数，'
+            '明确标记不可行并禁止冻结。完整候选及逐情景依据见 tuning_trials.csv 和 tuning_metrics/。</p>',
+            selected.to_html(index=False,escape=True)]
     if (out/'suitability.csv').exists():
         suitability=pd.read_csv(out/'suitability.csv')
         suitability['portfolio']=suitability['portfolio'].replace({'conservative':'保守','balanced':'均衡','growth':'成长','human_review':'人工复核'})
@@ -136,6 +156,6 @@ def generate_report(out):
             '许可 CC BY-NC-SA 4.0。图表和表格为派生分析。AI 使用：OpenAI Codex 协助编写代码和文档；团队须在提交前核查。</p>']
     body='\n'.join(parts)
     document='<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SafeInvest 基准报告</title><style>body{font:16px/1.5 system-ui;margin:32px auto;max-width:1250px;padding:0 20px;color:#183043}h1,h2{line-height:1.2}table{font-size:12px;border-collapse:collapse;display:block;overflow:auto}td,th{padding:7px;border:1px solid #ccd6dc;text-align:right}th:first-child,td:first-child{text-align:left}img{max-width:100%;height:auto}.caveat{background:#fff2ce;padding:16px}</style><body>'+body+'</body></html>'
-    (out/'report.html').write_text(document)
-    (out/'comparison_table.csv').write_text(display.to_csv(index=False))
+    (out/'report.html').write_text(document,encoding='utf-8')
+    (out/'comparison_table.csv').write_text(display.to_csv(index=False),encoding='utf-8')
     return out/'report.html'

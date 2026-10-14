@@ -6,6 +6,8 @@
 
 已实现 17 种基准策略、年度回测引擎、嵌套情景交叉验证、客户期限评价、配对区间、成本敏感性及受控最终评价。开发结果中，成本感知策略增长更高，但回撤也更大；尚无门控候选同时满足预设增长与下行风险晋级条件。
 
+新增同预算的路径风险约束选择研究：回撤降低伴随增长下降，20个策略族/外层折中18个无可行参数，四个策略族均不满足冻结条件。[最新研究报告](benchmark/outputs/development_path_risk_utf8/comparison/report.html)保存双运行、逐情景选参依据、配对区间及论文用矢量图；数值与解释见[实验结论](docs/FINDINGS.md)。
+
 **情景 1–120 用于开发，121–180 只供冻结后的最终评价。日常测试使用生成数据或开发分区。**
 
 ## 安装与运行
@@ -27,7 +29,12 @@ make benchmark RUN=benchmark/outputs/my_run
 make report RUN=benchmark/outputs/my_run
 make audit RUN=benchmark/outputs/my_run
 make replay RUN=benchmark/outputs/my_run
+
+# 同预算比较效用选择与路径风险约束选择，只使用开发情景
+make study RUN=benchmark/outputs/development_path_risk_study
 ```
+
+Windows 可指定本地解释器，如 `make test PYTHON=C:/Python313/python.exe`；测试入口在 Python 内设置源码路径。`make study` 使用 `configs/path_risk.json`，保存双运行、逐情景调参记录及配对研究报告；已有目录会拒绝覆盖。
 
 打开输出目录中的 `report.html` 查看中文报告；英文图表标签便于比赛提交引用。`make report/audit/replay` 默认指向 `development_consolidated`。可通过 `PYTHON=/path/to/python` 指定解释器，也可直接执行 `python benchmark/run.py --help`。
 

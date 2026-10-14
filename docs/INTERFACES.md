@@ -13,9 +13,12 @@
 | `benchmark/safebench/policies.py` | 17 种策略、训练估计及策略工厂 |
 | `benchmark/safebench/metrics.py` | 路径指标、聚合、配对区间和 Pareto |
 | `benchmark/safebench/experiment.py` | 嵌套 CV、多期限/成本评价、适配、冻结/最终流程 |
+| `benchmark/safebench/selection.py` | 原效用选择及可选的内层路径风险约束、不可行诊断 |
+| `benchmark/safebench/research.py` | 从两个已保存开发运行做配对选择规则比较，不读取市场数据 |
 | `benchmark/safebench/validation.py` | 独立账本核验及晋级检查 |
 | `benchmark/safebench/report.py` | 中文 HTML 展示与可用于英文提交的图表 |
 | `scripts/verify_benchmark.py` | 独立市场重放和标量等权计算 |
+| `scripts/run_tests.py` / `scripts/run_path_risk_study.py` | 跨平台统一测试 / 同预算双运行研究入口 |
 | `configs/benchmark.json` / `configs/profiles.json` | 唯一实验配置 / 客户问卷 |
 
 两种加载器职责不同：完整网格加载器保留既有公共 API，分区加载器为开发隔离而只解析所选数据。不要先全量读取真实 CSV 再划分来做开发。benchmark 代码复用公共类型；没有第二套 contracts。
@@ -32,7 +35,14 @@ compute_metrics(result) -> dict
 summarize(metrics_dataframe) -> pandas.DataFrame
 fit_model(training_scenarios, config) -> serializable_model_dict
 make_policy(name, model, params, config) -> policy  # exposes initial_target
+tune(scenarios, config, seed, trace_path=None) -> (params, trial_rows, split_audits)
+select_trials(scores, config, reference=None) -> (params, trial_rows)
+compare_selection_runs(control, constrained, out) -> pandas.DataFrame
 ```
+
+`selection_rule` 缺省为 `one_se_utility`，保持既有数值行为；`path_risk` 只按内层折外路径与同初始 Balanced 参照比较，约束参数见配置。`trial_rows` 新增 `selected`、P90/P10、参照值、`risk_feasible` 和 `selection_status`；没有可行候选时状态为 `infeasible_diagnostic`，仍评价全部外层情景，但禁止冻结。返回参数保留 gamma/buffer/window，并在新规则下附选择状态与 trial ID。
+
+`trace_path` 可选且只允许新建，保存各内层情景的候选指标（参照 trial=-1）；开发运行默认输出 `tuning_metrics/outer_<fold>.csv.gz`。选择比较要求两运行的开发分区、代码、环境、内外层划分和全部配置相同，只有 `selection_rule` 可不同。比较输出含源文件 hash、配对区间、汇总及图表；不覆盖历史运行。
 
 坏数据、非法动作和优化不可行明确报错；不能静默删除情景。业务不适配或模型预警可返回人工复核动作。Python API 是研究接口，不是安全沙箱；CLI 将输出/bundle 限制在 `benchmark/`。
 
@@ -75,8 +85,9 @@ MDD 包含每次扣费后的财富标记，替代初始文档仅明确初次费�
 | promotion_screen.csv | 研究晋级筛选，不是官方评分 |
 | suitability.csv、suitability_risk.csv | 推荐与候选风险依据 |
 | splits.json、tuning_trials.csv、fitted_models.json | 所有划分、搜索和拟合参数 |
+| tuning_metrics/ | 逐内层验证情景、策略、参数 trial 的原始指标及参照 |
 | validation.json、independent_replay.json | 核验与独立重放证据 |
-| report.html、figures/ | 本地报告、PNG/SVG 图表 |
+| report.html、figures/ | 本地报告、PNG/SVG 图表及无标题的论文用矢量 PDF |
 
 CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。
 

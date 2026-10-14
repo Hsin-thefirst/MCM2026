@@ -41,5 +41,37 @@
     "changes_after_results": "Configuration and utility paths, CLI defaults and report presentation only; trading rules, search space and financial computations unchanged. Historical artifacts retained without rewriting manifests.",
     "verification": "39 tests pass; all 18,360 metric rows exactly match development_integrated; 10,200 paths audited; 306,000 market transitions replayed and 1,080 independent scalar reference checks passed. Current code hash matches manifest.",
     "holdout_used": false
+  },
+  {
+    "run": "development_path_risk_study",
+    "date": "2026-10-14",
+    "executor": "Codex",
+    "purpose": "预声明路径风险约束选择研究：解决上轮效用调参与服务风险筛选不一致的问题。",
+    "status": "verified_financial_results_report_encoding_flagged",
+    "config": "configs/path_risk.json",
+    "search_budget": "效用对照和风险约束各使用4策略族×8参数×3内折×5外折，共960次候选/内折评价；每次仍评价17种策略、5期限和5档30年成本。",
+    "changed_factor": "两运行仅selection_rule不同；种子、内外层划分、gamma=3/8/16/32、buffer=0/0.001、初始配置和成本完全相同。",
+    "selection_constraints": "只使用外层训练集内部的折外结果：相对balanced_annual，P90 MDD允许增加≤0.01、P10 CAGR允许降低≤0.001；可行候选再用原效用和配对一标准误规则选择。",
+    "infeasible_handling": "无可行候选时只保留最小P90 MDD参数作为显式诊断，记录全部候选，禁止冻结该不可行策略族。",
+    "promotion_rule": "沿用docs/PROTOCOL.md既有增长路线标准，同时比较同初始Balanced参照；配对选择规则比较对四策略族进行端点/分层内Bonferroni调整，不解释为独立最终证据。",
+    "post_result_changes": "本轮不根据外层结果扩展参数、改约束或重跑种子；若失败如实记录。",
+    "holdout_used": false,
+    "result": "18/20个策略族/外层折无可行参数；两组12项增长路线比较均未晋级。成本感知P90回撤52.03%降至26.86%，中位实际CAGR5.45%降至2.62%。",
+    "verification": "50项测试通过；共36,720行指标、612,000条年度记录核验，两组独立重放通过；源代码hash匹配。",
+    "presentation_issue": "Windows默认cp936造成两个详细HTML与中文展示CSV编码不符合UTF-8声明；配对研究报告显式UTF-8正常。保留快照，登记原配置复跑验证编码修复。"
+  },
+  {
+    "run": "development_path_risk_utf8",
+    "date": "2026-10-14",
+    "executor": "Codex",
+    "purpose": "修复中文报告显式UTF-8编码，原配置重复验证财务结果不变。",
+    "status": "current_verified_development_reproduction",
+    "config": "configs/path_risk.json",
+    "search_budget": "重复原声明的两个4策略族×8参数×3内折×5外折运行，共960次候选/内折评价；这是确定性复现，不新增候选、种子或选择证据。",
+    "changes_after_results": "只改详细报告/中文展示CSV的写入编码及CLI输出编码，不改策略、约束、参数网格、统计方法或数据。",
+    "verification_plan": "与development_path_risk_study的两子运行逐行比较全部财务指标、候选诊断和逐情景内层记录；再次核验账本、独立市场重放、代码hash、UTF-8及PDF版面。",
+    "verification": "make test 51项通过；每组14份财务/决策/调参产物与首轮逐字节一致，配对选择区间不变；36,720行指标、612,000条年度记录与2,160项标量参照验证通过。当前代码hash匹配，中文报告/展示CSV为UTF-8，12张PDF重新渲染的像素与首轮已检查预览一致。",
+    "result": "18/20个策略族/外层折没有同时满足P90回撤及P10增长的参数，四族均不可冻结。降低权益配置减少回撤，同时牺牲增长；原增长路线结论不变。",
+    "holdout_used": false
   }
 ]
