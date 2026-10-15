@@ -47,10 +47,6 @@ def fit_model(scenarios,config):
     index=int(np.argmax(np.where(feasible,weights@mu,-np.inf)))
     inv=1/np.sqrt(np.diag(cov)); inv/=inv.sum()
     return dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
-                # Annual real returns from this training layer only.  These are the
-                # observations used by budget-value risk penalties; they are not
-                # synthetic or independently sampled paths.
-                risk_rows=rows.tolist(),
                 minvar=optimize(mu,cov,minimum_variance=True),inverse_vol=tuple(inv),
                 meanvar=optimize(mu,cov,gamma=config['fixed_gamma']),cvar=tuple(weights[index]),
                 cvar_feasible=bool(feasible.any()),cvar_estimate=float(tails[index]))
@@ -179,102 +175,11 @@ class DrawdownBudgetPolicy:
         return Decision(Action.KEEP,('BENEFIT_BELOW_COST',),'The estimated improvement does not justify trading costs and the safety margin.',
                         estimated_benefit=benefit,estimated_cost=cost)
 
-class BudgetValuePolicy(DrawdownBudgetPolicy):
-    """Horizon-scaled drawdown budget whose trades pass a training-risk value gate."""
-
-    def __init__(self, name, model, params, config, horizon=30, zero_band=False,
-                 force_static=False):
-        # The candidate's lifecycle cap uses the registered fixed shift; sibling
-        # ablations receive the same selected parameter dictionary from the caller.
-        budget_params = dict(params)
-        budget_params['equity_shift'] = -.05
-        super().__init__(name, model, budget_params, config, loss_tolerance=.25,
-                         equity_bounds=(.15, .65), nonequity_split=(.7, .3),
-                         horizon=horizon)
-        self.risk_penalty = float(params.get('risk_penalty', 1.0))
-        self.derisk_threshold = float(params.get('derisk_threshold', 0.0))
-        if not np.isfinite(self.risk_penalty) or self.risk_penalty < 0:
-            raise ValueError('risk_penalty must be finite and nonnegative')
-        if not np.isfinite(self.derisk_threshold) or not 0 <= self.derisk_threshold <= 1:
-            raise ValueError('derisk_threshold must be finite in [0, 1]')
-        if zero_band:
-            self.derisk_threshold = 0.0
-        rows = np.asarray(model.get('risk_rows', []), dtype=float)
-        if rows.ndim != 2 or rows.shape[1] != 3 or len(rows) == 0 or not np.isfinite(rows).all():
-            raise ValueError('risk_rows must be a finite nonempty array with three assets')
-        self.risk_rows = rows
-        self.force_static = bool(force_static)
-        # This policy always uses the complete value gate; it has no exemption path.
-        self.derisk_exempt = False
-
-    def _utility(self, weights, drawdown):
-        weights = np.asarray(weights, dtype=float)
-        shortfall = np.maximum(
-            0.0,
-            1.0 - (1.0 - drawdown) * (1.0 + self.risk_rows @ weights)
-            - self.loss_tolerance,
-        )
-        value = (1.0 + self.mu @ weights
-                 - self.gamma / 2.0 * (weights @ self.cov @ weights)
-                 - self.risk_penalty * float(shortfall.mean()))
-        return float(value)
-
-    def _target(self, realized_dd):
-        if self.force_static:
-            return np.asarray(self.initial_target, dtype=float)
-        budget_remaining = max(0.0, (self.loss_tolerance - realized_dd) / self.loss_tolerance)
-        target_equity = self.equity_min + (self.equity_max - self.equity_min) * budget_remaining ** self.k
-        target = np.array([target_equity,
-                           (1.0 - target_equity) * self.bond_frac,
-                           (1.0 - target_equity) * self.bill_frac])
-        target = np.clip(target, 0.0, 1.0)
-        return target / target.sum()
-
-    def decide(self, c):
-        realized_dd = 1 - sum(c.holdings) / c.cumulative_inflation / c.real_peak
-        if realized_dd >= self.loss_tolerance:
-            return Decision(Action.HUMAN_REVIEW, ('DRAWDOWN_LIMIT_REACHED',),
-                'Your realized drawdown has reached the loss tolerance. A human adviser should review your plan. We will hold your existing investments while review is pending.')
-        target = self._target(realized_dd)
-        current = np.asarray(c.holdings, dtype=float) / sum(c.holdings)
-
-        # The band only suppresses a small equity sell-back when the budget target
-        # itself has not fallen materially below the previous target.
-        budget_target_equity = float(target[0])
-        previous_target_equity = float(c.target_weights[0])
-        if (current[0] > budget_target_equity
-                and current[0] - budget_target_equity <= self.derisk_threshold
-                and previous_target_equity - budget_target_equity <= self.derisk_threshold):
-            return Decision(Action.KEEP, ('BUDGET_DRIFT_BAND',),
-                            'The small equity drift is within the budget trading band.')
-
-        current_value = self._utility(current, realized_dd)
-        target_value = self._utility(target, realized_dd)
-        if (target_value <= 0 or current_value <= 0
-                or not np.isfinite(target_value) or not np.isfinite(current_value)):
-            return Decision(Action.HUMAN_REVIEW, ('INVALID_ESTIMATE',),
-                            'The return and risk estimate is unreliable. Please seek human review.')
-        cost = float(c.transaction_cost_rate * .5 * np.abs(target - current).sum())
-        benefit = float((target_value - current_value) / target_value)
-        if benefit > cost + self.buffer:
-            action = (Action.REBALANCE if np.allclose(target, c.target_weights, rtol=0, atol=1e-10)
-                      else Action.CHANGE_TARGET)
-            return Decision(action, ('BUDGET_VALUE_ADJUSTMENT',),
-                'Adjusting allocation when the training risk-adjusted value exceeds trading cost and buffer.',
-                tuple(target), benefit, cost)
-        return Decision(Action.KEEP, ('BENEFIT_BELOW_COST',),
-                        'The estimated improvement does not justify trading costs and the safety margin.',
-                        estimated_benefit=benefit, estimated_cost=cost)
-
-
 POLICY_NAMES=['equal_annual','equal_hold','bills_hold','conservative_annual','balanced_annual','growth_annual',
               'balanced_hold','balanced_periodic','balanced_threshold','minimum_variance','inverse_volatility',
               'mean_variance','cvar_constrained','balanced_gate','cost_aware','adaptive','adaptive_review',
               'drawdown_conservative','drawdown_balanced','drawdown_aggressive',
-              'drawdown_lifecycle_conservative','drawdown_lifecycle_balanced','drawdown_lifecycle_aggressive',
-              'budget_lifecycle_balanced','budget_lifecycle_balanced_zero_band',
-              'budget_lifecycle_balanced_static','budget_lifecycle_balanced_annual',
-              'budget_lifecycle_balanced_hold']
+              'drawdown_lifecycle_conservative','drawdown_lifecycle_balanced','drawdown_lifecycle_aggressive']
 
 def make_policy(name,model,params,config,horizon=30):
     fixed={'equal_annual':(EQUAL,'annual'),'equal_hold':(EQUAL,'hold'),'bills_hold':((0.,0.,1.),'hold'),
@@ -285,21 +190,6 @@ def make_policy(name,model,params,config,horizon=30):
            'mean_variance':(tuple(model['meanvar']),'annual'),'cvar_constrained':(tuple(model['cvar']),'annual')}
     if name in fixed:
         return StaticPolicy(name,*fixed[name],interval=config['periodic_interval'],threshold=config['rebalance_threshold'])
-    budget_names = {
-        'budget_lifecycle_balanced': (False, False),
-        'budget_lifecycle_balanced_zero_band': (True, False),
-        'budget_lifecycle_balanced_static': (False, True),
-    }
-    if name in budget_names:
-        zero_band, force_static = budget_names[name]
-        return BudgetValuePolicy(name, model, params, config, horizon=horizon,
-                                 zero_band=zero_band, force_static=force_static)
-    if name in ('budget_lifecycle_balanced_annual', 'budget_lifecycle_balanced_hold'):
-        diagnostic = BudgetValuePolicy(name, model, params, config, horizon=horizon)
-        mode = 'annual' if name.endswith('_annual') else 'hold'
-        return StaticPolicy(name, diagnostic.initial_target, mode,
-                            interval=config['periodic_interval'],
-                            threshold=config['rebalance_threshold'])
     if name.startswith('drawdown_lifecycle_'):
         tolerances={'conservative':0.15,'balanced':0.25,'aggressive':0.35}
         bounds={'conservative':(0.15,0.50),'balanced':(0.15,0.65),'aggressive':(0.20,0.75)}

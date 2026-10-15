@@ -41,21 +41,6 @@
     {"k": 1.0, "buffer": 0.0, "gamma": 5.0, "derisk_exempt": true, "equity_shift": -0.05},
     {"k": 1.5, "buffer": 0.0, "gamma": 5.0, "derisk_exempt": true, "equity_shift": -0.05}
   ],
-  "budget_value_tuning_grid": [
-    {"k": 1.0, "derisk_threshold": 0.0, "gamma": 5.0, "buffer": 0.0, "risk_penalty": 1.0, "equity_shift": -0.05},
-    {"k": 1.0, "derisk_threshold": 0.02, "gamma": 5.0, "buffer": 0.0, "risk_penalty": 1.0, "equity_shift": -0.05},
-    {"k": 1.5, "derisk_threshold": 0.0, "gamma": 5.0, "buffer": 0.0, "risk_penalty": 1.0, "equity_shift": -0.05},
-    {"k": 1.5, "derisk_threshold": 0.02, "gamma": 5.0, "buffer": 0.0, "risk_penalty": 1.0, "equity_shift": -0.05}
-  ],
-  "budget_value_screen": {
-    "minimum_p90_reduction": 0.01,
-    "maximum_median_growth_loss": 0.001,
-    "maximum_p10_growth_loss": 0.001,
-    "minimum_consistent_folds": 4,
-    "confidence": 0.95,
-    "maximum_review_rate": 0.20,
-    "maximum_breach_upper": 0.20
-  },
   "selection_drawdown_penalty": 0.10,
   "suitability_max_breach_probability": 0.20,
   "suitability_confidence": 0.95,
