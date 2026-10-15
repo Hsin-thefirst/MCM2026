@@ -99,5 +99,28 @@
     "success_criteria": "Lifecycle short horizons keep a non-degenerate equity curve (H=5 cap > e_min) while H=30 risk stays at or better than drawdown_gatefix_v1; compare H=5/15 CAGR and P90 MDD against both drawdown_lifecycle_v1 and drawdown_gatefix_v1",
     "comparison": "Direct comparison to drawdown_gatefix_v1 (same scenarios, seeds, folds; differs only in lifecycle-family grid)",
     "holdout_used": false
+  },
+  {
+    "run": "budget_value_v1",
+    "date": "2026-10-15",
+    "purpose": "方案A：以有成本门槛的风险调整收益替代保护性豁免，检验生命周期回撤预算及交易带的增量价值",
+    "status": "completed_development_verified_not_established",
+    "completion_result": "五个期限相对三种同初始配置参照均未通过完整预注册增量标准；长期回撤改善伴随超限增长损失，0.5%费用检查未通过。不扩展搜索，新候选保留为研究消融。",
+    "verification": "20,640条路径、30,240行指标、552,960条年度记录账本核验通过；独立重放552,960条转换及1,080项标量参考通过；代码和配置hash匹配manifest；统一测试91项通过。HTML资源检查通过；图表视觉验收因审阅账号不可用未完成。",
+    "preregistration_preserved": true,
+    "changes_declared_before_run": [
+      "新增 Balanced 生命周期预算策略；保留旧策略作历史机制对照，不把旧豁免当作合规新候选",
+      "A(w)=1+mu*w-gamma*w*cov*w/2-mean(max(0,1-(1-dd)*(1+R_train*w)-L))，风险权重固定1；B=(A(target)-A(current))/A(target)，仅B>cost+buffer时交易，不使用保护性豁免。年度训练收益用于风险代理，不代表独立路径或路径风险保证",
+      "只比较4组 k={1,1.5} x 交易带={0,0.02}，gamma=5、buffer=0、equity_shift=-0.05固定；交易带限制小幅漂移卖回，大幅预算目标下降仍须完整收益门槛",
+      "5折外层、3折内层，按H=5/6/15/25/30分别选择；用内层折外路径计数筛选越界上界，不用拟合内风险认证。可行者最大化中位CAGR，无可行者显式选择违约上界最低者；不使用混合均值/中位数的一标准误规则",
+      "配对消融共用每折每期限选中参数：零交易带、关闭动态预算但保持同一门槛与复核、同初始配置年度再平衡、同初始配置持有。后两者是诊断参照，不声称满足顾问交易门槛",
+      "修补全部期限账本指标覆盖、交易门槛审计、冻结严格JSON及客户确切policy映射；不创建真实冻结包、不执行最终评价"
+    ],
+    "candidates": ["budget_lifecycle_balanced", "budget_lifecycle_balanced_zero_band", "budget_lifecycle_balanced_static", "budget_lifecycle_balanced_annual", "budget_lifecycle_balanced_hold"],
+    "tuning_budget": "新族仅4候选 x 5期限 x 3内折 x 5外折；不调risk_penalty、股票上下限或剩余期限滑道，不根据本轮结果增加候选",
+    "selection_objective": "每H内层OOF的MDD>25%概率95%CP上界<=20%，可行者最大化中位实际CAGR；不可行仅研究回退，不视为客户适配通过",
+    "incremental_success_criteria": "主风险降低路线：对static/annual/hold三对照分别在全部5期限内合计15比较做Bonferroni配对bootstrap，P90降低点估计>=1pp且调整区间上界<0，中位及P10 CAGR损失的调整区间下界>=-0.10pp/年，至少4/5外折回撤方向一致，0.5%费用H30仍满足同样点估计增长损失及回撤下降；不符合则报告未证明增量价值。对官方等权另报结果。部署适配另要求复核率<=20%、客户风险同时上界<=20%，不以研究回退替代。交易带仅作为消融报告费用/交易率/增长/回撤，不能单凭少交易宣称成功",
+    "statistical_limits": "开发情景已反复使用，本轮仍为探索性；bootstrap条件于拟合OOF模型且训练折重叠，不消除选择偏差或认证真实风险；同初始敞口不等于相同实现风险",
+    "holdout_used": false
   }
 ]

@@ -20,12 +20,25 @@ from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS
 BASE=ROOT/'benchmark'
 TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review',
        'drawdown_conservative','drawdown_balanced','drawdown_aggressive',
-       'drawdown_lifecycle_conservative','drawdown_lifecycle_balanced','drawdown_lifecycle_aggressive')
+       'drawdown_lifecycle_conservative','drawdown_lifecycle_balanced','drawdown_lifecycle_aggressive',
+       'budget_lifecycle_balanced')
+BUDGET_POLICY='budget_lifecycle_balanced'
+
+def json_safe(obj):
+    """Normalize numerical artifacts before strict JSON serialization and hashing."""
+    if isinstance(obj,np.ndarray): return json_safe(obj.tolist())
+    if isinstance(obj,np.generic): return json_safe(obj.item())
+    if isinstance(obj,float) and not np.isfinite(obj): return None
+    if isinstance(obj,dict): return {str(k):json_safe(v) for k,v in obj.items()}
+    if isinstance(obj,(list,tuple)): return [json_safe(v) for v in obj]
+    return obj
 
 def dump(path,obj):
-    Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True,allow_nan=False)+'\n')
+    Path(path).write_text(json.dumps(json_safe(obj),indent=2,sort_keys=True,allow_nan=False)+'\n')
 
 def digest(obj):
+    # Keep integrity hashing strict: malformed non-finite values must be rejected,
+    # not normalized to the same digest as an explicit JSON null.
     return hashlib.sha256(json.dumps(obj,sort_keys=True,allow_nan=False).encode()).hexdigest()
 
 def code_digest():
@@ -48,16 +61,19 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
     horizons=horizons or config['horizons']
     output,records=[],[]
     for name in names:
-        selected=params.get(name,config['tuning_grid'][0])
-        # Lifecycle policies need horizon-specific instances
-        horizon_dependent=name.startswith('drawdown_lifecycle_')
+        # Ablations inherit the dynamic candidate's fitted parameters, never tune independently.
+        source=BUDGET_POLICY if name.startswith('budget_lifecycle_') else name
+        default_grid=config.get('budget_value_tuning_grid',config['tuning_grid']) if source==BUDGET_POLICY else config['tuning_grid']
+        selected=params.get(source,default_grid[0])
+        horizon_dependent=name.startswith(('drawdown_lifecycle_','budget_lifecycle_'))
         for s in scenarios:
             if s.scenario_id in model['train_ids'] and not allow_train:
                 raise ValueError('Evaluation scenario overlaps fitted training scenarios')
             if horizon_dependent:
                 # Run each horizon separately with its own policy instance
                 for h in horizons:
-                    p=make_policy(name,model,selected,config,horizon=h)
+                    horizon_params=selected['by_horizon'][str(h)] if 'by_horizon' in selected else selected
+                    p=make_policy(name,model,horizon_params,config,horizon=h)
                     cfg=SimulationConfig(h,config['initial_wealth'],cost)
                     result=simulate(s,p,p.initial_target,cfg)
                     row=compute_metrics(result); row['fold']=fold
@@ -70,6 +86,8 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
                                 values=row.pop(field)
                                 row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
                             row.update(scenario_id=s.scenario_id,policy=name,horizon=h,cost_rate=cost,fold=fold)
+                            row['requires_benefit_gate']=bool(getattr(p,'requires_benefit_gate',False))
+                            row['buffer']=float(getattr(p,'buffer',0.0))
                             row['action']=r.action.value
                             row['reason_codes']=json.dumps(row['reason_codes'])
                             records.append(row)
@@ -90,6 +108,8 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
                             values=row.pop(field)
                             row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
                         row.update(scenario_id=s.scenario_id,policy=name,horizon=max_h,cost_rate=cost,fold=fold)
+                        row['requires_benefit_gate']=bool(getattr(p,'requires_benefit_gate',False))
+                        row['buffer']=float(getattr(p,'buffer',0.0))
                         row['action']=r.action.value
                         row['reason_codes']=json.dumps(row['reason_codes'])
                         records.append(row)
@@ -112,28 +132,25 @@ def select_drawdown_params(valid_scores,train_risk,name,tolerance,grid,config):
                                breaches=breaches,n=n,upper=float(upper),
                                feasible=bool(upper<=config['suitability_max_breach_probability']))
     feasible=sorted(i for i,s in stats.items() if s['feasible'])
-    best=None; eligible=[]; ses={}; fallback=not feasible
+    fallback=not feasible
+    # The objective is the median throughout; use complexity only for exact ties.
+    tie=lambda i:(grid[i].get('k',1.0),-grid[i].get('derisk_threshold',0.0),i)
     if feasible:
-        best=max(feasible,key=lambda i:(stats[i]['median_cagr'],-i))
-        pivot=g.pivot(index='scenario_id',columns='trial',values='real_cagr')
-        for trial in feasible:
-            diff=pivot[best]-pivot[trial]
-            ses[trial]=float(diff.std(ddof=1)/np.sqrt(len(diff)))
-            if float(diff.mean())<=ses[trial]+1e-12: eligible.append(trial)
-        if not eligible: eligible=[best]
-        selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i].get('k',1.0),-i))
+        selected=min(feasible,key=lambda i:(-stats[i]['median_cagr'],*tie(i)))
     else:
-        selected=min(stats,key=lambda i:(stats[i]['upper'],-stats[i]['median_cagr'],-i))
-        best=selected
+        selected=min(stats,key=lambda i:(stats[i]['upper'],-stats[i]['median_cagr'],*tie(i)))
     rows=[dict(policy=name,trial=trial,mean_utility=stats[trial]['mean_cagr'],
-               best_trial=int(best) if best is not None else -1,
-               paired_gap_se=ses.get(trial,float('nan')),
-               one_se_eligible=bool(trial in eligible),
+               best_trial=int(selected),selected_trial=int(selected),selected=trial==selected,
+               params=json.dumps(json_safe(grid[trial]),sort_keys=True,allow_nan=False),
+               selection_rule='min_breach_upper_then_max_median' if fallback else 'max_median_cagr_feasible',
+               paired_gap_se=None,
+               one_se_eligible=False,
                breach_count=stats[trial]['breaches'],train_paths=stats[trial]['n'],
                breach_upper_bound=stats[trial]['upper'],
                constraint_satisfied=stats[trial]['feasible'],
                constraint_fallback=fallback,
                median_cagr_valid=stats[trial]['median_cagr']) for trial in sorted(stats)]
+    rows=json_safe(rows)
     return int(selected),rows
 
 def drawdown_families(config):
@@ -150,8 +167,11 @@ def tune(scenarios,config,seed):
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
     collected=[]; audits=[]
-    gated_names=[n for n in TUNED if not n.startswith('drawdown_')]
+    gated_names=[n for n in TUNED if not n.startswith(('drawdown_','budget_lifecycle_'))]
     families=drawdown_families(config)
+    budget_grid=config.get('budget_value_tuning_grid',[])
+    if budget_grid and len(budget_grid)!=4:
+        raise ValueError('Budget value search requires exactly four predeclared candidates')
     # Train-side risk constraint per family: each trial is evaluated on the full
     # outer-training set under the pooled training model. Breach statistics feed the
     # suitability-style constraint; explicitly authorized, never used for the objective.
@@ -181,6 +201,13 @@ def tune(scenarios,config,seed):
                                     horizons=[30],keep_records=False)
                 metrics['trial']=trial
                 collected.append(metrics)
+        # Both risk screening and growth selection use inner out-of-fold paths at H.
+        # Do not replay the training set or substitute H=30 for shorter clients.
+        for trial,params in enumerate(budget_grid):
+            metrics,_=evaluate(valid,model,{BUDGET_POLICY:params},config,names=[BUDGET_POLICY],
+                                horizons=config['horizons'],keep_records=False)
+            metrics['trial']=trial
+            collected.append(metrics)
     scores=pd.concat(collected,ignore_index=True)
     # Standard utility for gated policies
     gated_mask=scores.policy.isin(gated_names)
@@ -215,33 +242,46 @@ def tune(scenarios,config,seed):
             selected,trial_rows=select_drawdown_params(scores,train_risk,name,tolerances[suffix],grid,config)
             rows.extend(trial_rows)
             chosen[name]=grid[selected]
-    return chosen,rows,audits
+    if budget_grid:
+        by_horizon={}
+        for h in config['horizons']:
+            oof=scores[(scores.policy==BUDGET_POLICY)&(scores.horizon==h)]
+            selected,trial_rows=select_drawdown_params(oof,oof,BUDGET_POLICY,.25,budget_grid,config)
+            for row in trial_rows:
+                row.update(horizon=int(h),risk_source='inner_oof',oof_paths=row['train_paths'])
+            rows.extend(trial_rows)
+            by_horizon[str(h)]=dict(budget_grid[selected])
+        chosen[BUDGET_POLICY]={'by_horizon':by_horizon}
+    return chosen,json_safe(rows),audits
 
 def suitability(metrics,config):
     profiles=json.loads((ROOT/'configs/profiles.json').read_text())
     rows=[]; risk=[]
+    policies=[(portfolio,portfolio+'_annual') for portfolio in PORTFOLIOS]
+    if BUDGET_POLICY in set(metrics.policy): policies.append(('balanced',BUDGET_POLICY))
     for p in profiles:
         candidates=[]
-        for portfolio in PORTFOLIOS:
-            g=metrics[(metrics.policy==portfolio+'_annual')&(metrics.horizon==p['horizon'])&
+        for portfolio,policy in policies:
+            g=metrics[(metrics.policy==policy)&(metrics.horizon==p['horizon'])&
                       np.isclose(metrics.cost_rate,config['cost_rate'])]
             if len(g)==0: raise ValueError('Missing suitability horizon')
             k=int((g.real_max_drawdown>p['loss_tolerance']).sum())
-            # Bonferroni over 3 candidate portfolios for each profile, to allow portfolio selection.
-            confidence=1-(1-config['suitability_confidence'])/3
+            confidence=1-(1-config['suitability_confidence'])/len(policies)
             upper=binomial_upper(k,len(g),confidence)
             liquidity_ok=p['liquidity']!='high' or portfolio=='conservative'
             horizon_ok=portfolio!='growth' or p['horizon']>=15
-            eligible=upper<=config['suitability_max_breach_probability'] and liquidity_ok and horizon_ok
-            risk.append(dict(profile=p['profile_id'],portfolio=portfolio,horizon=p['horizon'],n=len(g),
+            review_rate=float(g.review.mean()) if 'review' in g else 0.0
+            service_ok=policy!=BUDGET_POLICY or review_rate<=config.get('budget_value_screen',{}).get('maximum_review_rate',.20)
+            eligible=upper<=config['suitability_max_breach_probability'] and liquidity_ok and horizon_ok and service_ok
+            risk.append(dict(profile=p['profile_id'],portfolio=portfolio,policy=policy,horizon=p['horizon'],n=len(g),
                 breaches=k,breach_probability=k/len(g),upper_bound=upper,confidence=confidence,
                 tolerance=p['loss_tolerance'],eligible=eligible,liquidity_ok=liquidity_ok,horizon_ok=horizon_ok,
-                median_growth=g.real_cagr.median()))
-            if eligible: candidates.append((g.real_cagr.median(),portfolio))
-        choice=max(candidates)[1] if candidates else 'human_review'
-        reason=('Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.'
+                review_rate=review_rate,service_ok=service_ok,median_growth=g.real_cagr.median()))
+            if eligible: candidates.append((g.real_cagr.median(),portfolio,policy))
+        _,choice,policy=max(candidates) if candidates else (None,'human_review','human_review')
+        reason=('Choose the eligible policy with highest median real growth; loss tolerance is not guaranteed.'
                 if candidates else 'No portfolio passes the conservative development risk screen and liquidity/horizon rules.')
-        rows.append(dict(**p,portfolio=choice,explanation=reason))
+        rows.append(dict(**p,portfolio=choice,policy=policy,explanation=reason))
     return pd.DataFrame(rows),pd.DataFrame(risk)
 
 def run_development(config,data_path,out):
@@ -282,10 +322,39 @@ def run_development(config,data_path,out):
     from .validation import comparisons_and_screen, audit_outputs
     comparisons_and_screen(out,config)
     audit_outputs(out)
+    if BUDGET_POLICY in set(metrics.policy) and 'budget_value_screen' in config:
+        from .incremental import incremental_analysis
+        incremental_analysis(out,config)
     dump(out/'runtime.json',dict(seconds=time.perf_counter()-started))
     from .report import generate_report
     generate_report(out)
     return out
+
+def assignment_policy(profile):
+    """Resolve exact frozen policy ids while accepting legacy portfolio-only bundles."""
+    policy=profile.get('policy')
+    if isinstance(policy,str) and policy: return policy
+    portfolio=profile['portfolio']
+    return 'human_review' if portfolio=='human_review' else portfolio+'_annual'
+
+def selection_diagnostics(policy,assignments,trials,config):
+    policies=[policy]+[assignment_policy(p) for p in assignments]
+    uses_budget=any(p.startswith('budget_lifecycle_') for p in policies)
+    horizons=[]
+    if uses_budget:
+        for h in config['horizons']:
+            rows=[r for r in trials if r.get('policy')==BUDGET_POLICY and r.get('horizon')==h]
+            fallback=any(r.get('constraint_fallback',False) for r in rows)
+            horizons.append(dict(horizon=int(h),constraint_fallback=fallback,
+                                 selected_trial=rows[0].get('selected_trial') if rows else None,
+                                 diagnostics_available=bool(rows)))
+    fallback=any(r['constraint_fallback'] for r in horizons)
+    complete=all(r['diagnostics_available'] for r in horizons)
+    status=('research_only_if_fallback' if fallback else
+            'research_only_missing_diagnostics' if not complete else 'no_declared_horizon_fallback')
+    return dict(status=status,uses_budget_candidate=uses_budget,by_horizon=horizons,
+                deployment_established=False,
+                note='Freezing preserves a research selection; it does not establish deployment suitability.')
 
 def freeze(config,data_path,policy,output,development_run):
     if policy not in POLICY_NAMES:
@@ -298,15 +367,19 @@ def freeze(config,data_path,policy,output,development_run):
         raise ValueError('Development data changed')
     params,trials,audit=tune(scenarios,config,config['seed']+1000)
     model=fit_model(scenarios,config)
+    assignments=pd.read_csv(Path(development_run)/'suitability.csv').to_dict('records')
+    for profile in assignments: profile['policy']=assignment_policy(profile)
     bundle=dict(schema=1,selected_policy=policy,config=config,model=model,params=params,
                 code_sha256=code_digest(),dependencies=versions(),development_sha256=data_hash,
                 development_run=str(Path(development_run).resolve()),final_scenarios=list(range(121,181)),
                 final_comparators=['equal_annual','conservative_annual','balanced_annual','growth_annual','balanced_hold'],
-                frozen_suitability=pd.read_csv(Path(development_run)/'suitability.csv').to_dict('records'),
+                frozen_suitability=assignments,
                 tuning_trials=trials,tuning_splits=audit,
+                selection_diagnostics=selection_diagnostics(policy,assignments,trials,config),
                 protocol='One final evaluation; no adjustments after exposure; failed executions also consume the lock.')
+    bundle=json_safe(bundle)
     bundle['bundle_sha256']=digest(bundle)
-    with Path(output).open('x') as f: json.dump(bundle,f,indent=2,sort_keys=True)
+    with Path(output).open('x') as f: json.dump(bundle,f,indent=2,sort_keys=True,allow_nan=False)
 
 def verify_bundle(bundle):
     b=dict(bundle); claimed=b.pop('bundle_sha256')
@@ -333,7 +406,9 @@ def run_final(bundle_path,data_path,out,acknowledge):
     out.mkdir(parents=True)
     scenarios,final_hash=load_partition(data_path,'final',authorized=True)
     config=b['config']
-    names=list(dict.fromkeys(b['final_comparators']+[b['selected_policy']]))
+    frozen_policies=[assignment_policy(p) for p in b.get('frozen_suitability',[])]
+    names=[name for name in dict.fromkeys(b['final_comparators']+[b['selected_policy']]+frozen_policies)
+           if name!='human_review']
     metrics,records=evaluate(scenarios,b['model'],b['params'],config,names=names)
     # Predeclared cost robustness run, all generated in the same one-shot operation.
     all_metrics=[metrics]; all_records=[records]
@@ -351,11 +426,15 @@ def run_final(bundle_path,data_path,out,acknowledge):
     assignment_rows=[]
     for profile in b['frozen_suitability']:
         row=dict(profile)
-        if profile['portfolio']!='human_review':
-            group=metrics[(metrics.policy==profile['portfolio']+'_annual') &
+        assigned=assignment_policy(profile)
+        if assigned!='human_review':
+            group=metrics[(metrics.policy==assigned) &
                           (metrics.horizon==profile['horizon']) & np.isclose(metrics.cost_rate,config['cost_rate'])]
+            if len(group)==0:
+                raise ValueError('Missing final metrics for frozen suitability policy')
             row['final_breach_probability']=float((group.real_max_drawdown>profile['loss_tolerance']).mean())
             row['final_median_growth']=float(group.real_cagr.median())
+        row['policy']=assigned
         assignment_rows.append(row)
     pd.DataFrame(assignment_rows).to_csv(out/'suitability.csv',index=False)
     from .validation import audit_outputs
