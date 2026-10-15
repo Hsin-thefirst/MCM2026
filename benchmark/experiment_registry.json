@@ -41,5 +41,16 @@
     "changes_after_results": "Configuration and utility paths, CLI defaults and report presentation only; trading rules, search space and financial computations unchanged. Historical artifacts retained without rewriting manifests.",
     "verification": "39 tests pass; all 18,360 metric rows exactly match development_integrated; 10,200 paths audited; 306,000 market transitions replayed and 1,080 independent scalar reference checks passed. Current code hash matches manifest.",
     "holdout_used": false
+  },
+  {
+    "run": "drawdown_budget_v1",
+    "date": "2026-10-15",
+    "purpose": "Three-tier drawdown-budget policies (L=15%/25%/35%) with risk-matching tuning objective",
+    "status": "planned",
+    "candidates": ["drawdown_conservative", "drawdown_balanced", "drawdown_aggressive"],
+    "tuning_budget": "4 combinations × 3 inner folds × 3 policies = 36 training runs per outer fold",
+    "tuning_objective": "Risk-matched: feasible when P90 MDD <= L + 0.05; maximize median CAGR among feasible parameter sets",
+    "promotion_route": "Compare to interpolated fixed portfolios with same P90 MDD; show median CAGR improvement",
+    "holdout_used": false
   }
 ]

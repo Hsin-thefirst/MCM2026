@@ -18,7 +18,8 @@ from .metrics import compute_metrics, summarize, paired_comparisons, pareto_flag
 from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS
 
 BASE=ROOT/'benchmark'
-TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review')
+TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review',
+       'drawdown_conservative','drawdown_balanced','drawdown_aggressive')
 
 def dump(path,obj):
     Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True,allow_nan=False)+'\n')
@@ -79,13 +80,32 @@ def tune(scenarios,config,seed):
         valid=[by_id[sid] for sid in valid_ids]
         model=fit_model(train,config)
         audits.append(dict(inner_fold=inner,train_ids=model['train_ids'],validation_ids=valid_ids))
+        # Separate tuning grids for different policy families
+        drawdown_names=[n for n in TUNED if n.startswith('drawdown_')]
+        gated_names=[n for n in TUNED if not n.startswith('drawdown_')]
         for trial,params in enumerate(config['tuning_grid']):
-            metrics,_=evaluate(valid,model,{n:params for n in TUNED},config,names=list(TUNED),
+            metrics,_=evaluate(valid,model,{n:params for n in gated_names},config,names=list(gated_names),
+                                horizons=[30],keep_records=False)
+            metrics['trial']=trial
+            collected.append(metrics)
+        for trial,params in enumerate(config.get('drawdown_tuning_grid',[])):
+            metrics,_=evaluate(valid,model,{n:params for n in drawdown_names},config,names=list(drawdown_names),
                                 horizons=[30],keep_records=False)
             metrics['trial']=trial
             collected.append(metrics)
     scores=pd.concat(collected,ignore_index=True)
-    scores['utility']=scores.real_cagr-config['selection_drawdown_penalty']*scores.real_max_drawdown
+    # Risk-matched tuning objective for drawdown policies
+    for name in drawdown_names:
+        if name not in scores.policy.values: continue
+        tolerance={'conservative':0.15,'balanced':0.25,'aggressive':0.35}[name.split('_',1)[1]]
+        mask=scores.policy==name
+        scores.loc[mask,'utility']=np.where(
+            scores.loc[mask,'real_max_drawdown']<=tolerance+0.05,
+            scores.loc[mask,'real_cagr'],
+            -np.inf)
+    # Standard utility for gated policies
+    gated_mask=scores.policy.isin(gated_names)
+    scores.loc[gated_mask,'utility']=scores.loc[gated_mask,'real_cagr']-config['selection_drawdown_penalty']*scores.loc[gated_mask,'real_max_drawdown']
     rows=[]; chosen={}
     for name,g in scores.groupby('policy'):
         means=g.groupby('trial').utility.mean()
@@ -98,10 +118,15 @@ def tune(scenarios,config,seed):
             se=float(diff.std(ddof=1)/np.sqrt(len(diff)))
             ok=float(diff.mean()) <= se+1e-12
             if ok: eligible.append(int(trial))
+            grid=config.get('drawdown_tuning_grid' if name.startswith('drawdown_') else 'tuning_grid',[])
             rows.append(dict(policy=name,trial=int(trial),mean_utility=float(means[trial]),
                              best_trial=best,paired_gap_se=se,one_se_eligible=ok))
-        selected=max(eligible,key=lambda i:(config['tuning_grid'][i]['buffer'],config['tuning_grid'][i]['gamma'],-i))
-        chosen[name]=config['tuning_grid'][selected]
+        grid=config.get('drawdown_tuning_grid' if name.startswith('drawdown_') else 'tuning_grid',[])
+        if name.startswith('drawdown_'):
+            selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i].get('k',1.0),-i))
+        else:
+            selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i]['gamma'],-i))
+        chosen[name]=grid[selected]
     return chosen,rows,audits
 
 def suitability(metrics,config):

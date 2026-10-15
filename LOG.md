@@ -48,6 +48,30 @@
 - 下一步：用根 README/Makefile 作为统一入口；新模型使用新运行目录，按协议选择方案后再冻结并执行一次真实最终评估。
 - 完成：仅保留根 README/LOG；benchmark 的 docs、configs、tests 分别并入根目录，独立重放工具移到 `scripts/verify_benchmark.py`。合并 FORMULATION 与 METHODOLOGY、两份接口说明；CONTRIBUTING 内容并入根入口，删除冗余副本、无用默认配置和空 experiments 目录。
 - 依赖与语言：依赖范围仅由 `pyproject.toml` 维护，保留精确版本快照 `requirements.lock.txt`，删除转发用的 requirements.txt 和重复忽略文件。人读文档、历史英文日志译文及新 HTML 报告使用中文；AGENTS、代码标识符和机器接口使用英文。图表保留英文以便提交引用。
+
+## 2026-10-15
+
+### 回撤预算策略实验
+
+- 完成：预登记实验 `drawdown_budget_v1` 到 `experiment_registry.json`；新增 `DrawdownBudgetPolicy` 类，扩展 `make_policy` 工厂和 `POLICY_NAMES`；修改 `tune()` 支持风险匹配调参目标；添加 `drawdown_tuning_grid`；新增 5 项单元测试；修复报告标签缺失；运行开发实验 + 账本核验 + 独立重放。
+- 文件：`benchmark/experiment_registry.json`、`benchmark/safebench/policies.py`、`benchmark/safebench/experiment.py`、`configs/benchmark.json`、`benchmark/safebench/report.py`、`tests/test_drawdown_budget.py`、`benchmark/outputs/drawdown_budget_v1/`。
+- 策略原理：回撤预算策略（DrawdownBudgetPolicy）直接将客户损失容忍度 L 作为输入。每年根据已实现回撤 d_t = 1 − W_{t−1}/peak_{t−1} 计算剩余预算比例 c_t = max(0, (L − d_t)/L)，目标股票权重为 e*_t = e_min + (e_max − e_min)·c_t^k，其中 k 控制曲线形状。回撤接近容忍度时股票自动减持，财富回到高点后股票恢复。债券与短期票据按固定比例（7:3）分配剩余部分。保留原有成本门控：只有估计效用改进超过交易成本加缓冲值时才调仓。达到容忍度时触发人工复核，此时仓位已降至 e_min（15%–20%），复核等待期间账户处于低风险状态。三档策略对应三种容忍度：Conservative 15%、Balanced 25%、Aggressive 35%。思路源自 CPPI/TIPP 组合保险（Black–Jones 1987，Estep–Kritzman 1988）和 Grossman–Zhou（1993）最大回撤约束。
+- 调参：嵌套交叉验证，搜索空间 k∈{1.0, 1.5, 2.0}、e_max∈{0.65, 0.75}、e_min∈{0.15, 0.20}、buffer∈{0.0, 0.005}、gamma∈{5.0, 8.0}，总共 48 组。目标改为"在满足适配约束的前提下，让中位 CAGR 最大"，适配约束是"超过客户容忍度的概率上界（95% 置信）不超过 20%"。五个外层折叠几乎一致选择 k=1.0、buffer=0.0、gamma=5.0，e_max 和 e_min 在 0.65–0.75 和 0.15–0.20 之间选择。
+- 结果（30 年，成本 0.25%）：drawdown_balanced 中位实际 CAGR 4.69%，P90 MDD 45.27%，交易率 27.2%，人工复核触发率 60.8%。对比 balanced_annual（固定 50/35/15 每年再平衡）：中位 CAGR 4.50%，P90 MDD 44.03%，交易率 100%，复核率 0%。对比 cost_aware（不看容忍度的自适应）：中位 CAGR 5.45%，P90 MDD 52.03%，交易率 19.1%，复核率 0%。drawdown_balanced 增长介于两者之间（+0.19 pp vs balanced_annual），回撤也介于两者之间，但交易率大幅降低（从 100% 降到 27.2%）。三个回撤策略均在 Pareto 集内。
+- 晋级筛选：promotion_screen.csv 显示回撤策略未纳入候选列表（只检查了原有的 adaptive、cost_aware 等策略）。旧候选仍然全部 `not_established`，原因是 P90 回撤增加超过允许值（p90_noninferior=False）。
+- 验证：44 项测试通过（新增 5 项回撤预算测试）。账本核验：12,000 条路径，21,600 行指标，360,000 条年度决策，最大误差 1.36e-12。独立重放：360,000 行市场转换，1,080 项独立计算，最大持仓误差 1.82e-12。manifest 记录种子 20261014，commit `14c54eb`（与之前开发实验相同，只增加了新策略）。
+- 意义：回撤预算策略解决了"Balanced 策略无法权衡容忍度和增长"的问题。同一条规则下，不同容忍度的客户（B 25%、C 40%、D 15%）会自动得到不同的风险水平，不再需要在三个固定组合里硬选。人工复核机制也变得有意义：预算用完时仓位已降至 e_min，复核等待期间处于低风险状态，而不是像之前那样停在高风险状态等人工处理。但 drawdown_balanced 的 P90 MDD 仍然高于 balanced_annual（45.27% vs 44.03%），尚未证明在控制相同风险的前提下能提高增长。
+- 下一步：(1) 决定是否将回撤预算策略作为 Balanced 客户的推荐方案；(2) 如果采用，需要重新运行客户适配流程，验证 B、C 客户能否通过 drawdown_balanced 的筛选；(3) 更新 `docs/FINDINGS.md` 记录回撤策略结果；(4) 团队审查后冻结方案并执行一次真实终测（情景 121–180）。
 - 文件：`README.md`、`LOG.md`、`AGENTS.md`、`docs/`、`configs/benchmark.json`、`tests/test_benchmark.py`、`scripts/`、`Makefile`、`benchmark/run.py`、报告生成器及实验登记。
 - 验证：统一入口 39 项测试通过；新 `development_consolidated` 的 18,360 行指标与 integrated 完全一致。核验 10,200 条路径，独立重放 306,000 次年度变化及 1,080 项标量参考计算；代码 hash 匹配，中文报告资源和文档链接有效。历史实验快照保持原样，真实最终留出集未使用。
 - 下一步：从根入口运行新实验，继续按统一协议研究/选择模型；不再创建平行的文档、配置或依赖清单。
+
+## 2026-10-15
+
+### 本机重新生成开发结果
+
+- 执行者：ZCode（AI），应 XunZhi Cai 要求。
+- 完成：本机原无 `benchmark/outputs/`（Git 忽略），按现有配置在 Windows 上重新运行 `development`、`audit` 和独立重放，生成 `benchmark/outputs/development_consolidated/`（含 report.html 与 figures/）。未改代码与配置，属于复现而非新实验，未新增实验登记。
+- 环境：Python 3.12.6，numpy 2.1.2、pandas 2.2.3、scipy 1.14.1、matplotlib 3.9.2，低于 `requirements.lock.txt` 的精确版本；种子 20261014，git commit 14c54eb。
+- 验证：39 项测试通过；18,360 行指标；账本核验 306,000 条决策全部通过（最大差异 1.36e-12）；独立重放最大持仓差异 1.82e-12、1,080 项标量参考通过。H=30、成本 0.25% 下 cost_aware 中位实际 CAGR 5.45%、P90 MDD 52.03%，官方等权 3.58%/34.84%，客户适配 A/D 转人工、B/C/E Conservative，与 `docs/FINDINGS.md` 一致。旧快照不在本机，未能逐字节比对；真实最终留出集未使用。
+- 下一步：团队决定 P0 策略方向，确认 SI-04 后冻结并执行一次最终评价；英文报告可引用本次图表。

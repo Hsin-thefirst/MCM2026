@@ -21,6 +21,12 @@
     {"gamma": 8.0, "buffer": 0.0, "window": 5},
     {"gamma": 8.0, "buffer": 0.001, "window": 5}
   ],
+  "drawdown_tuning_grid": [
+    {"k": 1.0, "buffer": 0.0, "gamma": 5.0},
+    {"k": 1.0, "buffer": 0.001, "gamma": 5.0},
+    {"k": 1.5, "buffer": 0.0, "gamma": 5.0},
+    {"k": 1.5, "buffer": 0.001, "gamma": 5.0}
+  ],
   "selection_drawdown_penalty": 0.10,
   "suitability_max_breach_probability": 0.20,
   "suitability_confidence": 0.95,
