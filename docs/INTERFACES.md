@@ -10,7 +10,7 @@
 | `src/safeinvest/data.py` | 完整 180×30 网格校验/排序；兼容接口，日常测试仅用生成数据 |
 | `benchmark/safebench/data.py` | 开发分区读取、情景折划分、实际收益转换 |
 | `benchmark/safebench/engine.py` | 交易核算、因果上下文和年度模拟 |
-| `benchmark/safebench/policies.py` | 17 种策略、训练估计及策略工厂 |
+| `benchmark/safebench/policies.py` | 28种策略/配对消融、训练估计及策略工厂 |
 | `benchmark/safebench/metrics.py` | 路径指标、聚合、配对区间和 Pareto |
 | `benchmark/safebench/experiment.py` | 嵌套 CV、多期限/成本评价、适配、冻结/最终流程 |
 | `benchmark/safebench/validation.py` | 独立账本核验及晋级检查 |
@@ -57,7 +57,13 @@ make_policy(name, model, params, config) -> policy  # exposes initial_target
 
 训练工厂仅接收训练 IDs；归一化、特征选择、专家门控、早停和强化学习训练均在内层训练边界完成。保存参数、种子、训练 IDs；`evaluate` 拒绝训练/评价 ID 重叠。
 
-当前上下文没有 horizon，策略与期限无关，所以评价可模拟 30 年再取前缀。期限相关 MPC/RL 须在工厂另传 H，并为每个期限重新实例化/模拟，不能继承该优化。增加昂贵模型时记录推理耗时、失败次数、显式回退和解释；生产回退若转人工，应按真实动作参与评价。
+上下文没有 horizon，期限通过 `make_policy(..., horizon=H)` 传入工厂。`drawdown_lifecycle_*` 与 `budget_lifecycle_*` 对每个 H 重新实例化并模拟，其他期限无关策略可模拟最长路径再取前缀。当前生命周期只按初始期限设置股票上限，不是逐年剩余期限滑道。期限相关 MPC/RL 也不能继承前缀优化。增加昂贵模型时记录推理耗时、失败次数、显式回退和解释；生产回退若转人工，应按真实动作参与评价。
+
+方案 A 的 `budget_lifecycle_balanced` 使用 `params['by_horizon'][str(H)]` 保存期限独立参数；`_zero_band`、`_static`、`_annual`、`_hold` 四个配对对照复用同一折同一期限的参数和初始配置，不独立搜索。`fit_model` 的 `risk_rows` 仅保存该层训练情景的实际年度收益，用于一年期超容忍度损失代理。新候选没有保护性豁免，所有后续交易均须通过收益/费用门槛。年度再平衡和持有对照仅用于诊断。
+
+年度输出另含 `requires_benefit_gate`、`buffer`，供独立核验准确重算普通门控交易。核验逐一覆盖每个指标键：期限无关策略使用完整账本前缀，期限相关策略使用对应 H 的独立账本；缺少覆盖或重复覆盖均失败。历史无门控元数据的产物不能冒充具有完整的门控核验。
+
+`budget_value_tuning_grid` 是新族唯一搜索网格（4组）。按各 H 的内层折外路径检验风险约束并最大化中位 CAGR；无可行项明确记录研究回退。旧回撤选择也统一为中位数排序，不再混用均值的一标准误规则。缺失调参诊断使用 JSON null，冻结摘要拒绝未清洗的非有限值。客户适配新增确切 `policy` 标识；冻结及最终评价保留开发分配，不依据最终数据重选。
 
 ## 指标与输出映射
 
@@ -79,6 +85,8 @@ MDD 包含每次扣费后的财富标记，替代初始文档仅明确初次费�
 | splits.json、tuning_trials.csv、fitted_models.json | 所有划分、搜索和拟合参数 |
 | validation.json、independent_replay.json | 核验与独立重放证据 |
 | report.html、figures/ | 本地报告、PNG/SVG 图表 |
+| incremental_comparisons.csv、incremental_screen.csv | 方案 A 的同初始配置消融区间及预声明风险降低筛选 |
+| band_ablation.csv、incremental_protocol.json | 交易带消融与多重比较范围/解释边界 |
 
 CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。`decisions.csv.gz` 含 `gate_exempt` 列标记豁免交易；`tuning_trials.csv` 中回撤策略行含约束诊断列（`breach_count`、`train_paths`、`breach_upper_bound`、`constraint_satisfied`、`constraint_fallback`、`median_cagr_valid`）。回撤策略按族调参：`drawdown_*` 使用 `drawdown_tuning_grid`，`drawdown_lifecycle_*` 使用独立的 `drawdown_lifecycle_tuning_grid`（缺失时回退共享网格）；网格参数项支持 `derisk_exempt` 与 `equity_shift`。
 
