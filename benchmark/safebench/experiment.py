@@ -136,39 +136,51 @@ def select_drawdown_params(valid_scores,train_risk,name,tolerance,grid,config):
                median_cagr_valid=stats[trial]['median_cagr']) for trial in sorted(stats)]
     return int(selected),rows
 
+def drawdown_families(config):
+    """Per-family drawdown tuning grids. Lifecycle policies declare their own search
+    space: a global equity_shift tuned on the H=30 constraint double-shrinks the
+    horizon-scaled equity cap and can pin short-horizon policies on the e_min floor.
+    Missing lifecycle grid falls back to the shared one for backward compatibility."""
+    plain=[n for n in TUNED if n.startswith('drawdown_') and not n.startswith('drawdown_lifecycle_')]
+    lifecycle=[n for n in TUNED if n.startswith('drawdown_lifecycle_')]
+    return [(plain,config.get('drawdown_tuning_grid',[])),
+            (lifecycle,config.get('drawdown_lifecycle_tuning_grid',config.get('drawdown_tuning_grid',[])))]
+
 def tune(scenarios,config,seed):
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
     collected=[]; audits=[]
-    drawdown_names=[n for n in TUNED if n.startswith('drawdown_')]
     gated_names=[n for n in TUNED if not n.startswith('drawdown_')]
-    drawdown_grid=config.get('drawdown_tuning_grid',[])
-    # Train-side risk constraint: each drawdown trial is evaluated on the full
+    families=drawdown_families(config)
+    # Train-side risk constraint per family: each trial is evaluated on the full
     # outer-training set under the pooled training model. Breach statistics feed the
     # suitability-style constraint; explicitly authorized, never used for the objective.
     train_risk=pd.DataFrame()
     train_model=fit_model(scenarios,config)
-    for trial,params in enumerate(drawdown_grid):
-        metrics,_=evaluate(scenarios,train_model,{n:params for n in drawdown_names},config,
-                           names=list(drawdown_names),horizons=[30],keep_records=False,allow_train=True)
-        metrics['trial']=trial
-        train_risk=pd.concat([train_risk,metrics],ignore_index=True)
+    for names,grid in families:
+        if not names or not grid: continue
+        for trial,params in enumerate(grid):
+            metrics,_=evaluate(scenarios,train_model,{n:params for n in names},config,
+                               names=list(names),horizons=[30],keep_records=False,allow_train=True)
+            metrics['trial']=trial
+            train_risk=pd.concat([train_risk,metrics],ignore_index=True)
     for inner,valid_ids in enumerate(groups):
         train=[s for sid,s in by_id.items() if sid not in valid_ids]
         valid=[by_id[sid] for sid in valid_ids]
         model=fit_model(train,config)
         audits.append(dict(inner_fold=inner,train_ids=model['train_ids'],validation_ids=valid_ids))
-        # Separate tuning grids for different policy families
         for trial,params in enumerate(config['tuning_grid']):
             metrics,_=evaluate(valid,model,{n:params for n in gated_names},config,names=list(gated_names),
                                 horizons=[30],keep_records=False)
             metrics['trial']=trial
             collected.append(metrics)
-        for trial,params in enumerate(drawdown_grid):
-            metrics,_=evaluate(valid,model,{n:params for n in drawdown_names},config,names=list(drawdown_names),
-                                horizons=[30],keep_records=False)
-            metrics['trial']=trial
-            collected.append(metrics)
+        for names,grid in families:
+            if not names or not grid: continue
+            for trial,params in enumerate(grid):
+                metrics,_=evaluate(valid,model,{n:params for n in names},config,names=list(names),
+                                    horizons=[30],keep_records=False)
+                metrics['trial']=trial
+                collected.append(metrics)
     scores=pd.concat(collected,ignore_index=True)
     # Standard utility for gated policies
     gated_mask=scores.policy.isin(gated_names)
@@ -193,15 +205,16 @@ def tune(scenarios,config,seed):
         selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i]['gamma'],-i))
         chosen[name]=grid[selected]
     tolerances={'conservative':0.15,'balanced':0.25,'aggressive':0.35}
-    for name in drawdown_names:
-        if name not in scores.policy.values: continue
-        if name.startswith('drawdown_lifecycle_'):
-            suffix=name.split('_',2)[2]
-        else:
-            suffix=name.split('_',1)[1]
-        selected,trial_rows=select_drawdown_params(scores,train_risk,name,tolerances[suffix],drawdown_grid,config)
-        rows.extend(trial_rows)
-        chosen[name]=drawdown_grid[selected]
+    for names,grid in families:
+        for name in names:
+            if name not in scores.policy.values: continue
+            if name.startswith('drawdown_lifecycle_'):
+                suffix=name.split('_',2)[2]
+            else:
+                suffix=name.split('_',1)[1]
+            selected,trial_rows=select_drawdown_params(scores,train_risk,name,tolerances[suffix],grid,config)
+            rows.extend(trial_rows)
+            chosen[name]=grid[selected]
     return chosen,rows,audits
 
 def suitability(metrics,config):

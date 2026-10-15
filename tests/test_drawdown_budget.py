@@ -209,5 +209,26 @@ class TestDrawdownBudget(unittest.TestCase):
         ])
         self.assertEqual(exempt_direction_violations(r), [1])
 
+    def test_drawdown_families_partition(self):
+        """Per-family grids: lifecycle uses its own grid, plain the shared one."""
+        from safebench.experiment import drawdown_families
+        config = {'drawdown_tuning_grid': [{'k': 1.0}],
+                  'drawdown_lifecycle_tuning_grid': [{'k': 2.0}]}
+        (plain_names, plain_grid), (life_names, life_grid) = drawdown_families(config)
+        self.assertEqual(plain_grid, [{'k': 1.0}])
+        self.assertEqual(life_grid, [{'k': 2.0}])
+        self.assertEqual(sorted(plain_names),
+                         ['drawdown_aggressive', 'drawdown_balanced', 'drawdown_conservative'])
+        self.assertEqual(sorted(life_names),
+                         ['drawdown_lifecycle_aggressive', 'drawdown_lifecycle_balanced',
+                          'drawdown_lifecycle_conservative'])
+
+    def test_drawdown_families_fallback(self):
+        """Missing lifecycle grid falls back to the shared drawdown grid."""
+        from safebench.experiment import drawdown_families
+        config = {'drawdown_tuning_grid': [{'k': 1.0}]}
+        (_, plain_grid), (_, life_grid) = drawdown_families(config)
+        self.assertEqual(life_grid, plain_grid)
+
 if __name__ == '__main__':
     unittest.main()

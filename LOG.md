@@ -89,3 +89,12 @@
 - **关键发现：容忍度约束在年频下结构性不可行**。即使最优组合，训练路径突破率也达 47%（balanced，L=25%）至 81%（conservative，L=15%），远超 20% 上界；五个外层折叠全部回退选择违约最轻组合（`constraint_fallback=True`，一致选择 derisk_exempt=true + equity_shift=−0.10，即无豁免组合被约束拒绝、原股票上限也不可达标）。原因：年度决策点之间的一次深度下跌（叠加复核后冻结持仓）即可击穿 15–25% 容忍度，任何保留有意义股票敞口的年频策略都无法承诺 P(MDD>L)≤20%。drawdown_* 当前的合理定位是"风险降低路线"（显著降 P90 回撤、限制 CAGR 损失），而非"同风险下更高增长"；要真正守住容忍度需要更低股票上限（更低 e_min/e_max 档位进入搜索空间）或更高决策频率（超出本题年度框架）。
 - 验证：52 项测试通过（新增 7 项：豁免执行/加仓仍门控/equity_shift/约束选择可行与回退/豁免方向复核；引擎级豁免接受与成本一致性测试 2 项）。账本核验 15,240 条路径、24,840 行指标、432,360 条年度决策，最大误差 1.36e-12，豁免交易 28,522 笔方向复核零违规。独立重放 432,360 行市场转换、1,080 项独立参考计算，最大持仓误差 1.82e-12。manifest 记录种子 20261014；运行 288 秒。
 - 下一步：(1) 决定回撤策略的定位与客户适配路线——若走风险降低路线，需按 PROTOCOL 反向声明晋级标准并重跑客户适配（当前 47.5% 复核率是显著服务成本）；(2) 若继续追求守约容忍度，扩展搜索空间至更低 e_max/e_min 档位并重新预登记；(3) 目标波动率组合（原 P1 方案二）在年频下信号与回撤状态高度共线，建议降级为探索对照；(4) 更新 `docs/FINDINGS.md` 与 promotion screen 的候选范围后，团队审查冻结方案再执行一次性终测。
+
+### 按策略族设置调参网格（drawdown_familygrid_v1）
+
+- 完成：发现并修复全局网格对 lifecycle 策略的交互缺陷——`drawdown_gatefix_v1` 在 H=30 约束下选出的 `equity_shift=-0.10` 叠加在 lifecycle 期限缩放之后，把 5 年期 Balanced 的股票上限压到 e_min=0.15 地板，预算曲线整个退化（恒定 15% 股票，k 曲线失效）。修改 `tune()`：新增 `drawdown_families(config)` 把回撤策略分为 plain 与 lifecycle 两族，训练侧约束评估、验证侧评估与选择全部按族用自己的网格进行（lifecycle 族网格缺失时回退共享网格，保持向后兼容）；`configs/benchmark.json` 新增 `drawdown_lifecycle_tuning_grid`（8 组合：k×buffer×豁免真/假消融 + equity_shift∈{0,−0.05} 温和档），非 lifecycle 族保留原 8 组合（含 −0.10 档）。预登记实验 `drawdown_familygrid_v1` 并运行。
+- 文件：`benchmark/safebench/experiment.py`（`drawdown_families`、`tune` 分族循环）、`configs/benchmark.json`、`benchmark/experiment_registry.json`、`tests/test_drawdown_budget.py`（新增 2 项分族测试）、`docs/INTERFACES.md`、`docs/METHODOLOGY.md`、`benchmark/outputs/drawdown_familygrid_v1/`。
+- 结果：五个外层折叠一致为 lifecycle 族选中 trial 7（k∈{1.0,1.5}、derisk_exempt=true、equity_shift=−0.05），仍是回退选择（训练违约上界 0.59，约束不可行的结论不变）。对比 `drawdown_gatefix_v1`：lifecycle_balanced H=5 中位 CAGR 2.60%→2.88%（+0.28pp），P90 MDD 18.2%→19.5%（上限 0.20，曲线恢复功能性）；H=15 CAGR 3.45%→3.62%；H=30 CAGR 4.23%→4.27%、P90 MDD 38.6%→39.1%（温和 shift 的预期代价）。非 lifecycle 族结果与 gatefix 一致（同网格同选择）。
+- 新问题：短期限交易率接近 100%（H=5 lifecycle 达 0.97–0.99）——平坦预算曲线下每年漂移超出目标就触发豁免卖回，30 年总成本需在客户适配时计入。
+- 验证：54 项测试通过（新增分族划分与回退 2 项）。账本核验 15,240 条路径、432,360 条年度决策，最大误差 1.36e-12，豁免交易 24,410 笔方向复核零违规；独立重放 432,360 行、1,080 项独立参考计算通过。manifest 种子 20261014。
+- 下一步：(1) 客户适配路线决策（风险降低路线定位 + 反向声明晋级标准），如需进一步降低短期限换手可考虑给豁免卖回加最小偏离阈值（如目标偏离 >2pp 才交易）；(2) 更新 `docs/FINDINGS.md`；(3) 团队审查后冻结并一次性终测。

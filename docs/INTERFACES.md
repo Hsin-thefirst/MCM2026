@@ -80,6 +80,6 @@ MDD 包含每次扣费后的财富标记，替代初始文档仅明确初次费�
 | validation.json、independent_replay.json | 核验与独立重放证据 |
 | report.html、figures/ | 本地报告、PNG/SVG 图表 |
 
-CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。`decisions.csv.gz` 含 `gate_exempt` 列标记豁免交易；`tuning_trials.csv` 中回撤策略行含约束诊断列（`breach_count`、`train_paths`、`breach_upper_bound`、`constraint_satisfied`、`constraint_fallback`、`median_cagr_valid`），`drawdown_tuning_grid` 参数项支持 `derisk_exempt` 与 `equity_shift`。
+CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。`decisions.csv.gz` 含 `gate_exempt` 列标记豁免交易；`tuning_trials.csv` 中回撤策略行含约束诊断列（`breach_count`、`train_paths`、`breach_upper_bound`、`constraint_satisfied`、`constraint_fallback`、`median_cagr_valid`）。回撤策略按族调参：`drawdown_*` 使用 `drawdown_tuning_grid`，`drawdown_lifecycle_*` 使用独立的 `drawdown_lifecycle_tuning_grid`（缺失时回退共享网格）；网格参数项支持 `derisk_exempt` 与 `equity_shift`。
 
 冻结 artifact 保存训练状态、参数、代码与依赖版本、客户分配及最终比较列表；最终独占锁在读取真实最终收益前创建。目录重构后保留旧 manifest，不以新 hash 伪装旧实验；当前代码只从版本匹配的开发运行冻结。

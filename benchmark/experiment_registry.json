@@ -82,5 +82,22 @@
     "success_criteria": "P90 real MDD at H=30/cost 0.25% close to each tier's tolerance L (vs 45-47% previously, far above L=15/25/35%); review rate materially below 60.8%; median CAGR not collapsing; drawdown_* remain Pareto-noninferior vs balanced_annual on growth at comparable or lower tail risk",
     "comparison": "Direct comparison to drawdown_budget_v1 / drawdown_lifecycle_v1 (same scenarios, seeds, folds) and balanced_annual/cost_aware references",
     "holdout_used": false
+  },
+  {
+    "run": "drawdown_familygrid_v1",
+    "date": "2026-10-15",
+    "purpose": "Per-family tuning grids: in drawdown_gatefix_v1 the global equity_shift=-0.1 chosen under the H=30 constraint double-shrinks lifecycle horizon-scaled equity caps, pinning the 5-year balanced cap on the e_min floor (0.15) and degenerating the budget curve; lifecycle policies declare their own search space",
+    "status": "completed_development_verified",
+    "finding": "All 5 outer folds selected lifecycle trials with derisk_exempt=true, equity_shift=-0.05 (least-violating fallback; constraint still infeasible, breach upper 0.59 for balanced). Lifecycle H=5 CAGR 2.60%->2.88% with P90 MDD 18.2%->19.5% (cap 0.20, curve non-degenerate); H=15 3.45%->3.62%; H=30 4.23%->4.27% / P90 38.6%->39.1%. Short-horizon trade rates near 100% (exempt sell-back of drift each year) remain a cost concern.",
+    "changes_declared_before_run": [
+      "tune() evaluates and selects per policy family via drawdown_families(config): plain drawdown_* keeps the shared 8-combination grid (equity_shift in {0,-0.1}); drawdown_lifecycle_* gets a dedicated 8-combination grid with equity_shift in {0,-0.05} so the horizon-scaled cap keeps a functional dynamic range at short horizons (5y cap 0.25->0.20 instead of the degenerate 0.15)",
+      "Missing drawdown_lifecycle_tuning_grid falls back to the shared grid (backward compatible)",
+      "Constraint, objective, one-SE rule and fallback semantics unchanged from drawdown_gatefix_v1"
+    ],
+    "candidates": ["drawdown_conservative", "drawdown_balanced", "drawdown_aggressive", "drawdown_lifecycle_conservative", "drawdown_lifecycle_balanced", "drawdown_lifecycle_aggressive"],
+    "tuning_budget": "2 families x 8 combinations x (96 train + 3x32 valid) x 3 policies per outer fold",
+    "success_criteria": "Lifecycle short horizons keep a non-degenerate equity curve (H=5 cap > e_min) while H=30 risk stays at or better than drawdown_gatefix_v1; compare H=5/15 CAGR and P90 MDD against both drawdown_lifecycle_v1 and drawdown_gatefix_v1",
+    "comparison": "Direct comparison to drawdown_gatefix_v1 (same scenarios, seeds, folds; differs only in lifecycle-family grid)",
+    "holdout_used": false
   }
 ]
