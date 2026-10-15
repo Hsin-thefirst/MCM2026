@@ -106,6 +106,20 @@ class CausalityTests(unittest.TestCase):
             def decide(self,c):
                 return Decision(Action.CHANGE_TARGET,('TRADE',),'x',(1.,0,0),0.,0.)
         with self.assertRaises(ValueError): simulate(scenario([(0,0,0,0)]*2),Bad(),EQUAL,SimulationConfig(2))
+    def test_gate_exempt_protective_trade_allowed(self):
+        class Exempt:
+            name='ex'; requires_benefit_gate=True; buffer=0
+            def decide(self,c):
+                return Decision(Action.CHANGE_TARGET,('DRAWDOWN_RISK_REDUCTION',),'x',(0.,1.,0.),-1.,0.,gate_exempt=True)
+        r=simulate(scenario([(0,0,0,0)]*2),Exempt(),EQUAL,SimulationConfig(2,100,0))
+        self.assertEqual(r.records[1].action,Action.CHANGE_TARGET)
+        self.assertTrue(r.records[1].gate_exempt)
+    def test_gate_exempt_still_requires_cost_consistency(self):
+        class BadCost:
+            name='bc'; requires_benefit_gate=True; buffer=0
+            def decide(self,c):
+                return Decision(Action.CHANGE_TARGET,('DRAWDOWN_RISK_REDUCTION',),'x',(0.,1.,0.),-1.,1.0,gate_exempt=True)
+        with self.assertRaises(ValueError): simulate(scenario([(0,0,0,0)]*2),BadCost(),EQUAL,SimulationConfig(2))
     def test_rebalance_cannot_change_target(self):
         class Bad:
             name='bad'
@@ -165,7 +179,12 @@ class EvaluationTests(unittest.TestCase):
             self.assertGreater(compute_metrics(r)['terminal_real_wealth'],0)
             if p.requires_benefit_gate:
                 for x in r.records[1:]:
-                    if x.action in (Action.REBALANCE,Action.CHANGE_TARGET): self.assertGreater(x.estimated_benefit,x.estimated_cost+p.buffer)
+                    if x.action in (Action.REBALANCE,Action.CHANGE_TARGET):
+                        if x.gate_exempt:
+                            # Exemption is only valid for strictly risk-reducing trades.
+                            self.assertLess(x.target_weights[0],x.pre_trade_holdings[0]/sum(x.pre_trade_holdings)-1e-12)
+                        else:
+                            self.assertGreater(x.estimated_benefit,x.estimated_cost+p.buffer)
     def test_evaluation_train_overlap_rejected(self):
         ss,_=load_partition(ROOT/'data/SafeInvest_Synthetic_Data.csv')
         model=fit_model(ss[:5],CONFIG)

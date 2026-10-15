@@ -42,6 +42,18 @@ def comparisons_and_screen(out,config):
                 note='Exploratory growth-route screen only; service suitability and independent final evaluation still required.'))
     pd.DataFrame(screens).to_csv(out/'promotion_screen.csv',index=False)
 
+def exempt_direction_violations(records):
+    """Gate-exempt trades (period>1) must strictly reduce equity exposure; the
+    benefit-gate exemption is only valid for protective de-risking."""
+    r=records
+    trading=(r.action.isin(['rebalance','change_target']) & r.gate_exempt.astype(bool)
+             & (r.period>1)).to_numpy()
+    if not trading.any(): return []
+    pre=r.loc[trading,['pre_trade_holdings_equity','pre_trade_holdings_bond','pre_trade_holdings_bill']].to_numpy()
+    target_equity=r.loc[trading,'target_weights_equity'].to_numpy()
+    current_equity=pre[:,0]/pre.sum(axis=1)
+    return [int(i) for i in np.where(target_equity>=current_equity-1e-12)[0]]
+
 def audit_outputs(out):
     """Recompute wealth and metrics with independent scalar recurrences for all saved paths."""
     out=Path(out); c=json.loads((out/'config.json').read_text())
@@ -50,11 +62,11 @@ def audit_outputs(out):
     expected=set(manifest['scenario_ids'])
     assert set(m.scenario_id)==expected
     assert not m.duplicated(['policy','scenario_id','horizon','cost_rate']).any()
-    assert not r.duplicated(['policy','scenario_id','period','cost_rate']).any()
+    assert not r.duplicated(['policy','scenario_id','horizon','period','cost_rate']).any()
     audit_paths=0; maximum_error=0.
     assets=['equity','bond','bill']
-    r=r.sort_values(['policy','scenario_id','cost_rate','period']).reset_index(drop=True)
-    groups=['policy','scenario_id','cost_rate']
+    r=r.sort_values(['policy','scenario_id','horizon','cost_rate','period']).reset_index(drop=True)
+    groups=['policy','scenario_id','horizon','cost_rate']
     pre=r[['pre_trade_holdings_'+a for a in assets]].to_numpy()
     post=r[['post_trade_holdings_'+a for a in assets]].to_numpy()
     end=r[['end_holdings_'+a for a in assets]].to_numpy()
@@ -72,10 +84,12 @@ def audit_outputs(out):
     np.testing.assert_allclose(fees,r.transaction_cost,atol=1e-9)
     np.testing.assert_allclose(q,r.moved_amount,atol=1e-8)
     np.testing.assert_allclose(post.sum(axis=1)+fees,pre.sum(axis=1),atol=1e-8)
-    lookup={(p,int(s),float(cost)):g for (p,s,cost),g in m.groupby(groups)}
-    for (policy,sid,cost),g in r.groupby(groups):
+    exempt_violations=exempt_direction_violations(r)
+    assert not exempt_violations, f'Gate-exempt trades that do not reduce equity exposure: {exempt_violations[:10]}'
+    lookup={(p,int(s),int(h),float(cost)):g for (p,s,h,cost),g in m.groupby(groups)}
+    for (policy,sid,horizon_val,cost),g in r.groupby(groups):
         initial=c['initial_wealth']; peak=initial; mdd=0.; fees=0.; realfees=0.; infl=1.; wealths=[initial]; trades=0
-        metric_by_h={row.horizon:row for row in lookup[(policy,int(sid),float(cost))].itertuples()}
+        metric_by_h={row.horizon:row for row in lookup[(policy,int(sid),int(horizon_val),float(cost))].itertuples()}
         for row in g.itertuples():
             fee=row.transaction_cost
             if row.period>1 and row.moved_amount>1e-10*initial: trades+=1
@@ -113,6 +127,8 @@ def audit_outputs(out):
         assert all(f['model']['cvar_feasible'] and f['model']['cvar_estimate']<=c['cvar_limit']+1e-10 for f in fitted)
     result=dict(phase=manifest['phase'],audited_paths=audit_paths,metric_rows=len(m),decision_rows=len(r),
                 maximum_numeric_discrepancy=maximum_error,all_checks_passed=True,
+                gate_exempt_trades=int((r.gate_exempt & r.action.isin(['rebalance','change_target'])).sum()),
+                exempt_direction_violations=len(exempt_violations),
                 scope='All saved accounting paths, metric recurrences, uniqueness, CV splits and outer CVaR feasibility; market returns checked separately in replay tests.')
     (out/'validation.json').write_text(json.dumps(result,indent=2)+'\n')
     return result

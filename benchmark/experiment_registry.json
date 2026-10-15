@@ -52,5 +52,35 @@
     "tuning_objective": "Risk-matched: feasible when P90 MDD <= L + 0.05; maximize median CAGR among feasible parameter sets",
     "promotion_route": "Compare to interpolated fixed portfolios with same P90 MDD; show median CAGR improvement",
     "holdout_used": false
+  },
+  {
+    "run": "drawdown_lifecycle_v1",
+    "date": "2026-10-15",
+    "purpose": "Lifecycle-adjusted drawdown-budget policies: e_max scales by horizon/25, so short-term clients are automatically conservative",
+    "status": "planned",
+    "candidates": ["drawdown_lifecycle_conservative", "drawdown_lifecycle_balanced", "drawdown_lifecycle_aggressive"],
+    "tuning_budget": "4 combinations × 3 inner folds × 3 policies = 36 training runs per outer fold",
+    "tuning_objective": "Same risk-matching as drawdown_budget_v1: maximize median CAGR when P90 MDD <= tolerance + 5%",
+    "comparison": "Compare to drawdown_budget_v1 (no lifecycle) and fixed portfolios across multiple horizons (5, 6, 15, 25, 30 years)",
+    "holdout_used": false
+  },
+  {
+    "run": "drawdown_gatefix_v1",
+    "date": "2026-10-15",
+    "purpose": "Fix gate veto of protective de-risking and degenerate drawdown tuning: mean-variance benefit gate vetoes ~97% of risk-reducing trades (decisions audit of drawdown_budget_v1), and the hard per-scenario MDD mask left every trial mean_utility at -inf so selection was argmax over trial 0 in all folds",
+    "status": "completed_development_verified",
+    "finding": "Gate fix works mechanically (P90 MDD 45.3%->38.6% for balanced, review 60.8%->47.5%, exempt trades audited) but the breach-probability constraint is structurally infeasible at annual rebalancing: best trials still breach L on 47% (balanced) to 81% (conservative) of training paths, all 5 outer folds fell back to the least-violating trial (derisk_exempt=true, equity_shift=-0.1). Tolerance L=15/25% cannot be honored with meaningful equity exposure at annual decision frequency; position drawdown policies as a risk-reduction route, not a growth improvement at equal risk.",
+    "changes_declared_before_run": [
+      "DrawdownBudgetPolicy params gain derisk_exempt (protective de-risking bypasses the benefit gate, one-sided: re-risking still gated) and equity_shift (optional downward shift of the tier equity cap)",
+      "Engine: exempt trades (Decision.gate_exempt) must keep exact cost consistency; benefit inequality skipped only for exempt trades; validation audit independently verifies every exempt trade strictly reduces equity exposure",
+      "Tuning objective: maximize median validation CAGR subject to Clopper-Pearson upper bound of P(real MDD > L) on all training scenarios (95% confidence) <= suitability_max_breach_probability (0.20); if no trial qualifies, select the least-violating trial and record constraint_fallback",
+      "Search space: 8 combinations = k in {1.0,1.5} x buffer in {0,0.001} x derisk_exempt=true, plus 2 derisk_exempt=false ablation rows and 2 equity_shift=-0.10 rows"
+    ],
+    "candidates": ["drawdown_conservative", "drawdown_balanced", "drawdown_aggressive", "drawdown_lifecycle_conservative", "drawdown_lifecycle_balanced", "drawdown_lifecycle_aggressive"],
+    "tuning_budget": "8 combinations x (96 train + 3x32 valid) x 3 policies per outer fold",
+    "tuning_objective": "Constrained: maximize median validation CAGR s.t. P(breach > L) upper bound on training scenarios <= 20%; one-SE rule among feasible trials only",
+    "success_criteria": "P90 real MDD at H=30/cost 0.25% close to each tier's tolerance L (vs 45-47% previously, far above L=15/25/35%); review rate materially below 60.8%; median CAGR not collapsing; drawdown_* remain Pareto-noninferior vs balanced_annual on growth at comparable or lower tail risk",
+    "comparison": "Direct comparison to drawdown_budget_v1 / drawdown_lifecycle_v1 (same scenarios, seeds, folds) and balanced_annual/cost_aware references",
+    "holdout_used": false
   }
 ]

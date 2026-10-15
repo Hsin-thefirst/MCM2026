@@ -19,7 +19,8 @@ from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS
 
 BASE=ROOT/'benchmark'
 TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review',
-       'drawdown_conservative','drawdown_balanced','drawdown_aggressive')
+       'drawdown_conservative','drawdown_balanced','drawdown_aggressive',
+       'drawdown_lifecycle_conservative','drawdown_lifecycle_balanced','drawdown_lifecycle_aggressive')
 
 def dump(path,obj):
     Path(path).write_text(json.dumps(obj,indent=2,sort_keys=True,allow_nan=False)+'\n')
@@ -41,73 +42,141 @@ def manifest(config,data_hash,ids,phase):
                 git_commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True).stdout.strip(),
                 holdout_used=phase=='final')
 
-def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fold=0,keep_records=True):
+def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fold=0,keep_records=True,allow_train=False):
     names=names or POLICY_NAMES
     cost=config['cost_rate'] if cost is None else cost
     horizons=horizons or config['horizons']
     output,records=[],[]
     for name in names:
         selected=params.get(name,config['tuning_grid'][0])
+        # Lifecycle policies need horizon-specific instances
+        horizon_dependent=name.startswith('drawdown_lifecycle_')
         for s in scenarios:
-            if s.scenario_id in model['train_ids']:
+            if s.scenario_id in model['train_ids'] and not allow_train:
                 raise ValueError('Evaluation scenario overlaps fitted training scenarios')
-            p=make_policy(name,model,selected,config)
-            cfg=SimulationConfig(max(horizons),config['initial_wealth'],cost)
-            full=simulate(s,p,p.initial_target,cfg)
-            # All current policies are horizon-independent. Future horizon-conditioned policies must rerun each H.
-            for h in horizons:
-                result=replace(full,config=replace(cfg,horizon=h),records=full.records[:h])
-                row=compute_metrics(result); row['fold']=fold
-                output.append(row)
-            if keep_records:
-                for r in full.records:
-                    row=asdict(r)
-                    for field in ('target_weights','pre_trade_holdings','post_trade_holdings','end_holdings'):
-                        values=row.pop(field)
-                        row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
-                    row.update(scenario_id=s.scenario_id,policy=name,cost_rate=cost,fold=fold)
-                    row['action']=r.action.value
-                    row['reason_codes']=json.dumps(row['reason_codes'])
-                    records.append(row)
+            if horizon_dependent:
+                # Run each horizon separately with its own policy instance
+                for h in horizons:
+                    p=make_policy(name,model,selected,config,horizon=h)
+                    cfg=SimulationConfig(h,config['initial_wealth'],cost)
+                    result=simulate(s,p,p.initial_target,cfg)
+                    row=compute_metrics(result); row['fold']=fold
+                    output.append(row)
+                    # Save records for all horizons since each simulation is independent
+                    if keep_records:
+                        for r in result.records:
+                            row=asdict(r)
+                            for field in ('target_weights','pre_trade_holdings','post_trade_holdings','end_holdings'):
+                                values=row.pop(field)
+                                row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
+                            row.update(scenario_id=s.scenario_id,policy=name,horizon=h,cost_rate=cost,fold=fold)
+                            row['action']=r.action.value
+                            row['reason_codes']=json.dumps(row['reason_codes'])
+                            records.append(row)
+            else:
+                # Horizon-independent: run once at max horizon, truncate for shorter horizons
+                p=make_policy(name,model,selected,config)
+                cfg=SimulationConfig(max(horizons),config['initial_wealth'],cost)
+                full=simulate(s,p,p.initial_target,cfg)
+                for h in horizons:
+                    result=replace(full,config=replace(cfg,horizon=h),records=full.records[:h])
+                    row=compute_metrics(result); row['fold']=fold
+                    output.append(row)
+                if keep_records:
+                    max_h=max(horizons)
+                    for r in full.records:
+                        row=asdict(r)
+                        for field in ('target_weights','pre_trade_holdings','post_trade_holdings','end_holdings'):
+                            values=row.pop(field)
+                            row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
+                        row.update(scenario_id=s.scenario_id,policy=name,horizon=max_h,cost_rate=cost,fold=fold)
+                        row['action']=r.action.value
+                        row['reason_codes']=json.dumps(row['reason_codes'])
+                        records.append(row)
     return pd.DataFrame(output),pd.DataFrame(records)
+
+def select_drawdown_params(valid_scores,train_risk,name,tolerance,grid,config):
+    """Constrained selection for a drawdown policy: maximize the median validation
+    CAGR among trials whose training-scenario breach-probability upper bound meets the
+    suitability bar. When no trial qualifies, fall back to the least-violating trial
+    and record it, instead of degenerating to an arbitrary argmax over -inf utilities."""
+    g=valid_scores[valid_scores.policy==name]
+    r=train_risk[train_risk.policy==name]
+    stats={}
+    for trial in sorted(set(g.trial.unique())|set(r.trial.unique())):
+        v=g[g.trial==trial]; t=r[r.trial==trial]
+        breaches=int((t.real_max_drawdown>tolerance).sum()) if len(t) else 0
+        n=len(t)
+        upper=binomial_upper(breaches,n,config['suitability_confidence']) if n else 1.0
+        stats[int(trial)]=dict(mean_cagr=float(v.real_cagr.mean()),median_cagr=float(v.real_cagr.median()),
+                               breaches=breaches,n=n,upper=float(upper),
+                               feasible=bool(upper<=config['suitability_max_breach_probability']))
+    feasible=sorted(i for i,s in stats.items() if s['feasible'])
+    best=None; eligible=[]; ses={}; fallback=not feasible
+    if feasible:
+        best=max(feasible,key=lambda i:(stats[i]['median_cagr'],-i))
+        pivot=g.pivot(index='scenario_id',columns='trial',values='real_cagr')
+        for trial in feasible:
+            diff=pivot[best]-pivot[trial]
+            ses[trial]=float(diff.std(ddof=1)/np.sqrt(len(diff)))
+            if float(diff.mean())<=ses[trial]+1e-12: eligible.append(trial)
+        if not eligible: eligible=[best]
+        selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i].get('k',1.0),-i))
+    else:
+        selected=min(stats,key=lambda i:(stats[i]['upper'],-stats[i]['median_cagr'],-i))
+        best=selected
+    rows=[dict(policy=name,trial=trial,mean_utility=stats[trial]['mean_cagr'],
+               best_trial=int(best) if best is not None else -1,
+               paired_gap_se=ses.get(trial,float('nan')),
+               one_se_eligible=bool(trial in eligible),
+               breach_count=stats[trial]['breaches'],train_paths=stats[trial]['n'],
+               breach_upper_bound=stats[trial]['upper'],
+               constraint_satisfied=stats[trial]['feasible'],
+               constraint_fallback=fallback,
+               median_cagr_valid=stats[trial]['median_cagr']) for trial in sorted(stats)]
+    return int(selected),rows
 
 def tune(scenarios,config,seed):
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
     collected=[]; audits=[]
+    drawdown_names=[n for n in TUNED if n.startswith('drawdown_')]
+    gated_names=[n for n in TUNED if not n.startswith('drawdown_')]
+    drawdown_grid=config.get('drawdown_tuning_grid',[])
+    # Train-side risk constraint: each drawdown trial is evaluated on the full
+    # outer-training set under the pooled training model. Breach statistics feed the
+    # suitability-style constraint; explicitly authorized, never used for the objective.
+    train_risk=pd.DataFrame()
+    train_model=fit_model(scenarios,config)
+    for trial,params in enumerate(drawdown_grid):
+        metrics,_=evaluate(scenarios,train_model,{n:params for n in drawdown_names},config,
+                           names=list(drawdown_names),horizons=[30],keep_records=False,allow_train=True)
+        metrics['trial']=trial
+        train_risk=pd.concat([train_risk,metrics],ignore_index=True)
     for inner,valid_ids in enumerate(groups):
         train=[s for sid,s in by_id.items() if sid not in valid_ids]
         valid=[by_id[sid] for sid in valid_ids]
         model=fit_model(train,config)
         audits.append(dict(inner_fold=inner,train_ids=model['train_ids'],validation_ids=valid_ids))
         # Separate tuning grids for different policy families
-        drawdown_names=[n for n in TUNED if n.startswith('drawdown_')]
-        gated_names=[n for n in TUNED if not n.startswith('drawdown_')]
         for trial,params in enumerate(config['tuning_grid']):
             metrics,_=evaluate(valid,model,{n:params for n in gated_names},config,names=list(gated_names),
                                 horizons=[30],keep_records=False)
             metrics['trial']=trial
             collected.append(metrics)
-        for trial,params in enumerate(config.get('drawdown_tuning_grid',[])):
+        for trial,params in enumerate(drawdown_grid):
             metrics,_=evaluate(valid,model,{n:params for n in drawdown_names},config,names=list(drawdown_names),
                                 horizons=[30],keep_records=False)
             metrics['trial']=trial
             collected.append(metrics)
     scores=pd.concat(collected,ignore_index=True)
-    # Risk-matched tuning objective for drawdown policies
-    for name in drawdown_names:
-        if name not in scores.policy.values: continue
-        tolerance={'conservative':0.15,'balanced':0.25,'aggressive':0.35}[name.split('_',1)[1]]
-        mask=scores.policy==name
-        scores.loc[mask,'utility']=np.where(
-            scores.loc[mask,'real_max_drawdown']<=tolerance+0.05,
-            scores.loc[mask,'real_cagr'],
-            -np.inf)
     # Standard utility for gated policies
     gated_mask=scores.policy.isin(gated_names)
     scores.loc[gated_mask,'utility']=scores.loc[gated_mask,'real_cagr']-config['selection_drawdown_penalty']*scores.loc[gated_mask,'real_max_drawdown']
     rows=[]; chosen={}
-    for name,g in scores.groupby('policy'):
+    for name in gated_names:
+        if name not in scores.policy.values: continue
+        g=scores[scores.policy==name]
         means=g.groupby('trial').utility.mean()
         best=int(means.idxmax())
         # Paired one-standard-error rule: prefer higher buffer, then higher gamma among near-best candidates.
@@ -118,15 +187,21 @@ def tune(scenarios,config,seed):
             se=float(diff.std(ddof=1)/np.sqrt(len(diff)))
             ok=float(diff.mean()) <= se+1e-12
             if ok: eligible.append(int(trial))
-            grid=config.get('drawdown_tuning_grid' if name.startswith('drawdown_') else 'tuning_grid',[])
             rows.append(dict(policy=name,trial=int(trial),mean_utility=float(means[trial]),
                              best_trial=best,paired_gap_se=se,one_se_eligible=ok))
-        grid=config.get('drawdown_tuning_grid' if name.startswith('drawdown_') else 'tuning_grid',[])
-        if name.startswith('drawdown_'):
-            selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i].get('k',1.0),-i))
-        else:
-            selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i]['gamma'],-i))
+        grid=config['tuning_grid']
+        selected=max(eligible,key=lambda i:(grid[i]['buffer'],grid[i]['gamma'],-i))
         chosen[name]=grid[selected]
+    tolerances={'conservative':0.15,'balanced':0.25,'aggressive':0.35}
+    for name in drawdown_names:
+        if name not in scores.policy.values: continue
+        if name.startswith('drawdown_lifecycle_'):
+            suffix=name.split('_',2)[2]
+        else:
+            suffix=name.split('_',1)[1]
+        selected,trial_rows=select_drawdown_params(scores,train_risk,name,tolerances[suffix],drawdown_grid,config)
+        rows.extend(trial_rows)
+        chosen[name]=drawdown_grid[selected]
     return chosen,rows,audits
 
 def suitability(metrics,config):

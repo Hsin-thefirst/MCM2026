@@ -115,16 +115,30 @@ class GatedPolicy:
 
 class DrawdownBudgetPolicy:
     requires_benefit_gate=True
-    def __init__(self,name,model,params,config,loss_tolerance,equity_bounds,nonequity_split):
+    def __init__(self,name,model,params,config,loss_tolerance,equity_bounds,nonequity_split,horizon=None):
         self.name=name
         self.loss_tolerance=loss_tolerance
-        self.equity_min,self.equity_max=equity_bounds
+        self.equity_min_base,self.equity_max_base=equity_bounds
         self.bond_frac,self.bill_frac=nonequity_split
         self.k=params.get('k',1.0)
         self.buffer=params.get('buffer',0.0)
         self.mu=np.array(model['mu'])
         self.cov=np.array(model['cov'])
         self.gamma=params.get('gamma',5.0)
+        self.horizon=horizon
+        # Protective de-risking trades bypass the benefit gate: their value is loss
+        # protection, which the mean-variance benefit estimate cannot express.
+        self.derisk_exempt=bool(params.get('derisk_exempt',False))
+        # Optional downward shift of the tier's equity cap (tuned search space).
+        equity_shift=float(params.get('equity_shift',0.0))
+        # Lifecycle adjustment: scale e_max by horizon (capped at 1.0)
+        if horizon is not None:
+            lifecycle_factor=min(1.0,horizon/25.0)
+            self.equity_max=self.equity_min_base+(self.equity_max_base-self.equity_min_base)*lifecycle_factor
+        else:
+            self.equity_max=self.equity_max_base
+        self.equity_max=min(1.0,max(self.equity_max+equity_shift,self.equity_min_base))
+        self.equity_min=self.equity_min_base
         # Initial target at full budget: max equity exposure
         equity_init=self.equity_max
         bond_init=(1-equity_init)*self.bond_frac
@@ -153,15 +167,21 @@ class DrawdownBudgetPolicy:
             return Decision(action,('DRAWDOWN_BUDGET_ADJUSTMENT',),
                 f'Adjusting allocation based on remaining risk budget ({budget_remaining:.1%}). The estimate is uncertain; losses remain possible.',
                 tuple(target),benefit,cost)
+        if self.derisk_exempt and target[0]<current[0]-1e-12:
+            action=Action.REBALANCE if np.allclose(target,c.target_weights,rtol=0,atol=1e-10) else Action.CHANGE_TARGET
+            return Decision(action,('DRAWDOWN_RISK_REDUCTION',),
+                f'Protective de-risking toward the drawdown-budget target ({budget_remaining:.1%} of the loss budget remains). The value of this trade is loss protection, which the return-benefit estimate cannot express. The estimate is uncertain; losses remain possible.',
+                tuple(target),benefit,cost,gate_exempt=True)
         return Decision(Action.KEEP,('BENEFIT_BELOW_COST',),'The estimated improvement does not justify trading costs and the safety margin.',
                         estimated_benefit=benefit,estimated_cost=cost)
 
 POLICY_NAMES=['equal_annual','equal_hold','bills_hold','conservative_annual','balanced_annual','growth_annual',
               'balanced_hold','balanced_periodic','balanced_threshold','minimum_variance','inverse_volatility',
               'mean_variance','cvar_constrained','balanced_gate','cost_aware','adaptive','adaptive_review',
-              'drawdown_conservative','drawdown_balanced','drawdown_aggressive']
+              'drawdown_conservative','drawdown_balanced','drawdown_aggressive',
+              'drawdown_lifecycle_conservative','drawdown_lifecycle_balanced','drawdown_lifecycle_aggressive']
 
-def make_policy(name,model,params,config):
+def make_policy(name,model,params,config,horizon=30):
     fixed={'equal_annual':(EQUAL,'annual'),'equal_hold':(EQUAL,'hold'),'bills_hold':((0.,0.,1.),'hold'),
            **{p+'_annual':(w,'annual') for p,w in PORTFOLIOS.items()},
            'balanced_hold':(PORTFOLIOS['balanced'],'hold'),'balanced_periodic':(PORTFOLIOS['balanced'],'periodic'),
@@ -170,6 +190,11 @@ def make_policy(name,model,params,config):
            'mean_variance':(tuple(model['meanvar']),'annual'),'cvar_constrained':(tuple(model['cvar']),'annual')}
     if name in fixed:
         return StaticPolicy(name,*fixed[name],interval=config['periodic_interval'],threshold=config['rebalance_threshold'])
+    if name.startswith('drawdown_lifecycle_'):
+        tolerances={'conservative':0.15,'balanced':0.25,'aggressive':0.35}
+        bounds={'conservative':(0.15,0.50),'balanced':(0.15,0.65),'aggressive':(0.20,0.75)}
+        suffix=name.split('_',2)[2]
+        return DrawdownBudgetPolicy(name,model,params,config,tolerances[suffix],bounds[suffix],(0.7,0.3),horizon=horizon)
     if name.startswith('drawdown_'):
         tolerances={'conservative':0.15,'balanced':0.25,'aggressive':0.35}
         bounds={'conservative':(0.15,0.50),'balanced':(0.15,0.65),'aggressive':(0.20,0.75)}

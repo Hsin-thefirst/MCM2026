@@ -62,6 +62,30 @@
 - 验证：44 项测试通过（新增 5 项回撤预算测试）。账本核验：12,000 条路径，21,600 行指标，360,000 条年度决策，最大误差 1.36e-12。独立重放：360,000 行市场转换，1,080 项独立计算，最大持仓误差 1.82e-12。manifest 记录种子 20261014，commit `14c54eb`（与之前开发实验相同，只增加了新策略）。
 - 意义：回撤预算策略解决了"Balanced 策略无法权衡容忍度和增长"的问题。同一条规则下，不同容忍度的客户（B 25%、C 40%、D 15%）会自动得到不同的风险水平，不再需要在三个固定组合里硬选。人工复核机制也变得有意义：预算用完时仓位已降至 e_min，复核等待期间处于低风险状态，而不是像之前那样停在高风险状态等人工处理。但 drawdown_balanced 的 P90 MDD 仍然高于 balanced_annual（45.27% vs 44.03%），尚未证明在控制相同风险的前提下能提高增长。
 - 下一步：(1) 决定是否将回撤预算策略作为 Balanced 客户的推荐方案；(2) 如果采用，需要重新运行客户适配流程，验证 B、C 客户能否通过 drawdown_balanced 的筛选；(3) 更新 `docs/FINDINGS.md` 记录回撤策略结果；(4) 团队审查后冻结方案并执行一次真实终测（情景 121–180）。
+
+### 生命周期 + 回撤预算组合策略
+
+- 完成：在 `DrawdownBudgetPolicy` 基础上添加生命周期因子，让股票上限 `e_max` 随客户期限缩放；修改 `evaluate` 函数支持期限相关策略（每个 horizon 重新实例化策略）；修改账本核验逻辑支持期限相关的决策记录（增加 horizon 字段）；预登记 `drawdown_lifecycle_v1` 实验；运行开发实验 + 账本核验 + 独立重放。
+- 文件：`benchmark/safebench/policies.py`（添加 horizon 参数）、`benchmark/safebench/experiment.py`（修改 evaluate、TUNED 和 tune 函数）、`benchmark/safebench/validation.py`（修改核验逻辑）、`benchmark/safebench/report.py`（添加标签）、`benchmark/experiment_registry.json`（预登记）、`benchmark/outputs/drawdown_lifecycle_v1/`。
+- 策略原理：基础逻辑与 `drawdown_budget_v1` 相同，但 `e_max` 不再固定。计算公式：`lifecycle_factor = min(1.0, horizon / 25.0)`，`e_max = e_min + (e_max_base - e_min) × lifecycle_factor`。对 Balanced 风格（容忍度 25%），5 年期 e_max=0.25（股票最高 25%），30 年期 e_max=0.65（股票最高 65%）。这样短期客户自动保守，长期客户可以承担更多波动。
+- 结果对比（成本 0.25%，Balanced 风格）：短期客户大幅受益：5 年期限，生命周期版本的 P90 MDD 从 26.8% 降到 20.3%（降低 6.5 pp），交易率从 64% 降到 16.2%，复核率从 6.7% 降到 3.3%。代价是中位 CAGR 从 4.55% 降到 3.29%（−1.26 pp），但对短期投资者是合理权衡。15 年期限，P90 MDD 从 36.8% 降到 31.5%，复核率从 34.2% 降到 24.2%。25 年和 30 年期限，生命周期版本与非生命周期版本完全相同（lifecycle_factor 都是 1.0）。
+- 关键发现：同一条规则（drawdown_lifecycle_balanced）下，短期客户自动得到保守配置（e_max=0.25），长期客户自动得到增长配置（e_max=0.65）。不再需要手工匹配三个固定组合（Conservative/Balanced/Growth）。这是**期限维度的风险匹配**：不仅匹配容忍度（通过 L 参数），也匹配投资期限（通过 horizon 缩放）。
+- 架构改动：为支持期限相关策略，扩展了 `evaluate` 函数：期限相关策略（名字以 `drawdown_lifecycle_` 开头）为每个 horizon 单独运行模拟，其他策略仍然用截断优化。决策记录新增 `horizon` 字段区分不同期限的路径，账本核验逻辑相应更新。未来如果添加其他期限相关策略，只需在策略名前缀检查中添加即可。
+- 验证：44 项测试通过。账本核验：15,240 条路径（含不同期限），24,840 行指标，432,360 条年度决策（生命周期策略为每个 horizon 保存完整路径），最大误差 1.36e-12。独立重放：432,360 行市场转换，最大持仓误差 1.82e-12。Manifest 记录种子 20261014，commit `14c54eb`。
+- 局限：生命周期因子的缩放系数（horizon/25）是手工选择的，未经调优。25 年和 30 年客户的结果完全相同，说明缩放在 25 年后饱和。
+- 下一步：(1) 将 `drawdown_lifecycle_balanced` 作为 Balanced 客户的推荐策略；(2) 重新运行客户适配流程，验证 5 个客户档案（A–E）能否通过生命周期策略的筛选；(3) 对比生命周期版本与固定组合的多期限晋级路线；(4) 更新 `docs/FINDINGS.md` 记录生命周期改进；(5) 团队审查后冻结方案并执行一次真实终测（情景 121–180）。
+
+### 文档与依赖整合
+
 - 文件：`README.md`、`LOG.md`、`AGENTS.md`、`docs/`、`configs/benchmark.json`、`tests/test_benchmark.py`、`scripts/`、`Makefile`、`benchmark/run.py`、报告生成器及实验登记。
 - 验证：统一入口 39 项测试通过；新 `development_consolidated` 的 18,360 行指标与 integrated 完全一致。核验 10,200 条路径，独立重放 306,000 次年度变化及 1,080 项标量参考计算；代码 hash 匹配，中文报告资源和文档链接有效。历史实验快照保持原样，真实最终留出集未使用。
 - 下一步：从根入口运行新实验，继续按统一协议研究/选择模型；不再创建平行的文档、配置或依赖清单。
+
+### 回撤预算机制修复：门控否决与调参退化（drawdown_gatefix_v1）
+
+- 完成：诊断并修复两个使回撤预算策略失效的缺陷。(1) **门控单向否决减仓**：`drawdown_budget_v1` 决策记录显示被 `BENEFIT_BELOW_COST` 挡住的 1,361 条决策中 97% 收益估计为负——回撤加深时预算曲线要求减仓，但减仓降低均值-方差效用估计被门控否决，而恢复后的加仓（benefit>0）被放行，形成"跌时不减仓、涨回才加仓"的单向棘轮；复核触发后持仓冻结继续下跌（触发路径最终 MDD 中位 36.3% vs 触发时 27.5%）。(2) **调参完全退化**：`tuning_trials.csv` 中所有组合在全部 5 个外层折叠的 mean_utility 均为 −inf（逐情景硬掩码 MDD≤L+5pp 被任何一条路径毒化），argmax 机械返回第 0 个组合，此前记录的"调参选择"实为默认值。修复内容：`Decision`/`PeriodRecord` 新增 `gate_exempt` 字段；`derisk_exempt=true` 时目标股票权重严格低于当前敞口的减仓交易豁免 benefit 不等式（单向：加仓仍受完整门控），引擎仍独立校验成本一致性，`validation.audit_outputs` 独立复核豁免交易必须严格减仓（新函数 `exempt_direction_violations`）；`tune()` 对回撤策略改为约束选择——训练情景违约次数的 Clopper–Pearson 上界（95% 置信）≤20% 为可行性约束、可行集内最大化验证集中位 CAGR、无组合可行时选违约最轻组合并记录 `constraint_fallback`（新函数 `select_drawdown_params`）；`evaluate()` 新增 `allow_train` 参数仅供训练侧约束评估；策略新增 `equity_shift` 参数（股票上限下调档位）；搜索空间扩为 8 组合（含 2 个无豁免消融行、2 个 equity_shift=−0.10 行）；预登记实验 `drawdown_gatefix_v1`。
+- 文件：`src/safeinvest/contracts.py`、`benchmark/safebench/engine.py`、`benchmark/safebench/policies.py`、`benchmark/safebench/experiment.py`、`benchmark/safebench/validation.py`、`configs/benchmark.json`、`benchmark/experiment_registry.json`、`tests/test_drawdown_budget.py`、`tests/test_benchmark.py`、`docs/INTERFACES.md`、`docs/METHODOLOGY.md`、`benchmark/outputs/drawdown_gatefix_v1/`。
+- 结果（30 年期、成本 0.25%，drawdown_balanced 对比修复前）：P90 实际回撤 45.27%→38.65%（−6.6pp），CVaR90 回撤 49.84%→44.93%，复核率 60.8%→47.5%，中位 CAGR 4.69%→4.23%（−0.46pp），交易率 27.2%→49.2%，30 年实际总成本中位 0.48→0.93（每 100 初始财富）。三档容忍度回撤重新分层：conservative 37.6%/aggressive 41.6%（此前 46.8%/45.0% 几乎无差异）。豁免交易 92% 为原被否决的负 benefit 减仓，复核后漂移已收敛（P90 仅 +11pp）。对 balanced_annual（P90 44.03%、CAGR 4.50%）：回撤低 5.4pp、增长低 0.27pp。
+- **关键发现：容忍度约束在年频下结构性不可行**。即使最优组合，训练路径突破率也达 47%（balanced，L=25%）至 81%（conservative，L=15%），远超 20% 上界；五个外层折叠全部回退选择违约最轻组合（`constraint_fallback=True`，一致选择 derisk_exempt=true + equity_shift=−0.10，即无豁免组合被约束拒绝、原股票上限也不可达标）。原因：年度决策点之间的一次深度下跌（叠加复核后冻结持仓）即可击穿 15–25% 容忍度，任何保留有意义股票敞口的年频策略都无法承诺 P(MDD>L)≤20%。drawdown_* 当前的合理定位是"风险降低路线"（显著降 P90 回撤、限制 CAGR 损失），而非"同风险下更高增长"；要真正守住容忍度需要更低股票上限（更低 e_min/e_max 档位进入搜索空间）或更高决策频率（超出本题年度框架）。
+- 验证：52 项测试通过（新增 7 项：豁免执行/加仓仍门控/equity_shift/约束选择可行与回退/豁免方向复核；引擎级豁免接受与成本一致性测试 2 项）。账本核验 15,240 条路径、24,840 行指标、432,360 条年度决策，最大误差 1.36e-12，豁免交易 28,522 笔方向复核零违规。独立重放 432,360 行市场转换、1,080 项独立参考计算，最大持仓误差 1.82e-12。manifest 记录种子 20261014；运行 288 秒。
+- 下一步：(1) 决定回撤策略的定位与客户适配路线——若走风险降低路线，需按 PROTOCOL 反向声明晋级标准并重跑客户适配（当前 47.5% 复核率是显著服务成本）；(2) 若继续追求守约容忍度，扩展搜索空间至更低 e_max/e_min 档位并重新预登记；(3) 目标波动率组合（原 P1 方案二）在年频下信号与回撤状态高度共线，建议降级为探索对照；(4) 更新 `docs/FINDINGS.md` 与 promotion screen 的候选范围后，团队审查冻结方案再执行一次性终测。

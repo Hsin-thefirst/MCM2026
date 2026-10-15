@@ -49,6 +49,8 @@ make_policy(name, model, params, config) -> policy  # exposes initial_target
 
 决定附原因码和解释。门控策略暴露 `requires_benefit_gate=True` 与 `buffer`；交易必须提供收益/成本估计，满足定义过的门槛，引擎独立验证成本。无条件诊断策略不声称满足实际建议策略的收益门槛。
 
+**保护性减仓豁免**：`Decision.gate_exempt=True` 标记保护性减仓交易（原因码 `DRAWDOWN_RISK_REDUCTION`）。引擎对所有门控策略交易独立重算并校验成本一致性；对豁免交易跳过"收益 > 成本+buffer"不等式（减仓的价值是损失保护，均值-方差收益估计无法表达），但豁免必须单向：豁免交易（第 1 年之后）必须严格降低股票敞口，`validation.audit_outputs` 独立复核方向，违规即核验失败。加仓与中性再平衡仍受完整门槛约束。
+
 初始配置由引擎在第 1 年收益前完成并收费，后续才调用策略。复核待处理期间不再调用策略，继续持有和估值，不切换到 bills 或虚构顾问干预。初始交易字段同时保存在第一条年度记录中，费用不可重复累加。
 
 ## 添加未来模型
@@ -78,6 +80,6 @@ MDD 包含每次扣费后的财富标记，替代初始文档仅明确初次费�
 | validation.json、independent_replay.json | 核验与独立重放证据 |
 | report.html、figures/ | 本地报告、PNG/SVG 图表 |
 
-CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。
+CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为 JSON 数组，缺失估计留空。JSON 中缺失值为 null。年度记录存到 30 年，短期限结果使用相应前缀。`decisions.csv.gz` 含 `gate_exempt` 列标记豁免交易；`tuning_trials.csv` 中回撤策略行含约束诊断列（`breach_count`、`train_paths`、`breach_upper_bound`、`constraint_satisfied`、`constraint_fallback`、`median_cagr_valid`），`drawdown_tuning_grid` 参数项支持 `derisk_exempt` 与 `equity_shift`。
 
 冻结 artifact 保存训练状态、参数、代码与依赖版本、客户分配及最终比较列表；最终独占锁在读取真实最终收益前创建。目录重构后保留旧 manifest，不以新 hash 伪装旧实验；当前代码只从版本匹配的开发运行冻结。

@@ -1,9 +1,12 @@
 """Unit tests for DrawdownBudgetPolicy."""
 import unittest
 import numpy as np
+import pandas as pd
 from safeinvest.contracts import PolicyContext, MarketObservation, Action
 from safebench.policies import DrawdownBudgetPolicy, fit_model
 from safebench.data import load_partition
+from safebench.experiment import select_drawdown_params
+from safebench.validation import exempt_direction_violations
 
 class TestDrawdownBudget(unittest.TestCase):
     @classmethod
@@ -101,6 +104,110 @@ class TestDrawdownBudget(unittest.TestCase):
         # With high buffer, small benefit should be blocked
         if decision.action == Action.KEEP:
             self.assertIn('BENEFIT_BELOW_COST', decision.reason_codes)
+
+    def _derisk_context(self):
+        """Partial drawdown: real wealth 85 vs peak 100 → dd=15%, budget 40% → target equity 35%."""
+        obs = self.scenarios[0].observations[0]
+        return PolicyContext(period=2, history=[obs], holdings=(42.5, 24.5, 18.0),
+                             target_weights=(0.5, 0.35, 0.15), cumulative_inflation=1.0,
+                             real_peak=100.0, review_pending=False, transaction_cost_rate=0.0025)
+
+    def test_derisk_exempt_trades_when_benefit_negative(self):
+        """With derisk_exempt, a protective de-risk executes even when the mean-variance
+        benefit is negative; without the flag the same decision is gate-blocked."""
+        common = dict(loss_tolerance=0.25, equity_bounds=(0.15, 0.65), nonequity_split=(0.7, 0.3))
+        exempt = DrawdownBudgetPolicy('drawdown_x', self.model,
+                                      {'k': 1.0, 'buffer': 0.0, 'gamma': 0.1, 'derisk_exempt': True},
+                                      self.config, **common)
+        gated = DrawdownBudgetPolicy('drawdown_x', self.model,
+                                     {'k': 1.0, 'buffer': 0.0, 'gamma': 0.1}, self.config, **common)
+        ctx = self._derisk_context()
+        decision = exempt.decide(ctx)
+        self.assertIn(decision.action, (Action.REBALANCE, Action.CHANGE_TARGET))
+        self.assertEqual(decision.reason_codes[0], 'DRAWDOWN_RISK_REDUCTION')
+        self.assertTrue(decision.gate_exempt)
+        self.assertAlmostEqual(decision.target_weights[0], 0.35, places=10)
+        blocked = gated.decide(ctx)
+        self.assertEqual(blocked.action, Action.KEEP)
+        self.assertIn('BENEFIT_BELOW_COST', blocked.reason_codes)
+        self.assertFalse(blocked.gate_exempt)
+
+    def test_rerisk_still_gated_with_exemption(self):
+        """Exemption must stay one-sided: re-risking trades still need the benefit gate."""
+        policy = DrawdownBudgetPolicy('drawdown_x', self.model,
+                                      {'k': 1.0, 'buffer': 0.0, 'gamma': 20.0, 'derisk_exempt': True},
+                                      self.config, loss_tolerance=0.25, equity_bounds=(0.15, 0.65),
+                                      nonequity_split=(0.7, 0.3))
+        obs = self.scenarios[0].observations[0]
+        # No drawdown: budget full → target equity 0.65 above current 0.15 → risk-increasing
+        ctx = PolicyContext(period=2, history=[obs], holdings=(15.0, 59.5, 25.5),
+                            target_weights=(0.15, 0.595, 0.255), cumulative_inflation=1.0,
+                            real_peak=100.0, review_pending=False, transaction_cost_rate=0.0025)
+        decision = policy.decide(ctx)
+        self.assertEqual(decision.action, Action.KEEP)
+        self.assertIn('BENEFIT_BELOW_COST', decision.reason_codes)
+        self.assertFalse(decision.gate_exempt)
+
+    def test_equity_shift_parameter(self):
+        """equity_shift lowers the tier equity cap and the initial target follows."""
+        params = {'k': 1.0, 'buffer': 0.0, 'gamma': 5.0, 'equity_shift': -0.10}
+        policy = DrawdownBudgetPolicy('drawdown_balanced', self.model, params, self.config,
+                                      loss_tolerance=0.25, equity_bounds=(0.15, 0.65),
+                                      nonequity_split=(0.7, 0.3))
+        equity, bond, bill = policy.initial_target
+        self.assertAlmostEqual(equity, 0.55, places=10)
+        self.assertAlmostEqual(equity + bond + bill, 1.0, places=10)
+
+    def test_selection_prefers_feasible_over_higher_cagr(self):
+        """Trials meeting the training breach-probability constraint win even with lower CAGR."""
+        n = 64
+        valid = pd.DataFrame([
+            dict(policy='drawdown_x', trial=t, scenario_id=s, real_cagr=0.04 + 0.01 * t)
+            for t in (0, 1) for s in range(1, n + 1)])
+        train = pd.DataFrame(
+            [dict(policy='drawdown_x', trial=0, scenario_id=s, real_max_drawdown=0.10) for s in range(1, n + 1)] +
+            [dict(policy='drawdown_x', trial=1, scenario_id=s, real_max_drawdown=0.30) for s in range(1, n + 1)])
+        grid = [{'k': 1.0, 'buffer': 0.0}, {'k': 1.0, 'buffer': 0.001}]
+        config = {'suitability_confidence': 0.95, 'suitability_max_breach_probability': 0.20}
+        selected, rows = select_drawdown_params(valid, train, 'drawdown_x', 0.25, grid, config)
+        self.assertEqual(selected, 0)
+        by_trial = {r['trial']: r for r in rows}
+        self.assertTrue(by_trial[0]['constraint_satisfied'])
+        self.assertFalse(by_trial[1]['constraint_satisfied'])
+        self.assertFalse(any(r['constraint_fallback'] for r in rows))
+
+    def test_selection_fallback_when_none_feasible(self):
+        """If no trial meets the constraint, pick the least-violating one and record it."""
+        n = 64
+        valid = pd.DataFrame([
+            dict(policy='drawdown_x', trial=t, scenario_id=s, real_cagr=0.06 - 0.01 * t)
+            for t in (0, 1) for s in range(1, n + 1)])
+        train = pd.DataFrame(
+            [dict(policy='drawdown_x', trial=0, scenario_id=s, real_max_drawdown=0.30) for s in range(1, n + 1)] +
+            [dict(policy='drawdown_x', trial=1, scenario_id=s, real_max_drawdown=0.30 if s % 4 == 0 else 0.20)
+             for s in range(1, n + 1)])
+        grid = [{'k': 1.0, 'buffer': 0.0}, {'k': 1.5, 'buffer': 0.0}]
+        config = {'suitability_confidence': 0.95, 'suitability_max_breach_probability': 0.20}
+        selected, rows = select_drawdown_params(valid, train, 'drawdown_x', 0.25, grid, config)
+        self.assertEqual(selected, 1)  # fewer breaches → lower upper bound, despite lower CAGR
+        self.assertTrue(all(r['constraint_fallback'] for r in rows))
+        self.assertFalse(all(r['constraint_satisfied'] for r in rows))
+
+    def test_exempt_direction_violations(self):
+        """Audit helper flags exempt trades that do not reduce equity exposure."""
+        r = pd.DataFrame([
+            dict(action='rebalance', gate_exempt=True, period=2, pre_trade_holdings_equity=50.,
+                 pre_trade_holdings_bond=30., pre_trade_holdings_bill=20., target_weights_equity=0.35),
+            dict(action='rebalance', gate_exempt=True, period=2, pre_trade_holdings_equity=50.,
+                 pre_trade_holdings_bond=30., pre_trade_holdings_bill=20., target_weights_equity=0.60),
+            dict(action='rebalance', gate_exempt=False, period=2, pre_trade_holdings_equity=50.,
+                 pre_trade_holdings_bond=30., pre_trade_holdings_bill=20., target_weights_equity=0.90),
+            dict(action='rebalance', gate_exempt=True, period=1, pre_trade_holdings_equity=0.,
+                 pre_trade_holdings_bond=0., pre_trade_holdings_bill=100., target_weights_equity=0.65),
+            dict(action='keep', gate_exempt=False, period=2, pre_trade_holdings_equity=50.,
+                 pre_trade_holdings_bond=30., pre_trade_holdings_bill=20., target_weights_equity=0.90),
+        ])
+        self.assertEqual(exempt_direction_violations(r), [1])
 
 if __name__ == '__main__':
     unittest.main()

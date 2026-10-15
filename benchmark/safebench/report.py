@@ -17,7 +17,8 @@ LABELS={'equal_annual':'Equal weight / annual','equal_hold':'Equal weight / hold
  'minimum_variance':'Minimum variance','inverse_volatility':'Inverse volatility','mean_variance':'Mean variance',
  'cvar_constrained':'CVaR constrained','balanced_gate':'Balanced / cost gate','cost_aware':'Cost aware',
  'adaptive':'Adaptive','adaptive_review':'Adaptive + review',
- 'drawdown_conservative':'Drawdown budget / 15%','drawdown_balanced':'Drawdown budget / 25%','drawdown_aggressive':'Drawdown budget / 35%'}
+ 'drawdown_conservative':'Drawdown budget / 15%','drawdown_balanced':'Drawdown budget / 25%','drawdown_aggressive':'Drawdown budget / 35%',
+ 'drawdown_lifecycle_conservative':'DD lifecycle / 15%','drawdown_lifecycle_balanced':'DD lifecycle / 25%','drawdown_lifecycle_aggressive':'DD lifecycle / 35%'}
 
 def generate_report(out):
     out=Path(out); figures=out/'figures'; figures.mkdir(exist_ok=True)

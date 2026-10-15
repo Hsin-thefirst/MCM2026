@@ -48,9 +48,11 @@ def simulate(scenario, policy, initial_target, config):
             trade = execute_trade(h,decision.target_weights,config.transaction_cost_rate)
             if t > 1 and getattr(policy,'requires_benefit_gate',False):
                 actual_fraction = trade.transaction_cost/sum(h)
-                if (decision.estimated_benefit is None or decision.estimated_cost is None
-                    or not math.isclose(decision.estimated_cost,actual_fraction,abs_tol=1e-10)
-                    or decision.estimated_benefit <= actual_fraction + getattr(policy,'buffer',0)):
+                if (decision.estimated_cost is None
+                    or not math.isclose(decision.estimated_cost,actual_fraction,abs_tol=1e-10)):
+                    raise ValueError('Trade cost estimate inconsistent with audited fee')
+                if (not decision.gate_exempt and (decision.estimated_benefit is None
+                    or decision.estimated_benefit <= actual_fraction + getattr(policy,'buffer',0))):
                     raise ValueError('Trade fails auditable benefit/cost gate')
             target = tuple(decision.target_weights)
             h = trade.post_trade_holdings
@@ -72,7 +74,8 @@ def simulate(scenario, policy, initial_target, config):
         records.append(PeriodRecord(t,decision.action,target,pre,post,h,trade.moved_amount,
                                     trade.transaction_cost,inflation,wealth,pending,
                                     decision.reason_codes,decision.explanation,
-                                    decision.estimated_benefit,decision.estimated_cost))
+                                    decision.estimated_benefit,decision.estimated_cost,
+                                    decision.gate_exempt))
     return SimulationResult(scenario.scenario_id,policy.name,config,tuple(initial_target),
                             initial.moved_amount,initial.transaction_cost,
                             initial.post_trade_holdings,tuple(records))

@@ -85,6 +85,7 @@ class Decision:
     target_weights: Weights | None = None
     estimated_benefit: float | None = None  # Fraction of pre-trade nominal wealth
     estimated_cost: float | None = None  # Same unit as estimated_benefit
+    gate_exempt: bool = False  # Protective de-risking trade; exempt from the benefit inequality
 
     def __post_init__(self) -> None:
         trades = self.action in (Action.REBALANCE, Action.CHANGE_TARGET)
@@ -138,6 +139,7 @@ class PeriodRecord:
     explanation: str
     estimated_benefit: float | None = None
     estimated_cost: float | None = None
+    gate_exempt: bool = False
 
 
 @dataclass(frozen=True)
