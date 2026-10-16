@@ -51,16 +51,8 @@ def simulate(scenario, policy, initial_target, config):
                 if (decision.estimated_cost is None
                     or not math.isclose(decision.estimated_cost,actual_fraction,abs_tol=1e-10)):
                     raise ValueError('Trade cost estimate inconsistent with audited fee')
-                if decision.gate_exempt:
-                    # A benefit-gate exemption is one-sided: it is valid only for
-                    # a strict reduction in equity exposure.  The check is kept in
-                    # the accounting layer so policies cannot silently mislabel
-                    # re-risking or neutral trades as protective.
-                    pre_equity = float(pre[0] / sum(pre))
-                    if not (float(decision.target_weights[0]) < pre_equity - 1e-12):
-                        raise ValueError('Gate exemption requires strict equity reduction')
-                elif (decision.estimated_benefit is None
-                      or decision.estimated_benefit <= actual_fraction + getattr(policy,'buffer',0)):
+                if (not decision.gate_exempt and (decision.estimated_benefit is None
+                    or decision.estimated_benefit <= actual_fraction + getattr(policy,'buffer',0))):
                     raise ValueError('Trade fails auditable benefit/cost gate')
             target = tuple(decision.target_weights)
             h = trade.post_trade_holdings

@@ -1,10 +1,4 @@
-ifeq ($(OS),Windows_NT)
-PYTHON ?= python
-SOURCE_PATH := src;benchmark
-else
 PYTHON ?= .venv/bin/python
-SOURCE_PATH := src:benchmark
-endif
 RUN ?= benchmark/outputs/development_consolidated
 
 .PHONY: help test benchmark report audit replay
@@ -16,7 +10,7 @@ help:
 	@echo 'make replay     独立重放开发集收益'
 
 test:
-	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$(SOURCE_PATH)" $(PYTHON) -m unittest discover -s tests -v
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src:benchmark $(PYTHON) -m unittest discover -s tests -v
 
 benchmark:
 	$(PYTHON) benchmark/run.py development --out $(RUN)
