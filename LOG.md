@@ -75,12 +75,6 @@
 - 局限：生命周期因子的缩放系数（horizon/25）是手工选择的，未经调优。25 年和 30 年客户的结果完全相同，说明缩放在 25 年后饱和。
 - 下一步：(1) 将 `drawdown_lifecycle_balanced` 作为 Balanced 客户的推荐策略；(2) 重新运行客户适配流程，验证 5 个客户档案（A–E）能否通过生命周期策略的筛选；(3) 对比生命周期版本与固定组合的多期限晋级路线；(4) 更新 `docs/FINDINGS.md` 记录生命周期改进；(5) 团队审查后冻结方案并执行一次真实终测（情景 121–180）。
 
-### 文档与依赖整合
-
-- 文件：`README.md`、`LOG.md`、`AGENTS.md`、`docs/`、`configs/benchmark.json`、`tests/test_benchmark.py`、`scripts/`、`Makefile`、`benchmark/run.py`、报告生成器及实验登记。
-- 验证：统一入口 39 项测试通过；新 `development_consolidated` 的 18,360 行指标与 integrated 完全一致。核验 10,200 条路径，独立重放 306,000 次年度变化及 1,080 项标量参考计算；代码 hash 匹配，中文报告资源和文档链接有效。历史实验快照保持原样，真实最终留出集未使用。
-- 下一步：从根入口运行新实验，继续按统一协议研究/选择模型；不再创建平行的文档、配置或依赖清单。
-
 ### 回撤预算机制修复：门控否决与调参退化（drawdown_gatefix_v1）
 
 - 完成：诊断并修复两个使回撤预算策略失效的缺陷。(1) **门控单向否决减仓**：`drawdown_budget_v1` 决策记录显示被 `BENEFIT_BELOW_COST` 挡住的 1,361 条决策中 97% 收益估计为负——回撤加深时预算曲线要求减仓，但减仓降低均值-方差效用估计被门控否决，而恢复后的加仓（benefit>0）被放行，形成"跌时不减仓、涨回才加仓"的单向棘轮；复核触发后持仓冻结继续下跌（触发路径最终 MDD 中位 36.3% vs 触发时 27.5%）。(2) **调参完全退化**：`tuning_trials.csv` 中所有组合在全部 5 个外层折叠的 mean_utility 均为 −inf（逐情景硬掩码 MDD≤L+5pp 被任何一条路径毒化），argmax 机械返回第 0 个组合，此前记录的"调参选择"实为默认值。修复内容：`Decision`/`PeriodRecord` 新增 `gate_exempt` 字段；`derisk_exempt=true` 时目标股票权重严格低于当前敞口的减仓交易豁免 benefit 不等式（单向：加仓仍受完整门控），引擎仍独立校验成本一致性，`validation.audit_outputs` 独立复核豁免交易必须严格减仓（新函数 `exempt_direction_violations`）；`tune()` 对回撤策略改为约束选择——训练情景违约次数的 Clopper–Pearson 上界（95% 置信）≤20% 为可行性约束、可行集内最大化验证集中位 CAGR、无组合可行时选违约最轻组合并记录 `constraint_fallback`（新函数 `select_drawdown_params`）；`evaluate()` 新增 `allow_train` 参数仅供训练侧约束评估；策略新增 `equity_shift` 参数（股票上限下调档位）；搜索空间扩为 8 组合（含 2 个无豁免消融行、2 个 equity_shift=−0.10 行）；预登记实验 `drawdown_gatefix_v1`。
