@@ -2,9 +2,20 @@
   "seed": 20261014,
   "outer_folds": 5,
   "inner_folds": 3,
-  "horizons": [5, 6, 15, 25, 30],
+  "horizons": [
+    5,
+    6,
+    15,
+    25,
+    30
+  ],
   "cost_rate": 0.0025,
-  "sensitivity_costs": [0.0, 0.00125, 0.005, 0.01],
+  "sensitivity_costs": [
+    0.0,
+    0.00125,
+    0.005,
+    0.01
+  ],
   "bootstrap": 4000,
   "initial_wealth": 100.0,
   "covariance_shrinkage": 0.25,
@@ -16,14 +27,117 @@
   "prior_strength": 30,
   "review_drawdown": 0.25,
   "tuning_grid": [
-    {"gamma": 3.0, "buffer": 0.0, "window": 5},
-    {"gamma": 3.0, "buffer": 0.001, "window": 5},
-    {"gamma": 8.0, "buffer": 0.0, "window": 5},
-    {"gamma": 8.0, "buffer": 0.001, "window": 5}
+    {
+      "gamma": 3.0,
+      "buffer": 0.0,
+      "window": 5
+    },
+    {
+      "gamma": 3.0,
+      "buffer": 0.001,
+      "window": 5
+    },
+    {
+      "gamma": 8.0,
+      "buffer": 0.0,
+      "window": 5
+    },
+    {
+      "gamma": 8.0,
+      "buffer": 0.001,
+      "window": 5
+    }
   ],
-  "selection_drawdown_penalty": 0.10,
-  "suitability_max_breach_probability": 0.20,
+  "selection_drawdown_penalty": 0.1,
+  "suitability_max_breach_probability": 0.2,
   "suitability_confidence": 0.95,
   "minimum_growth_improvement": 0.001,
-  "maximum_p90_loss_increase": 0.01
+  "maximum_p90_loss_increase": 0.01,
+  "expert_research": {
+    "enabled": true,
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "hidden_sizes": [
+      12,
+      8
+    ],
+    "supervised_epochs": 80,
+    "rl_epochs": 120,
+    "learning_rate": 0.003,
+    "entropy_bonus": 0.01,
+    "buffer": 0.001,
+    "base_gamma": 3.0,
+    "drawdown_gamma": 40.0,
+    "horizon_gamma": 12.0,
+    "drawdown_penalties": [
+      0.1,
+      0.3
+    ],
+    "minimum_p90_reduction": 0.03,
+    "maximum_growth_loss": 0.005,
+    "maximum_p10_loss": 0.002,
+    "primary_reference": "balanced_annual"
+  },
+  "frontier_research": {
+    "enabled": true,
+    "grid_step": 0.05,
+    "trials": [
+      {
+        "reference": "balanced",
+        "minimum_p90_reduction": 0.03,
+        "drawdown_penalty": 0.01
+      },
+      {
+        "reference": "balanced",
+        "minimum_p90_reduction": 0.05,
+        "drawdown_penalty": 0.03
+      }
+    ],
+    "maximum_p10_loss": 0.002,
+    "buffer": 0.001,
+    "suspension_drawdown": 0.6,
+    "training_states": 600,
+    "seeds": [
+      101,
+      202,
+      303
+    ],
+    "hidden_sizes": [
+      12,
+      8
+    ],
+    "epochs": 160,
+    "learning_rate": 0.003,
+    "ridge": 1.0,
+    "training_cost_rate": 0.0025,
+    "risk_barrier": 0.5,
+    "risk_slack": 0.01
+  },
+  "balanced_policy": "frontier_mpc",
+  "selection_basis": "开发预注册：风险预算配置/交易门控/多期规划/线性与神经近似的消融；既有晋级门槛保持。提交选择以开发证据、可靠性与客户适配为依据。",
+  "generate_report": false,
+  "cushion_research": {
+    "enabled": true,
+    "gamma_at_peak": 4.0,
+    "loss_budgets": [
+      0.4,
+      0.5
+    ],
+    "buffer": 0.0001,
+    "grid_step": 0.025,
+    "suspension_drawdown": 0.6,
+    "strategic_prior_weight": 1.0,
+    "risk_response_strength": 0.5
+  },
+  "calibrated_research": {
+    "enabled": true,
+    "gammas": [
+      4.0,
+      4.5,
+      5.0
+    ]
+  }
 }

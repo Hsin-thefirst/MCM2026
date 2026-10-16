@@ -5,7 +5,7 @@ import math
 from typing import Literal, Protocol
 
 ASSETS = ("equity", "bond", "bill")
-CONTRACT_VERSION = "1.0"
+CONTRACT_VERSION = "1.1"
 Weights = tuple[float, float, float]
 Holdings = tuple[float, float, float]
 PortfolioName = Literal["conservative", "balanced", "growth"]
@@ -75,6 +75,7 @@ class PolicyContext:
     real_peak: float  # Maximum realized real wealth so far; initial value 100
     review_pending: bool
     transaction_cost_rate: float
+    real_max_drawdown: float = 0.0  # Running loss, including fee-time marks
 
 
 @dataclass(frozen=True)

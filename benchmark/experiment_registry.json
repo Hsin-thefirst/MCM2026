@@ -37,9 +37,255 @@
     "run": "development_consolidated",
     "date": "2026-10-14",
     "purpose": "Consolidate documentation, configuration, tests and utilities at project root; localize human-facing documentation and report in Chinese",
-    "status": "current_verified_development",
+    "status": "verified_historical_development",
     "changes_after_results": "Configuration and utility paths, CLI defaults and report presentation only; trading rules, search space and financial computations unchanged. Historical artifacts retained without rewriting manifests.",
     "verification": "39 tests pass; all 18,360 metric rows exactly match development_integrated; 10,200 paths audited; 306,000 market transitions replayed and 1,080 independent scalar reference checks passed. Current code hash matches manifest.",
     "holdout_used": false
+  },
+  {
+    "run": "development_experts_v1",
+    "date": "2026-10-16",
+    "purpose": "预注册：可解释专家、两层神经门控与风险敏感 REINFORCE 的递进消融；主路线为限制增长损失的尾部风险下降。",
+    "status": "verified_historical_development",
+    "holdout_used": false,
+    "search_budget": {
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "drawdown_penalties": [
+        0.1,
+        0.3
+      ],
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "hidden_sizes": [
+        12,
+        8
+      ],
+      "supervised_epochs": 80,
+      "rl_epochs": 120
+    },
+    "candidates": [
+      "expert_defensive",
+      "expert_greedy",
+      "moe_supervised",
+      "moe_rl",
+      "moe_rl_static"
+    ],
+    "selection": "内层 H=30 下相对 Balanced 年度：中位 CAGR 损失≤0.5个百分点、P10损失≤0.2个百分点且P90回撤下降≥3个百分点；可行者优先低P90。若均不满足，按标准化约束违约最小选择并明确标记未通过，不伪装风险约束成立。",
+    "promotion": "外层配对区间与4/5折、0.5%费用鲁棒性联合筛选；同时报告原增长路线。主要比较 Balanced 年度，另保留等权、Balanced持有和相同专家集合的简单门控。",
+    "scope": "仅情景1–120；五期限独立模拟；各神经模型三种子概率集成，不挑最佳种子；单种子另存稳定性诊断。所有专家共享初始Balanced配置和成本核验。",
+    "finding": "22策略五折开发完成；RL中位实际CAGR 3.2097%、P90回撤37.7563%；所有新增候选未通过预声明风险路线。共享gamma=8使战略专家从未被选中，规则门控与防御专家表现相同。",
+    "verification": "47项统一测试通过；23,760条期限路径、530,640条年度记录账本核验及独立市场重放通过，另有1,080项独立等权计算。15种历史基准指标完全一致，均值方差/最小方差有微小优化数值差异（最大CAGR差2.58e-9、MDD差9.39e-9）。"
+  },
+  {
+    "run": "development_experts_v2",
+    "date": "2026-10-16",
+    "status": "verified_historical_development",
+    "purpose": "事后提出的单因素门槛诊断：基础gamma由8改为3，其余专家、网络、风险筛选与训练预算完全不变，检查专家动作退化是否由共享门槛导致。",
+    "informed_by": "已查看development_experts_v1的开发结果及专家动作使用；因此不是新的独立证据。",
+    "search_budget": {
+      "additional_configurations": 1,
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "drawdown_penalties": [
+        0.1,
+        0.3
+      ],
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "supervised_epochs": 80,
+      "rl_epochs": 120
+    },
+    "changes": {
+      "expert_research.base_gamma": {
+        "from": 8.0,
+        "to": 3.0
+      }
+    },
+    "holdout_used": false,
+    "stopping_rule": "完成这一单因素版本后报告全部结果，不继续根据外层表现扩展搜索。",
+    "finding": "RL中位实际CAGR 3.8616%、P90回撤34.6049%；简单规则3.8155%、34.6049%。RL相对规则增长差0.046个百分点，95%区间[-0.209,0.219]，未证明增量。新增5候选均未通过风险路线，原增长路线亦无晋级。",
+    "verification": "48项测试通过（含生成数据专家冻结流程）；23760条期限路径、530640条年度记录账本核验及独立市场重放通过，1080项独立等权计算；代码/配置hash匹配，17种历史策略18360条指标与v1完全一致。",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "development_frontier_v1",
+    "date": "2026-10-16",
+    "status": "verified_historical_development",
+    "purpose": "按用户授权继续提交版迭代；补齐最大回撤状态与同预算消融，比较训练内路径风险预算配置、短期门控、多期情景价值、线性与神经近似。",
+    "informed_by": "此前专家v1/v2开发结果与代码审查；不是新的独立数据。",
+    "search_budget": {
+      "additional_model_families": 3,
+      "frontier_trials": [
+        {
+          "risk_budget_ratio": 1.0,
+          "drawdown_penalty": 0.1
+        },
+        {
+          "risk_budget_ratio": 0.9,
+          "drawdown_penalty": 0.3
+        }
+      ],
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "neural_epochs": 160,
+      "training_states": 600,
+      "legacy_expert_penalties": [
+        0.1,
+        0.3
+      ]
+    },
+    "candidates": [
+      "frontier_annual",
+      "frontier_hold",
+      "frontier_gate",
+      "frontier_mpc",
+      "frontier_linear",
+      "frontier_neural"
+    ],
+    "selection": "配置仅训练内按相对于等权的尾均最大回撤预算与P10约束选择；交易价值按含费用的多期对数增长与尾均回撤计算。内层保留原30年风险路线违约量，兼顾全部五期限效用；外层原晋级门槛不变。",
+    "stopping_rule": "先完整评价该批次；若暴露可定位实现问题则修复并另登记重跑，不据外层收益无限调参。若模型增量不成立，保留最简单可靠方案并完成提交材料。",
+    "holdout_used": false,
+    "diagnostic_budget": "另外固定一个ridge=1、4项过去五年特征的逐年收益预测器，与训练均值比较；整情景五折，不搜索超参数，不作为独立收益证据。",
+    "finding": "路径风险配置年度策略3.6447%/34.4102%，MPC2.8007%/31.9392%，神经近似3.7940%/38.6351%；全部新候选未通过风险路线。多期惩罚导致过度防御，独立调参的持有参照不能作为严格同配置消融。",
+    "verification": "54项统一测试；30,240条期限路径和675,360条年度记录审计及独立市场重放通过，另1080项独立等权计算；最大持仓差1.82e-12。"
+  },
+  {
+    "run": "development_frontier_v2",
+    "date": "2026-10-16",
+    "status": "verified_historical_development",
+    "purpose": "用户明确暂停报告/论文；仅继续改进模型与核验。针对v1风险预算与主要参照不一致、MPC过度防御及独立调参对照不匹配，预登记第二批。",
+    "informed_by": "已查看frontier_v1开发结果；不是新的独立证据。",
+    "search_budget": {
+      "trials": [
+        {
+          "reference": "balanced",
+          "minimum_p90_reduction": 0.03,
+          "drawdown_penalty": 0.01
+        },
+        {
+          "reference": "balanced",
+          "minimum_p90_reduction": 0.05,
+          "drawdown_penalty": 0.03
+        }
+      ],
+      "risk_barrier": 0.5,
+      "risk_slack": 0.01,
+      "seeds": [
+        101,
+        202,
+        303
+      ],
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "training_states": 600,
+      "epochs": 160
+    },
+    "changes": "配置风险预算改为相对Balanced的P90回撤下降3/5个百分点，P10容忍度沿用既定0.2个百分点；较小MDD惩罚配超出同状态战略动作P90风险的固定违约惩罚。增加MPC参数完全一致的年度/持有/短期门控参照；修正近似模型在新费用下激活训练内常量特征的问题。",
+    "promotion": "外层晋级条件不变；既有RL与原17参照全部保留。",
+    "scope": "仅开发1–120；暂停报告、论文、提交包与真实最终评价。",
+    "stopping_rule": "完整评价两组设置及严格配对消融；有新可定位问题才修复，不按外层结果无限扫描。",
+    "holdout_used": false,
+    "matched_control_budget": "固定两组已声明参数下，对年度/持有/短期门控在H30和0.25%/0.5%费用评价；为每个候选引用其内层已选参数，禁止重新调参。区间仅逐点诊断，不替代原多候选晋级。",
+    "finding": "MPC 4.4068%/P90回撤40.5324%；原Balanced 4.4965%/44.0277%；中位增长损失0.0897个百分点、P90下降3.4953个百分点，仍未通过原多候选区间晋级。",
+    "verification": "59项统一测试；33,480条期限路径、747,720条年度记录审计及独立重放；50项训练风险预算全可行并独立标量重算，最大差2.78e-16；1440条严格匹配参照路径、43200条年度记录审计通过。"
+  },
+  {
+    "run": "development_cushion_v1",
+    "date": "2026-10-16",
+    "status": "verified_historical_development",
+    "purpose": "检验少数固定专家动作的限制：加入细配置网格与由实际回撤平滑决定风险厌恶的成本门控；含相同初始Balanced与固定风险厌恶对照。",
+    "informed_by": "已查看frontier两轮开发结果，属于后续研究，不构成新的独立证据。",
+    "search_budget": {
+      "gamma_at_peak": 4.0,
+      "loss_budgets": [
+        0.4,
+        0.5
+      ],
+      "buffer": 0.0001,
+      "grid_step": 0.025,
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "new_strategies": [
+        "cushion_static",
+        "cushion_gate"
+      ]
+    },
+    "method": "gamma(d,L)=4 L (1-d)/(max(L-d,.02))；以均值方差效用比较保持/当前目标/细网格目标，扣精确成本后选择，只交易收益超过费用和buffer的动作。不是保证购买力底线的保险策略。",
+    "reuse": "复用frontier_v2的相同外层训练模型与历史候选指标/账本；新策略只引用其中训练内均值/协方差，新超参数仅在同样内层划分拟合选择。保存来源manifest/model哈希与原候选指标逐项一致核验。",
+    "promotion": "沿用原增长和风险路线条件；不根据外层修改门槛。",
+    "scope": "仅开发1–120；无报告/论文，无最终评价。",
+    "stopping_rule": "评完两组风险预算及固定对照，若不胜出则保留失败并以已验证的最佳增长/风险取舍作为开发结论，不把有限开发集反复试验当成独立证明。",
+    "holdout_used": false,
+    "finding": "平滑规则4.3118%/P90回撤38.6245%，固定gamma4对照4.6696%/43.1623%。相对Balanced尾部回撤下降5.4032个百分点，但增长与P10的调整区间未通过；不宣称晋级。",
+    "verification": "62项统一测试；35,640条路径及795,960条年度记录审计和独立市场重放通过，1080项标量参考计算；31个旧候选33,480条指标保持一致，最大差4.55e-13。"
+  },
+  {
+    "run": "development_cushion_v2",
+    "date": "2026-10-16",
+    "status": "verified_historical_development",
+    "purpose": "验证战略配置逆优化先验与较弱回撤反馈能否减少估计噪声、保留增长；不继续扩大网络。",
+    "informed_by": "已查看cushion_v1及此前开发结果，不是独立证据。",
+    "search_budget": {
+      "strategic_prior_weight": 1.0,
+      "risk_response_strength": 0.5,
+      "gamma_at_peak": 4.0,
+      "loss_budgets": [
+        0.4,
+        0.5
+      ],
+      "buffer": 0.0001,
+      "grid_step": 0.025,
+      "outer_folds": 5,
+      "inner_folds": 3
+    },
+    "method": "mu_prior=4 Sigma w_B + s*1，其中s保持Balanced训练预期收益；峰值下Balanced为摩擦前最优。gamma=4[1+0.5(L(1-d*)/(L-d*)-1)]，d*饱和在L-0.02。并非完整Black-Litterman模型，未把服务组合假设为市场组合。",
+    "reuse": "复用cushion_v1的相同外层训练模型，重新选择新动态规则；重新评价31个不受影响的旧候选并核验全部财务结果；两种cushion策略是新版本，不冒充旧结果一致。",
+    "promotion": "全部原增长/风险晋级条件保持；保留失败版本及历史hash。",
+    "stopping_rule": "完成这项结构变体后据全部开发证据确定最可靠方案；不得通过放宽标准或反复查看最终数据制造成功。",
+    "holdout_used": false,
+    "bootstrap_precision_check": "完成后固定用20000次整情景配对bootstrap复核H30官方及翻倍费用相对Balanced的全部候选，保留同样候选族大小，仅减少Monte Carlo端点误差，不增加独立数据，不据结果换种子。",
+    "finding": "锚定平滑规则4.3607%/P90回撤40.7583%，未优于已有MPC或首版更防御取舍。20000次bootstrap复核仍未通过完整晋级，增长非劣改善但P10和尾部区间未过。",
+    "verification": "63项统一测试；35640条路径、795960条年度记录及1080项参考独立重放通过；31旧候选财务指标一致，最大差4.55e-13。"
+  },
+  {
+    "run": "development_calibrated_v1",
+    "date": "2026-10-16",
+    "status": "current_verified_development",
+    "purpose": "补齐公平简单参照：将同初始Balanced、同细网格的经验均值方差成本门控按同一风险路线校准，而非只比较按增长效用选择的gamma3/8旧策略。",
+    "informed_by": "已查看此前开发结果；中间风险参数来自识别出的对照覆盖缺口，不构成独立证据。",
+    "search_budget": {
+      "gammas": [
+        4.0,
+        4.5,
+        5.0
+      ],
+      "buffer": 0.0001,
+      "grid_step": 0.025,
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "new_policies": [
+        "calibrated_fixed",
+        "calibrated_gate"
+      ]
+    },
+    "method": "calibrated_fixed固定gamma4；calibrated_gate仅在内层风险路线选择4/4.5/5。使用训练经验均值、协方差，不采用战略逆优化先验，不采用回撤反馈；保持同样精确成本及buffer。",
+    "reuse": "复用上一轮同外层训练模型；33个旧候选重新评价并核验一致，新的风险参数只在相同内层训练/验证边界选择。",
+    "promotion": "保留全部原增长/风险晋级条件；若最终仍无候选通过，明确保留不确定性，不能伪造分数或把不断试开发集当作独立成功。",
+    "scope": "仅开发，不准备报告/论文，不读取最终留出集。",
+    "holdout_used": false,
+    "finding": "简单风险校准4.2821%/P90回撤40.3133%，交易率41.95%；MPC仍是较高增长的风险取舍候选4.4068%/40.5324%，没有候选通过原严格多候选区间晋级。客户C可通过MPC开发风险诊断，不冒充冻结模型覆盖认证。",
+    "verification": "64项统一测试；37,800条期限路径、844,200条年度记录、1080项独立等权计算通过；33个旧候选35640条指标重算一致，最大差4.55e-13；50项训练预算独立重算全可行。"
   }
 ]

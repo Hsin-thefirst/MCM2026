@@ -24,6 +24,7 @@ def simulate(scenario, policy, initial_target, config):
     target = tuple(initial_target)
     inflation, peak, pending = 1., config.initial_wealth, False
     records = []
+    maximum_drawdown = 0.
     initial = None
     for t in range(1, config.horizon+1):
         o = scenario.observations[t-1]
@@ -32,7 +33,7 @@ def simulate(scenario, policy, initial_target, config):
         if not all(math.isfinite(x) and x > -1 for x in (*o.nominal_returns,o.inflation)):
             raise ValueError('Invalid market observation')
         ctx = PolicyContext(t,scenario.observations[:t-1],h,target,inflation,peak,pending,
-                            config.transaction_cost_rate)
+                            config.transaction_cost_rate, maximum_drawdown)
         if t == 1:
             decision = Decision(Action.REBALANCE,('INITIAL_ALLOCATION',),'Initial allocation.',target)
         elif pending:
@@ -62,6 +63,7 @@ def simulate(scenario, policy, initial_target, config):
             initial = trade
         # Include all fee-time marks in MDD/peak accounting, as well as annual marks.
         peak = max(peak,sum(h)/inflation)
+        maximum_drawdown = max(maximum_drawdown,1-sum(h)/inflation/peak)
         post = h
         h = tuple(x*(1+r) for x,r in zip(h,o.nominal_returns))
         inflation *= 1+o.inflation
@@ -69,6 +71,7 @@ def simulate(scenario, policy, initial_target, config):
         if not math.isfinite(wealth) or wealth <= 0:
             raise ValueError('Invalid wealth path')
         peak = max(peak,wealth)
+        maximum_drawdown = max(maximum_drawdown,1-wealth/peak)
         records.append(PeriodRecord(t,decision.action,target,pre,post,h,trade.moved_amount,
                                     trade.transaction_cost,inflation,wealth,pending,
                                     decision.reason_codes,decision.explanation,

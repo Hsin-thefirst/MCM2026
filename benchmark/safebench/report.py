@@ -16,7 +16,17 @@ LABELS={'equal_annual':'Equal weight / annual','equal_hold':'Equal weight / hold
  'balanced_hold':'Balanced / hold','balanced_periodic':'Balanced / 3-year','balanced_threshold':'Balanced / 5pp band',
  'minimum_variance':'Minimum variance','inverse_volatility':'Inverse volatility','mean_variance':'Mean variance',
  'cvar_constrained':'CVaR constrained','balanced_gate':'Balanced / cost gate','cost_aware':'Cost aware',
- 'adaptive':'Adaptive','adaptive_review':'Adaptive + review'}
+ 'adaptive':'Adaptive','adaptive_review':'Adaptive + review',
+ 'expert_defensive':'Defensive expert / cost gate','expert_greedy':'Greedy expert gate',
+ 'moe_supervised':'Neural expert gate / supervised','moe_rl':'Neural expert gate / RL ensemble',
+ 'moe_rl_static':'RL gate / no state',
+ 'frontier_annual':'Risk budget / annual','frontier_hold':'Risk budget / hold',
+ 'frontier_gate':'Risk budget / myopic gate','frontier_mpc':'Risk budget / scenario planner',
+ 'frontier_linear':'Scenario value / linear','frontier_neural':'Scenario value / neural ensemble',
+ 'frontier_matched_annual':'Matched planner / annual','frontier_matched_hold':'Matched planner / hold',
+ 'frontier_matched_gate':'Matched planner / myopic gate',
+ 'cushion_static':'Fine grid / fixed risk preference','cushion_gate':'Fine grid / drawdown cushion',
+ 'calibrated_fixed':'Empirical moments / gamma 4','calibrated_gate':'Risk-calibrated cost gate'}
 
 def generate_report(out):
     out=Path(out); figures=out/'figures'; figures.mkdir(exist_ok=True)
@@ -52,7 +62,8 @@ def generate_report(out):
     axes[0].set_yticks(range(len(chosen)),[LABELS[p] for p in chosen])
     fig.suptitle('Paired scenario bootstrap · pointwise 95% intervals\nExploratory OOF comparisons; fitted-model uncertainty excluded',fontsize=11)
     fig.tight_layout(); save(fig,'paired_intervals')
-    selected=[p for p in ['equal_annual','balanced_annual','balanced_hold','cost_aware','adaptive','adaptive_review'] if p in set(main.policy)]
+    selected=[p for p in ['equal_annual','balanced_annual','expert_greedy','moe_rl',
+        'frontier_annual','frontier_gate','frontier_mpc','frontier_linear','frontier_neural'] if p in set(main.policy)]
     fig,axes=plt.subplots(1,2,figsize=(11,4.5))
     for name in selected:
         g=summary[(summary.policy==name)&(summary.horizon==30)].sort_values('cost_rate')
@@ -67,6 +78,7 @@ def generate_report(out):
     fig,ax=plt.subplots(figsize=(10,4.8))
     for name in selected:
         g=records[(records.policy==name)&(records.scenario_id==severe)&np.isclose(records.cost_rate,config['cost_rate'])].sort_values('period')
+        if 'simulation_horizon' in g: g=g[g.simulation_horizon==30]
         ax.plot([0]+g.period.tolist(),[config['initial_wealth']]+g.real_wealth.tolist(),label=LABELS[name])
         alert=g[g.action=='human_review']
         if len(alert): ax.scatter(alert.period,alert.real_wealth,marker='X',s=90)
@@ -88,7 +100,8 @@ def generate_report(out):
     zh_names=dict(zip(LABELS, ['等权年度再平衡','等权买入持有','全持有票据',
         '保守年度再平衡','均衡年度再平衡','成长年度再平衡','均衡买入持有','均衡每三年再平衡',
         '均衡偏离5个百分点再平衡','最小方差','逆波动率','均值方差','CVaR约束配置',
-        '固定均衡成本门控','成本感知配置','自适应配置','自适应加人工复核']))
+        '固定均衡成本门控','成本感知配置','自适应配置','自适应加人工复核',
+        '防御专家成本门控','规则专家门控','神经专家门控（监督）','神经专家门控（RL三种子集成）','RL门控（无状态）']))
     display['policy']=display['policy'].map(zh_names)
     display['pareto']=display['pareto'].map({True:'是',False:'否'})
     display=display.rename(columns={'policy':'策略','median_growth':'中位实际CAGR','p10_growth':'P10增长',
@@ -112,6 +125,27 @@ def generate_report(out):
       'X 表示人工复核所在年份；此后资产继续漂移，没有虚构顾问干预。</p>'
       '<img src="figures/severe_path.png" alt="严重情景的实际财富路径">',
       '<h2>投资期限敏感性</h2><img src="figures/horizon_risk.png" alt="不同投资期限的回撤">']
+    if (out/'risk_promotion_screen.csv').exists():
+        risk=pd.read_csv(out/'risk_promotion_screen.csv')
+        risk=risk[risk.reference==config['expert_research']['primary_reference']].copy()
+        risk['policy']=risk.policy.map(zh_names)
+        for col in ['growth_difference','p90_difference']:
+            risk[col]=risk[col].map(lambda x:f'{100*x:+.2f}个百分点')
+        risk=risk.rename(columns={'policy':'策略','reference':'参照','practical_risk_reduction':'回撤下降≥3个百分点',
+            'risk_upper_negative':'风险区间上界<0','growth_noninferior':'增长损失区间合格',
+            'p10_noninferior':'P10增长区间合格','fold_stability':'至少4/5折下降',
+            'doubled_cost_robust':'费用翻倍合格','no_execution_fallback':'无执行回退',
+            'positive_folds':'回撤下降折数','growth_difference':'中位增长差','p90_difference':'P90回撤差','status':'结论'})
+        risk=risk.replace({'not_established':'尚未证明','investigate_for_promotion':'可继续晋级研究','balanced_annual':'均衡年度再平衡',True:'通过',False:'未通过'})
+        parts+=['<h2>专家模型：预声明风险路线</h2><p>相对均衡年度参照，要求P90回撤至少下降3个百分点，'
+                '中位年化增长损失不超过0.5个百分点、P10损失不超过0.2个百分点；同时检查配对区间、折间方向和双倍费用。'
+                '这是研究筛选，不是官方得分或部署批准。神经模型均为固定三种子概率集成，未选取最优种子。</p>',
+                risk.to_html(index=False,escape=True)]
+        seeds=pd.read_csv(out/'seed_summary.csv')
+        seed_display=seeds[['policy','median_growth','p10_growth','p90_loss','mean_trade_rate']].copy()
+        for col in seed_display.columns[1:]: seed_display[col]=seed_display[col].map(lambda x:f'{100*x:.2f}%')
+        seed_display.columns=['RL训练种子编号','中位实际CAGR','P10增长','P90回撤','后续交易率']
+        parts+=['<h2>训练种子稳定性</h2><p>各种子使用同一个内层选出的风险惩罚；这些结果不参与种子挑选。</p>',seed_display.to_html(index=False)]
     if (out/'suitability.csv').exists():
         suitability=pd.read_csv(out/'suitability.csv')
         suitability['portfolio']=suitability['portfolio'].replace({'conservative':'保守','balanced':'均衡','growth':'成长','human_review':'人工复核'})
@@ -123,7 +157,7 @@ def generate_report(out):
         suitability=suitability.rename(columns={'profile_id':'客户','horizon':'期限（年）','loss_tolerance':'损失容忍度',
             'liquidity':'流动性需要','portfolio':'组合/动作','explanation':'说明',
             'final_breach_probability':'最终越界概率','final_median_growth':'最终中位增长'})
-        parts+=['<h2>客户入门适配示例</h2><p>对固定组合使用同时的一侧风险界。高流动性只考虑保守组合，'
+        parts+=['<h2>客户入门适配示例</h2><p>固定策略的一侧风险界以独立情景为前提；学习策略的折外界仅为诊断，不能认证冻结模型的覆盖率。均衡客户按表中实际策略评价。高流动性只考虑保守组合，'
                 '成长组合至少需要15年。容忍度是客户回答，不是保证；20%越界概率筛选是研究假设。</p>',
                 suitability.to_html(index=False,escape=True)]
     method_link=html.escape(os.path.relpath(ROOT/'docs/METHODOLOGY.md',out),quote=True)

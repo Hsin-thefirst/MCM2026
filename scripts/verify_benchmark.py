@@ -51,7 +51,8 @@ for s in scenarios:
 weights=r[[f'post_trade_holdings_{a}' for a in ['equity','bond','bill']]].to_numpy()
 weights=weights/weights.sum(axis=1,keepdims=True)
 for i,a in enumerate(['equity','bond','bill']): r[a+'_exposure']=weights[:,i]
-r.groupby(['policy','cost_rate'])[['equity_exposure','bond_exposure','bill_exposure']].mean().to_csv(out/'allocation_exposure.csv')
+group_keys=['policy','cost_rate']+(['simulation_horizon'] if 'simulation_horizon' in r else [])
+r.groupby(group_keys)[['equity_exposure','bond_exposure','bill_exposure']].mean().to_csv(out/'allocation_exposure.csv')
 result=dict(all_checks_passed=True,market_rows_replayed=len(r),max_holding_discrepancy=max_error,
             independently_computed_reference_metrics=checks,holdout_used=False,
             scope='All saved return transitions and cumulative inflation; scalar independent equal-weight recurrence for every cost/horizon/scenario.')

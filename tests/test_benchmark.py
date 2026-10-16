@@ -184,7 +184,8 @@ class FinalWorkflowTests(unittest.TestCase):
                 f.write('scenario_id,period,equity_return,bond_return,bill_proxy_return,inflation\n')
                 for sid in range(1,181):
                     for t in range(1,31): f.write(f'{sid},{t},0,0,0,0\n')
-            config=dict(CONFIG,inner_folds=2,tuning_grid=[CONFIG['tuning_grid'][0]],bootstrap=50,sensitivity_costs=[.005])
+            config=dict(CONFIG,inner_folds=2,tuning_grid=[CONFIG['tuning_grid'][0]],bootstrap=50,
+                        sensitivity_costs=[.005],expert_research={'enabled':False},frontier_research={'enabled':False},cushion_research={'enabled':False},calibrated_research={'enabled':False})
             _,sha=load_partition(data)
             (dev/'manifest.json').write_text(json.dumps(manifest(config,sha,list(range(1,121)),'development')))
             pd.DataFrame([dict(profile_id='A',horizon=5,loss_tolerance=.1,liquidity='high',portfolio='human_review',explanation='fixture')]).to_csv(dev/'suitability.csv',index=False)

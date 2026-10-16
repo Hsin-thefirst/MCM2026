@@ -46,10 +46,14 @@ def fit_model(scenarios,config):
         raise RuntimeError('CVaR cap infeasible on declared grid; no silent fallback')
     index=int(np.argmax(np.where(feasible,weights@mu,-np.inf)))
     inv=1/np.sqrt(np.diag(cov)); inv/=inv.sum()
-    return dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
+    model = dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
                 minvar=optimize(mu,cov,minimum_variance=True),inverse_vol=tuple(inv),
                 meanvar=optimize(mu,cov,gamma=config['fixed_gamma']),cvar=tuple(weights[index]),
                 cvar_feasible=bool(feasible.any()),cvar_estimate=float(tails[index]))
+    from .frontier import enabled, fit_frontier
+    if enabled(config):
+        model['frontier'] = fit_frontier(scenarios, config)
+    return model
 
 @dataclass
 class StaticPolicy:
@@ -117,7 +121,16 @@ POLICY_NAMES=['equal_annual','equal_hold','bills_hold','conservative_annual','ba
               'balanced_hold','balanced_periodic','balanced_threshold','minimum_variance','inverse_volatility',
               'mean_variance','cvar_constrained','balanced_gate','cost_aware','adaptive','adaptive_review']
 
-def make_policy(name,model,params,config):
+def make_policy(name,model,params,config,horizon=None):
+    from .cushion import CUSHION_NAMES,CALIBRATED_NAMES,CushionPolicy
+    if name in CUSHION_NAMES+CALIBRATED_NAMES:
+        return CushionPolicy(name,model,params,config,horizon)
+    from .frontier import FRONTIER_NAMES, MATCHED_NAMES, FrontierPolicy
+    if name in FRONTIER_NAMES+MATCHED_NAMES:
+        return FrontierPolicy(name,model,params,config,horizon)
+    from .experts import EXPERT_NAMES, SEED_NAMES, ExpertPolicy
+    if name in EXPERT_NAMES or name in SEED_NAMES:
+        return ExpertPolicy(name,model,params,config,horizon)
     fixed={'equal_annual':(EQUAL,'annual'),'equal_hold':(EQUAL,'hold'),'bills_hold':((0.,0.,1.),'hold'),
            **{p+'_annual':(w,'annual') for p,w in PORTFOLIOS.items()},
            'balanced_hold':(PORTFOLIOS['balanced'],'hold'),'balanced_periodic':(PORTFOLIOS['balanced'],'periodic'),
