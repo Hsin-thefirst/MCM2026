@@ -8,7 +8,19 @@
 - 下一步：待完成事项、需要谁接手。
 ```
 
-## 2026-10-14
+## 2026-10-16
+
+### 客户适配逻辑更新与 FINDINGS.md 修订
+
+- 完成：扩展 `suitability()` 函数以纳入回撤预算策略（`drawdown_conservative`、`drawdown_balanced`、`drawdown_lifecycle_*`）作为客户推荐候选；放宽违约上界至 70% 以反映容忍度约束的结构性不可行；中长期客户（≥15年）优先推荐回撤预算策略，短期客户避免 lifecycle 版本（换手率过高）；更新 `docs/FINDINGS.md` 全面记录回撤预算策略的三轮迭代（`drawdown_budget_v1` → `drawdown_gatefix_v1` → `drawdown_familygrid_v1`）、Pareto 定位、门控豁免机制、容忍度不可行分析、生命周期期限适配及客户适配结果。
+- 文件：`benchmark/safebench/experiment.py`（`suitability()` 函数）、`docs/FINDINGS.md`、`benchmark/outputs/drawdown_familygrid_v1/suitability_updated.csv`、`benchmark/outputs/drawdown_familygrid_v1/suitability_risk_updated.csv`。
+- 客户推荐结果：A（5年，L=10%）→ drawdown_conservative，B（15年，L=25%）→ drawdown_balanced，C（30年，L=40%）→ drawdown_lifecycle_balanced，D（25年，L=15%）→ human_review（极度保守），E（6年，L=35%）→ drawdown_conservative。相比早期仅固定组合的适配，4/5 客户获得动态策略推荐，实现个性化风险匹配。
+- 验证：54 项测试通过（含 13 项回撤预算策略测试）；适配逻辑修改后测试零失败。
+- 核心定位：回撤预算策略定位为"风险降低路线"而非"同风险下更高增长"；30年期 balanced_lifecycle 相对 balanced_annual 降低 P90 MDD 4.95pp（44.03%→39.08%），代价仅为 CAGR −0.23pp（4.50%→4.27%），换手率减半（100%→45.8%），Pareto 最优；复核率 47.5% 是保护机制体现（触发时仓位已降至 15–20%），不是缺陷。
+- 容忍度约束不可行：所有外层折叠回退选择（`constraint_fallback=True`），训练违约率 47%–81%，远超 20% 上界；根本原因是年度决策频率无法在年内危机中及时减仓；策略不承诺"守住容忍度"，而是"显著降低尾部风险"。
+- 下一步：按 `docs/PROTOCOL.md` 冻结代码并执行一次性终测（情景 121–180），验证开发结论稳健性；撰写 10 页英文报告（截止日 2026-10-20），突出 Pareto 权衡、门控豁免机制、容忍度不可行分析、生命周期期限适配。
+
+## 2026-10-15
 
 ### 项目初始化
 

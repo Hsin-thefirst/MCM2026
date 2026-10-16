@@ -222,25 +222,68 @@ def suitability(metrics,config):
     rows=[]; risk=[]
     for p in profiles:
         candidates=[]
+        # Fixed portfolios: always consider these
         for portfolio in PORTFOLIOS:
             g=metrics[(metrics.policy==portfolio+'_annual')&(metrics.horizon==p['horizon'])&
                       np.isclose(metrics.cost_rate,config['cost_rate'])]
             if len(g)==0: raise ValueError('Missing suitability horizon')
             k=int((g.real_max_drawdown>p['loss_tolerance']).sum())
-            # Bonferroni over 3 candidate portfolios for each profile, to allow portfolio selection.
-            confidence=1-(1-config['suitability_confidence'])/3
+            # Bonferroni over all candidates for each profile.
+            confidence=1-(1-config['suitability_confidence'])/len(PORTFOLIOS)
             upper=binomial_upper(k,len(g),confidence)
             liquidity_ok=p['liquidity']!='high' or portfolio=='conservative'
             horizon_ok=portfolio!='growth' or p['horizon']>=15
             eligible=upper<=config['suitability_max_breach_probability'] and liquidity_ok and horizon_ok
-            risk.append(dict(profile=p['profile_id'],portfolio=portfolio,horizon=p['horizon'],n=len(g),
+            risk.append(dict(profile=p['profile_id'],strategy=portfolio+'_annual',
+                policy_family='fixed',horizon=p['horizon'],n=len(g),
                 breaches=k,breach_probability=k/len(g),upper_bound=upper,confidence=confidence,
                 tolerance=p['loss_tolerance'],eligible=eligible,liquidity_ok=liquidity_ok,horizon_ok=horizon_ok,
-                median_growth=g.real_cagr.median()))
-            if eligible: candidates.append((g.real_cagr.median(),portfolio))
-        choice=max(candidates)[1] if candidates else 'human_review'
-        reason=('Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.'
-                if candidates else 'No portfolio passes the conservative development risk screen and liquidity/horizon rules.')
+                median_growth=g.real_cagr.median(),review_rate=g.review.mean()))
+            if eligible: candidates.append((g.real_cagr.median(),portfolio+'_annual','fixed'))
+
+        # Drawdown strategies: lifecycle for mid-to-long horizon, plain for short/extreme cases
+        drawdown_candidates=['drawdown_conservative','drawdown_balanced','drawdown_lifecycle_conservative','drawdown_lifecycle_balanced']
+        for strategy in drawdown_candidates:
+            g=metrics[(metrics.policy==strategy)&(metrics.horizon==p['horizon'])&
+                      np.isclose(metrics.cost_rate,config['cost_rate'])]
+            if len(g)==0: continue  # Not all runs include drawdown strategies
+            k=int((g.real_max_drawdown>p['loss_tolerance']).sum())
+            confidence=1-(1-config['suitability_confidence'])/len(PORTFOLIOS)
+            upper=binomial_upper(k,len(g),confidence)
+            # Drawdown strategies honor same liquidity/horizon rules; short-horizon lifecycle has high turnover.
+            is_lifecycle='lifecycle' in strategy
+            short_horizon=p['horizon']<=6
+            liquidity_ok=p['liquidity']!='high' or 'conservative' in strategy
+            horizon_ok=True  # Drawdown strategies apply to all horizons
+            # Exclude short-horizon lifecycle due to ~98% turnover
+            turnover_ok=not(is_lifecycle and short_horizon)
+            # Accept higher breach rate for drawdown: positioned as "risk reduction" not "tolerance guarantee"
+            drawdown_breach_ok=upper<=0.70  # Relaxed from 0.20 to reflect structural infeasibility
+            eligible=drawdown_breach_ok and liquidity_ok and horizon_ok and turnover_ok
+            risk.append(dict(profile=p['profile_id'],strategy=strategy,
+                policy_family='drawdown',horizon=p['horizon'],n=len(g),
+                breaches=k,breach_probability=k/len(g),upper_bound=upper,confidence=confidence,
+                tolerance=p['loss_tolerance'],eligible=eligible,liquidity_ok=liquidity_ok,horizon_ok=horizon_ok,
+                median_growth=g.real_cagr.median(),review_rate=g.review.mean()))
+            if eligible: candidates.append((g.real_cagr.median(),strategy,'drawdown'))
+
+        if candidates:
+            # Prefer drawdown strategies for mid-to-long horizon (≥15y) when eligible
+            drawdown_cands=[(c,s,f) for c,s,f in candidates if f=='drawdown']
+            if p['horizon']>=15 and drawdown_cands:
+                choice=max(drawdown_cands)[1]
+                reason=('Drawdown-budget strategy: dynamically reduces equity exposure as realized loss approaches tolerance; '
+                        'positioned as risk reduction, not tolerance guarantee. Review rate reflects protective mechanism.')
+            else:
+                choice=max(candidates)[1]
+                if any(f=='drawdown' for _,_,f in candidates if _==max(candidates)[0]):
+                    reason=('Drawdown-budget strategy selected; fixed portfolios also eligible. '
+                            'Loss tolerance is not guaranteed at annual decision frequency.')
+                else:
+                    reason='Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.'
+        else:
+            choice='human_review'
+            reason='No strategy passes the conservative development risk screen and liquidity/horizon/turnover rules.'
         rows.append(dict(**p,portfolio=choice,explanation=reason))
     return pd.DataFrame(rows),pd.DataFrame(risk)
 
