@@ -1,0 +1,18 @@
+{
+  "source_run": "benchmark/outputs/development_submission_v1",
+  "policies": ["fusion_mpc", "fusion_drawdown", "fusion_lifecycle"],
+  "horizons": [5, 6, 15, 25, 30],
+  "costs": [0.0025, 0.005],
+  "drawdown_penalty": 0.03,
+  "risk_barrier": 0.5,
+  "risk_slack": 0.01,
+  "move_cap": 0.1,
+  "loss_budget": 0.25,
+  "equity_floor": 0.15,
+  "curvature": 1.0,
+  "lifecycle_scale": 25.0,
+  "seed": 20261018,
+  "bootstrap": 4000,
+  "cai_commit": "f16a8aa",
+  "mpc_commit": "967c8a9"
+}

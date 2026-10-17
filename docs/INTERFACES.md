@@ -147,3 +147,11 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 `scripts/verify_submission.py <development_run>`独立重建全部8规则×5期限×5外折的选择约束、一标准误、旧A/C1金融结果及限幅/净价值/回撤记忆，并复拟合训练信号。`scripts/verify_saved_final.py <final_run>`仅从保存账本复核最终核算和冻结客户分配，不重读市场数据。`scripts/package_submission.py --development-run ... --bundle ... --final-run ... --out ...`在核验通过后打包源码和数值证据，检查50MB上限及逐文件hash；详见[提交与复现](SUBMISSION.md)。
 
 开发目录中的`suitability.csv`为配置默认研究候选的映射；依据预声明采用决定另外保存`selected_suitability.csv`、`selected_suitability_risk.csv`作为实际提交候选诊断。正式冻结仍用实际策略ID重算，冻结包的`frozen_suitability`是最终客户分配依据；最终输出只追加评价，不重新推荐。
+
+## 跨分支融合研究（2026-10-17）
+
+`scripts/run_fusion_research.py --out benchmark/outputs/<新目录>`读取`configs/fusion_research.json`，复用已保存的五折A模型和内层选参，仅评价开发1–120。`scripts/fusion_policy.py`提供三个研究策略：A锚加持有延续MPC、追加Cai回撤动作、追加Cai期限缩放回撤动作。初始配置、复核规则、收益成本门槛与原A一致；所有后续候选动作先限搬动比例10%，再计算训练情景同年度后缀的含费对数增长、尾部回撤和风险屏障。期限缩放使用客户原始H/25，不是剩余年限；它只改变新增动作，不改初始配置。
+
+研究脚本独立于正式策略工厂，不能据此直接冻结/最终评价。它保存完整年度账本、五期限两费用指标、配对区间和独立标量核验；复现A共同1200条指标。`manifest.json`记录训练来源hash、脚本hash、设置以及最终集已暴露的事实，不能称为新的独立确认。客户映射不改变，也不移植Cai分支的成本豁免或风险筛选放宽。原冻结包/最终锁和核心源码hash保持不变。
+
+`scripts/summarize_fusion.py <run>`只读取已保存指标/账本，生成`screen.csv`与`action_counts.csv`，拒绝覆盖；沿用既有增长/风险筛选阈值，保存逐条件布尔值、折间方向与双倍费用差。筛选不包含新客户采用认证，不构成提交自动选择。

@@ -674,5 +674,37 @@
     },
     "purpose": "交付冻结金融v1的可复现源码ZIP；补齐历史数值参照及题目PDF，原样复制赛题数据，不做新分析。",
     "stopping_rule_satisfied": true
+  },
+  {
+    "run": "development_fusion_v1",
+    "date": "2026-10-17",
+    "status": "completed_exploratory_no_adoption",
+    "purpose": "按用户授权审查Cai与MPC并固定三条融合规则，最终暴露后的探索性开发，不替代冻结提交。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "config": "configs/fusion_research.json",
+    "source_commits": {
+      "Cai": "f16a8aa",
+      "mpc": "967c8a9",
+      "submission": "7b76cc2"
+    },
+    "search_budget": "3固定规则×5外折×120总开发情景×5期限×2费用；复用原OOF A模型和内层选参，无新增参数搜索。另重放A1200条作一致性核验。",
+    "selection": "全部报告，不用外折结果改选正式候选。MPC惩罚0.03/屏障0.5/松弛0.01沿用来源；Cai预算0.25/k1/最低权益0.15/期限25年。",
+    "changes": "相同A初始配置；Cai仅新增动作、非权益比例沿用A；MPC用训练同年后缀并计入初次扣费峰值和历史最大回撤；所有动作10%限幅和原成本门槛；不移植豁免或70%客户线。",
+    "stopping_rule": "本批完成即汇总，失败不增搜。新模型需新的独立数据验证。",
+    "verification": {
+      "annual_records": 77760,
+      "benefit_gate_checks": 47008,
+      "cap_checks": 37711,
+      "evaluated_paths": 4800,
+      "final_lock_and_bundle_unchanged": true,
+      "maximum_scalar_error": 5.684341886080801e-13,
+      "original_a_matched_rows": 1200,
+      "passed": true,
+      "seconds": 54.383544679993065
+    },
+    "tests_passed": 78,
+    "finding": "三个融合候选五期限对A均未通过原筛选；H30回撤融合4.3244%增长/40.4352% P90、交易70.63%，实际费用较A增加51.6%；保留原提交。",
+    "stopping_rule_satisfied": true
   }
 ]
