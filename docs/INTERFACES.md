@@ -143,3 +143,5 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 客户主规则读取`submission.balanced_policy`。高流动性采用公开战略目标最低bills比例0.4作为代理，不能声称满足未知提款或保证实际持仓下限。增长产品H>=15限制不变。实际执行P90风险次序反转时转人工；推荐同时检查官方与双倍费用的容忍度越界上界。家族大小440事前固定，覆盖5客户×11种唯一产品/程序×4种流动性口径×2种费用，不在选择后缩减；这些OOF二项上界仍仅为诊断。`customer_rule_sensitivity.csv`和`customer_candidate_risk.csv`保存原标签限制及0.4/0.2/0.3目标比例的全部诊断，不据其收益选择阈值。
 
 `submission_comparisons.csv`、`submission_screen.csv`保存全部匹配比较与原增长/风险晋级条件；`submission_decision.json`按预声明规则只在内层选择程序与校准A之间确定拟提交版本，不从外层逐个挑战者中挑赢家。冻结沿用该实际策略ID，保留全部已完成开发的扩展参照，最终客户分配不重选。报告生成继续关闭。
+
+`scripts/verify_submission.py <development_run>`独立重建全部8规则×5期限×5外折的选择约束、一标准误、旧A/C1金融结果及限幅/净价值/回撤记忆，并复拟合训练信号。`scripts/verify_saved_final.py <final_run>`仅从保存账本复核最终核算和冻结客户分配，不重读市场数据。`scripts/package_submission.py --development-run ... --bundle ... --final-run ... --out ...`在核验通过后打包源码和数值证据，检查50MB上限及逐文件hash；详见[提交与复现](SUBMISSION.md)。
