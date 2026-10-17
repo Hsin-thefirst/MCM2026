@@ -588,16 +588,21 @@
   {
     "run": "final_submission_v1",
     "date": "2026-10-17",
-    "status": "registered_before_execution",
+    "status": "final_lock_claimed_evaluation_running",
     "phase": "final",
     "config": "configs/submission.json",
     "development_run": "development_submission_v1",
     "selected_policy": "plan_a_balanced",
     "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
-    "holdout_used": false,
+    "holdout_used": true,
     "purpose": "执行已批准的冻结与一次性最终评价；开发选型已终止，不再调整金融程序。",
     "search_budget": "无新增搜索；全120内层选择与重拟合是固定程序，最终只评价121–180。",
     "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。",
-    "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5"
+    "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+    "evaluation_lock": {
+      "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+      "started": "2026-10-17T09:34:44.220225+00:00"
+    },
+    "no_further_financial_tuning": true
   }
 ]
