@@ -45,6 +45,9 @@ def comparisons_and_screen(out,config):
     pd.DataFrame(screens).to_csv(out/'promotion_screen.csv',index=False)
     from .extensions import extension_comparisons
     extension_comparisons(out,config)
+    if config.get('submission',{}).get('enabled'):
+        from .submission_analysis import comparisons_and_screen as submission_screen
+        submission_screen(out,config)
     if config.get('plan_a',{}).get('enabled') and 'plan_a_balanced' in set(main.policy):
         settings=config['plan_a']['risk_promotion']; risk_screens=[]
         high=metrics[(metrics.horizon==30)&np.isclose(metrics.cost_rate,.005)]
@@ -84,9 +87,10 @@ def audit_outputs(out):
         m=m.merge(lengths,on=['policy','scenario_id','cost_rate'],validate='many_to_one')
     assert not r.duplicated(['policy','scenario_id','period','cost_rate','simulation_horizon']).any()
     if 'evaluated_policies' in manifest:
+        from .experiment import evaluation_schedule
         expected_keys={(p,s,h,cost) for p in manifest['evaluated_policies'] for s in expected
-                       for cost in [c['cost_rate']]+c['sensitivity_costs']
-                       for h in (c['horizons'] if cost==c['cost_rate'] else [30])
+                       for cost,horizons in evaluation_schedule(c)
+                       for h in horizons
                        if not p.startswith('plan_c_') or h in c.get('plan_c',{}).get('evaluation_horizons',c['horizons'])}
         assert set(m[['policy','scenario_id','horizon','cost_rate']].itertuples(index=False,name=None))==expected_keys
     audit_paths=0; maximum_error=0.

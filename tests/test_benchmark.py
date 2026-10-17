@@ -209,6 +209,14 @@ class FinalWorkflowTests(unittest.TestCase):
                 freeze(extended,data,'plan_b_narrow',root/'signal_mapping_check.json',dev)
                 self.assertEqual(mapped.call_args.args[2]['balanced'],'plan_b_narrow')
                 self.assertIn('plan_b_narrow_0',json.loads((root/'signal_mapping_check.json').read_text())['final_comparators'])
+            submission_config=dict(extended,submission=dict(enabled=True,balanced_policy='submission_selected'))
+            (dev/'manifest.json').write_text(json.dumps(manifest(submission_config,sha,list(range(1,121)),'development')))
+            with patch('safebench.experiment.tune',return_value=(snapshot['params'],[],[])), \
+                 patch('safebench.experiment.fit_model',return_value=snapshot['model']), \
+                 patch('safebench.experiment.suitability',return_value=(pd.DataFrame(snapshot['frozen_suitability']),None)) as mapped:
+                freeze(submission_config,data,'submission_selected',root/'submission_mapping_check.json',dev)
+                self.assertEqual(mapped.call_args.args[2]['balanced'],'submission_selected')
+                self.assertIn('submission_c_cap10',json.loads((root/'submission_mapping_check.json').read_text())['final_comparators'])
             screened=dict(extended,plan_c=dict(enabled=True,evaluation_horizons=[30]))
             (dev/'manifest.json').write_text(json.dumps(manifest(screened,sha,list(range(1,121)),'development')))
             with patch('safebench.experiment.tune',return_value=(snapshot['params'],[],[])), \

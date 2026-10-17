@@ -53,11 +53,11 @@ def fit_model(scenarios,config):
     from .plan_a import enabled, fit_plan_a
     if enabled(config):
         model['plan_a'] = fit_plan_a(scenarios, config)
-    from . import plan_b, plan_c
-    if plan_b.enabled(config):
+    from . import plan_b, plan_c, submission
+    if plan_b.enabled(config) or submission.enabled(config):
         from .signals import fit_signals
         model['signals'] = fit_signals(scenarios)
-    if plan_c.enabled(config): model['scenario_control'] = plan_c.fit_control(scenarios, config)
+    if plan_c.enabled(config) or submission.enabled(config): model['scenario_control'] = plan_c.fit_control(scenarios, config)
     return model
 
 @dataclass
@@ -128,11 +128,14 @@ POLICY_NAMES=['equal_annual','equal_hold','bills_hold','conservative_annual','ba
 
 def policy_names(config):
     from .plan_a import enabled, POLICIES
-    from . import plan_b, plan_c
-    return POLICY_NAMES + (POLICIES if enabled(config) else []) + (plan_b.POLICIES if plan_b.enabled(config) else []) + (plan_c.POLICIES if plan_c.enabled(config) else [])
+    from . import plan_b, plan_c, submission
+    return POLICY_NAMES + (POLICIES if enabled(config) else []) + (plan_b.POLICIES if plan_b.enabled(config) else []) + (plan_c.POLICIES if plan_c.enabled(config) else []) + (submission.POLICIES if submission.enabled(config) else [])
 
 
 def make_policy(name,model,params,config,horizon=None):
+    from . import submission
+    if name in submission.POLICIES:
+        return submission.make_submission_policy(name,model,params,config,horizon)
     from .plan_a import POLICIES, PlanAPolicy
     if name in POLICIES:
         return PlanAPolicy(name, model, params, config, horizon)

@@ -131,3 +131,15 @@ CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为
 
 
 B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A“向锚配置靠拢”的说明，因为新动作可能离开A锚；短历史/异常回退及窄动作eta0继续原样复用A决策。该修正只改变解释文本，须以新源码hash另存运行并核对金融指标一致。
+
+## 面向提交的执行扩展（2026-10-17）
+
+`configs/submission.json`继承统一输入，开启`submission.enabled`，保留原25策略并新增8个策略ID，共33个。`submission.py`的`BASE_RULES`包含原A与7条执行挑战，另有`submission_selected`在内层选择；复杂度顺序固定。A参数先按原程序选择，全执行族共享，不增加笛卡尔参数搜索。`tuning_trials.csv`记录8条规则的全部约束/分数/一标准误，`splits.json`的每个内层条目保存`submission_validation_metrics`供独立重建。无合格者回退A并标记`execution_selection_feasible=false`。
+
+`make_submission_policy(name,model,params,config,horizon)`构造期限相关策略。S1保留原五点并加入`continuous_fraction(c,q,f)`，对每个候选先筛费用门槛；S2固定0.05偏离带并对到边界动作执行同一门槛。限幅C一步在`rollout`规划动作阶段以`move_cap`限制搬动比例，当前费用/风险/续接均用限制后的目标重新计算；后续A续接不改动，初次建仓不受限。B长组采用原窄动作Ridge，H<=6零倾斜，其他正式期限分别0.25/0.5。所有新策略保留英文客户说明及原人工复核机制。
+
+`evaluation_schedule(config)`返回费用及对应期限。新增`customer_stress_costs=[0.005]`使双倍费用也覆盖全部五个客户期限，默认旧配置行为不变；开发、最终及审计使用同一日程。新增指标`execution_rule`为实际执行规则，`strategic_bill_min`为公开战略目标集的最低bills比例（C同时含A锚及防御目标），不是路径实际持仓下限。
+
+客户主规则读取`submission.balanced_policy`。高流动性采用公开战略目标最低bills比例0.4作为代理，不能声称满足未知提款或保证实际持仓下限。增长产品H>=15限制不变。实际执行P90风险次序反转时转人工；推荐同时检查官方与双倍费用的容忍度越界上界。家族大小440事前固定，覆盖5客户×11种唯一产品/程序×4种流动性口径×2种费用，不在选择后缩减；这些OOF二项上界仍仅为诊断。`customer_rule_sensitivity.csv`和`customer_candidate_risk.csv`保存原标签限制及0.4/0.2/0.3目标比例的全部诊断，不据其收益选择阈值。
+
+`submission_comparisons.csv`、`submission_screen.csv`保存全部匹配比较与原增长/风险晋级条件；`submission_decision.json`按预声明规则只在内层选择程序与校准A之间确定拟提交版本，不从外层逐个挑战者中挑赢家。冻结沿用该实际策略ID，保留全部已完成开发的扩展参照，最终客户分配不重选。报告生成继续关闭。

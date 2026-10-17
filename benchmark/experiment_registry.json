@@ -366,5 +366,59 @@
     },
     "finding": "与v1/v2金融指标完全一致；B两个所选动作族未晋级，C三步对一步主比较未晋级，按停止规则不扩展全期限。",
     "stopping_rule_satisfied": true
+  },
+  {
+    "run": "analysis_bc_report_20261017_v1",
+    "date": "2026-10-17",
+    "status": "completed_inline_analysis_report_cancelled",
+    "holdout_used": false,
+    "purpose": "按用户要求分析已完成B/C，并制作可查看的数据报告；仅处理已保存开发输出。",
+    "search_budget": "不训练、不新增候选、不重选参数。复算已存汇总、折统计及预测诊断；新增费用幅度与暴露描述。",
+    "selection": "保持预声明主比较和晋级标准；派生分析不用于事后改选。",
+    "stopping_rule": "完成来源hash、汇总复算、共享策略去重、报告构建和可执行展示核验后交付；真实最终集继续封存。",
+    "finding": "用户取消报告交付；仅从保存结果计算并直接展示数据，派生CSV/JSON保留，不训练或使用最终集。"
+  },
+  {
+    "run": "development_submission_v1",
+    "date": "2026-10-17",
+    "status": "registered_before_run",
+    "config": "configs/submission.json",
+    "holdout_used": false,
+    "purpose": "执行用户批准的有限优化计划，形成可冻结提交程序；报告和论文继续暂停。",
+    "search_budget": {
+      "base_execution_rules": [
+        "plan_a_balanced",
+        "submission_a_continuous",
+        "submission_a_band",
+        "submission_c_full",
+        "submission_c_cap10",
+        "submission_c_cap20",
+        "submission_b_long025",
+        "submission_b_long05"
+      ],
+      "nested_selector": "submission_selected",
+      "total_evaluated_policies": 33,
+      "a_parameters": "原0.75/0.85/0.95×gamma4/12先选择并共享，不额外做执行规则×A参数搜索",
+      "new_hyperparameters": "无额外搜索；band0.05，cap0.10/0.20，Ridge/特征不变，B短组eta0/长组0.25或0.5，kappa1/深度1。"
+    },
+    "selection": "外层5/内层3，内层先按原A程序确定参数，再以实际执行风险/同锚年度增长和P10/复核限制筛8规则，配对整情景一标准误优先简单；无合格者回退A并明确失败。",
+    "adoption": "仅S8可替代A：相对A过增长或风险原路线，且相对Balanced年度过增长路线，或相对Balanced年度及同锚年度同时过风险路线；五期限产品风险次序有效。否则保留A，不能外层挑单个挑战者。",
+    "customer_assumptions": {
+      "family_size": 440,
+      "family_scope": "5客户×11唯一产品程序×4流动性口径×2费用",
+      "maximum_breach_probability": 0.2,
+      "confidence": 0.95,
+      "primary_liquidity": "最低公开战略目标bills比例0.4",
+      "sensitivity_only": [
+        0.2,
+        0.3,
+        "legacy"
+      ],
+      "growth_minimum_horizon": 15,
+      "stress_cost": 0.005
+    },
+    "evaluation": "五期限官方/双倍费用；H30其余0/0.125%/1%费用；原25策略与同锚对照全部保留。",
+    "stopping_rule": "完成一批与独立核验后结束搜索；未通过晋级则保留A。只修复实现错误并记录，不增候选。开发结束后冻结、最终一次性评价，之后不调参。",
+    "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14"
   }
 ]

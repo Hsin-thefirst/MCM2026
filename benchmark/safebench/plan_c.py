@@ -64,6 +64,11 @@ def rollout(policy, c, depth, kappa):
                       np.where(kind == 2, policy.anchor, policy.defensive)))
         else:
             target = advice
+        cap = getattr(policy, 'move_cap', None)
+        if cap is not None and step < depth:
+            moved = .5*np.abs(target-current).sum(axis=-1)
+            scale = np.minimum(1., cap/np.maximum(moved, np.finfo(float).tiny))
+            target = current+scale[..., None]*(target-current)
         target = np.where(pending[..., None], current, target)
         fraction = c.transaction_cost_rate*.5*np.abs(target-current).sum(axis=-1)
         if step == 0:
@@ -116,6 +121,8 @@ class PlanCPolicy(PlanAPolicy):
             mean_future_cost_fraction_sum=float(result['future_cost'][winner]),
             historic_max_drawdown=c.historical_max_drawdown,
             first_action_values=[float(np.max(j[seq[:, 0] == a])) for a in range(4)])
+        if getattr(self, 'move_cap', None) is not None:
+            self.last_diagnostics['move_cap'] = self.move_cap
         if seq[winner, 0] == 0 or benefit <= cost+self.buffer:
             return Decision(Action.KEEP, ('PLAN_C_BELOW_COST',), 'The projected net improvement does not cover the safety margin. Hold the existing investments.', estimated_benefit=benefit, estimated_cost=cost)
         decision = self._trade(c, result['targets'][winner], benefit, cost, 'PLAN_C_NET_PATH_VALUE')

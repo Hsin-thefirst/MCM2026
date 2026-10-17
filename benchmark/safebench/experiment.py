@@ -16,7 +16,7 @@ from .data import load_partition, folds, real_rows
 from .engine import simulate
 from .metrics import compute_metrics, summarize, paired_comparisons, pareto_flags, binomial_upper, expected_shortfall
 from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS, policy_names
-from . import plan_a, plan_b, plan_c
+from . import plan_a, plan_b, plan_c, submission
 
 BASE=ROOT/'benchmark'
 TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review')
@@ -41,13 +41,18 @@ def manifest(config,data_hash,ids,phase,names=None):
                 git_commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True).stdout.strip(),
                 holdout_used=phase=='final',evaluated_policies=names or policy_names(config))
 
+def evaluation_schedule(config):
+    return [(config['cost_rate'], config['horizons'])]+[
+        (cost, config['horizons'] if cost in config.get('customer_stress_costs', []) else [30])
+        for cost in config['sensitivity_costs']]
+
 def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fold=0,keep_records=True):
     names=names or policy_names(config)
     cost=config['cost_rate'] if cost is None else cost
     horizons=horizons or config['horizons']
     output,records=[],[]
     for name in names:
-        research = name in plan_a.POLICIES+plan_b.POLICIES+plan_c.POLICIES
+        research = name in plan_a.POLICIES+plan_b.POLICIES+plan_c.POLICIES+submission.POLICIES
         active_horizons = [h for h in horizons if name not in plan_c.POLICIES or h in config.get('plan_c', {}).get('evaluation_horizons', config['horizons'])]
         default=plan_a.parameter_grid(config)[0] if research else config['tuning_grid'][0]
         selected=params.get(name,default)
@@ -70,6 +75,9 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
                         entry=model['plan_a']['entries'][f"{product}:{h}:{selected['risk_ratio']:g}"]
                         row['plan_a_risk_budget']=entry['risk_budget']
                         row['plan_a_validation_budget']=entry.get('validation_budget',entry['risk_budget'])
+                    if submission.enabled(config):
+                        row['strategic_bill_min']=submission.strategic_bill_min(p)
+                        row['execution_rule']=getattr(p,'execution_rule',name)
                     output.append(row)
                 if keep_records:
                     for r in full.records:
@@ -210,33 +218,73 @@ def tune(scenarios,config,seed,refit_model=None):
                 signal_selection_feasible=best[1],signal_constraint_violation=best[2])
     if plan_c.enabled(config):
         for name in plan_c.POLICIES: chosen[name]=dict(chosen['plan_a_balanced'])
+    if submission.enabled(config):
+        anchor_params=chosen['plan_a_balanced']
+        for name in submission.POLICIES:
+            chosen[name]=dict(anchor_params)
+        selected, execution_trials, evidence=submission.tune_submission(inner_models,anchor_params,config,evaluate)
+        chosen['submission_selected']=selected
+        for row in execution_trials:
+            if row['execution_rule'] in submission.POLICIES:
+                chosen[row['execution_rule']]['execution_selection_feasible']=row['selection_feasible']
+            row['horizon_constraints']=json.dumps(row['horizon_constraints'])
+        rows.extend(execution_trials)
+        for audit, block in zip(audits,evidence):
+            audit['submission_validation_metrics']=block
     return chosen,rows,audits
 
 def suitability(metrics,config,policy_map=None):
     profiles=json.loads((ROOT/'configs/profiles.json').read_text())
     rows=[]; risk=[]
     if policy_map is None:
-        use_plan=plan_a.enabled(config) and all('plan_a_'+p in set(metrics.policy) for p in PORTFOLIOS)
+        use_plan=plan_a.enabled(config) and (submission.enabled(config) or all('plan_a_'+p in set(metrics.policy) for p in PORTFOLIOS))
         policy_map={p:('plan_a_'+p if use_plan else p+'_annual') for p in PORTFOLIOS}
+        if submission.enabled(config):
+            policy_map['balanced']=config['submission']['balanced_policy']
+    settings=config.get('submission',{}) if submission.enabled(config) else {}
+    confidence=1-(1-config['suitability_confidence'])/settings.get('suitability_family_size',3)
+    costs=[config['cost_rate']]+[v for v in config.get('customer_stress_costs',[]) if v!=config['cost_rate']]
     for p in profiles:
         candidates=[]
+        risk_order_ok=True
+        if settings:
+            for cost in costs:
+                quantiles=[]
+                for product in PORTFOLIOS:
+                    block=metrics[(metrics.policy==policy_map[product])&(metrics.horizon==p['horizon'])&np.isclose(metrics.cost_rate,cost)]
+                    if block.empty: raise ValueError('Missing customer stress horizon')
+                    quantiles.append(block.real_max_drawdown.quantile(.9))
+                risk_order_ok &= bool(quantiles[0]<=quantiles[1]+1e-10 and quantiles[1]<=quantiles[2]+1e-10)
         for portfolio in PORTFOLIOS:
             policy=policy_map[portfolio]
             g=metrics[(metrics.policy==policy)&(metrics.horizon==p['horizon'])&
                       np.isclose(metrics.cost_rate,config['cost_rate'])]
             if len(g)==0: raise ValueError('Missing suitability horizon')
             k=int((g.real_max_drawdown>p['loss_tolerance']).sum())
-            # Bonferroni over 3 candidate portfolios for each profile, to allow portfolio selection.
-            confidence=1-(1-config['suitability_confidence'])/3
             upper=binomial_upper(k,len(g),confidence)
             liquidity_ok=p['liquidity']!='high' or portfolio=='conservative'
+            bill_min=None
+            if settings.get('liquidity_mode')=='strategic_bill_floor':
+                if 'strategic_bill_min' not in g: raise ValueError('Missing strategic liquidity evidence')
+                bill_min=float(g.strategic_bill_min.min())
+                liquidity_ok=p['liquidity']!='high' or bool(np.isfinite(bill_min) and bill_min>=settings['liquidity_floor']-1e-8)
             horizon_ok=portfolio!='growth' or p['horizon']>=15
-            eligible=upper<=config['suitability_max_breach_probability'] and liquidity_ok and horizon_ok
-            evidence='OOF diagnostic; refit coverage not guaranteed' if policy.startswith(('plan_a_', 'plan_b_', 'plan_c_')) else 'Fixed-policy scenario sample'
+            stress_upper=upper
+            for cost in costs[1:]:
+                stress=metrics[(metrics.policy==policy)&(metrics.horizon==p['horizon'])&np.isclose(metrics.cost_rate,cost)]
+                if len(stress)!=len(g) or set(stress.scenario_id)!=set(g.scenario_id): raise ValueError('Incomplete customer stress sample')
+                stress_upper=max(stress_upper,binomial_upper(int((stress.real_max_drawdown>p['loss_tolerance']).sum()),len(stress),confidence))
+            stress_ok=stress_upper<=config['suitability_max_breach_probability']
+            eligible=stress_ok and liquidity_ok and horizon_ok and risk_order_ok
+            evidence='OOF diagnostic; refit coverage not guaranteed' if policy.startswith(('plan_a_', 'plan_b_', 'plan_c_', 'submission_')) else 'Fixed-policy scenario sample'
             risk.append(dict(profile=p['profile_id'],portfolio=portfolio,policy=policy,evidence=evidence,horizon=p['horizon'],n=len(g),
                 breaches=k,breach_probability=k/len(g),upper_bound=upper,confidence=confidence,
                 tolerance=p['loss_tolerance'],eligible=eligible,liquidity_ok=liquidity_ok,horizon_ok=horizon_ok,
                 median_growth=g.real_cagr.median()))
+            if settings:
+                risk[-1].update(stress_upper_bound=stress_upper,cost_stress_ok=stress_ok,
+                    strategic_bill_min=bill_min,risk_order_ok=risk_order_ok,
+                    comparison_family=settings['suitability_family_size'],liquidity_mode=settings['liquidity_mode'])
             if eligible: candidates.append((g.real_cagr.median(),portfolio))
         choice=max(candidates)[1] if candidates else 'human_review'
         reason=('Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.'
@@ -261,7 +309,7 @@ def run_development(config,data_path,out):
         model=fit_model(train,config)
         params,trials,inner_audit=tune(train,config,config['seed']+outer+1,refit_model=model)
         print('Outer fold',outer+1,'selected',params,flush=True)
-        if plan_b.enabled(config):
+        if plan_b.enabled(config) or submission.enabled(config):
             from .signals import forecast, real_returns
             for scenario in valid:
                 for i in range(2, len(scenario.observations)):
@@ -275,8 +323,8 @@ def run_development(config,data_path,out):
         trial_rows.extend(dict(outer_fold=outer,**r) for r in trials)
         metrics,records=evaluate(valid,model,params,config,fold=outer)
         all_metrics.append(metrics); all_records.append(records)
-        for cost in config['sensitivity_costs']:
-            metrics,records=evaluate(valid,model,params,config,cost=cost,horizons=[30],fold=outer)
+        for cost,horizons in evaluation_schedule(config)[1:]:
+            metrics,records=evaluate(valid,model,params,config,cost=cost,horizons=horizons,fold=outer)
             all_metrics.append(metrics); all_records.append(records)
     metrics=pd.concat(all_metrics,ignore_index=True)
     records=pd.concat(all_records,ignore_index=True)
@@ -289,6 +337,9 @@ def run_development(config,data_path,out):
     paired=paired_comparisons(metrics,config['seed'],config['bootstrap']); paired.to_csv(out/'paired_comparisons.csv',index=False)
     assignments,risks=suitability(metrics,config)
     assignments.to_csv(out/'suitability.csv',index=False); risks.to_csv(out/'suitability_risk.csv',index=False)
+    if submission.enabled(config):
+        from .submission_analysis import write_customer_sensitivity
+        write_customer_sensitivity(out,metrics,config)
     from .validation import comparisons_and_screen, audit_outputs
     comparisons_and_screen(out,config)
     audit_outputs(out)
@@ -314,13 +365,14 @@ def freeze(config,data_path,policy,output,development_run):
     assignments=pd.read_csv(Path(development_run)/'suitability.csv').to_dict('records')
     if plan_a.enabled(config) and (Path(development_run)/'scenario_metrics.csv').exists():
         mapping={p:'plan_a_'+p for p in PORTFOLIOS}
-        if policy in plan_a.CONTROLS+plan_b.POLICIES+plan_c.POLICIES or policy=='plan_a_balanced': mapping['balanced']=policy
+        if policy in plan_a.CONTROLS+plan_b.POLICIES+plan_c.POLICIES+submission.POLICIES or policy=='plan_a_balanced': mapping['balanced']=policy
         assignments=suitability(pd.read_csv(Path(development_run)/'scenario_metrics.csv'),config,mapping)[0].to_dict('records')
     comparators=['equal_annual','conservative_annual','balanced_annual','growth_annual','balanced_hold']
     if plan_a.enabled(config): comparators+=plan_a.POLICIES
     if plan_b.enabled(config): comparators+=plan_b.POLICIES
     if plan_c.enabled(config) and set(config['plan_c'].get('evaluation_horizons',config['horizons']))==set(config['horizons']):
         comparators+=plan_c.POLICIES
+    if submission.enabled(config): comparators+=submission.POLICIES
     bundle=dict(schema=1,selected_policy=policy,config=config,model=model,params=params,
                 code_sha256=code_digest(),dependencies=versions(),development_sha256=data_hash,
                 development_run=str(Path(development_run).resolve()),final_scenarios=list(range(121,181)),
@@ -360,8 +412,8 @@ def run_final(bundle_path,data_path,out,acknowledge):
     metrics,records=evaluate(scenarios,b['model'],b['params'],config,names=names)
     # Predeclared cost robustness run, all generated in the same one-shot operation.
     all_metrics=[metrics]; all_records=[records]
-    for cost in config['sensitivity_costs']:
-        m,r=evaluate(scenarios,b['model'],b['params'],config,names=names,cost=cost,horizons=[30])
+    for cost,horizons in evaluation_schedule(config)[1:]:
+        m,r=evaluate(scenarios,b['model'],b['params'],config,names=names,cost=cost,horizons=horizons)
         all_metrics.append(m); all_records.append(r)
     metrics=pd.concat(all_metrics,ignore_index=True); records=pd.concat(all_records,ignore_index=True)
     metrics.to_csv(out/'scenario_metrics.csv',index=False)

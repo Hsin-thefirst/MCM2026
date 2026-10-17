@@ -1,0 +1,13 @@
+{
+  "extends": "benchmark.json",
+  "plan_b": {"enabled": false, "ood_limit": 10.0},
+  "plan_c": {"enabled": false},
+  "customer_stress_costs": [0.005],
+  "submission": {
+    "enabled": true,
+    "balanced_policy": "submission_selected",
+    "liquidity_mode": "strategic_bill_floor",
+    "liquidity_floor": 0.4,
+    "suitability_family_size": 440
+  }
+}
