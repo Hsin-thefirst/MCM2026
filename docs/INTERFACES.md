@@ -127,7 +127,7 @@ CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为
 配置可用`extends`相对当前文件继承，递归合并对象、替换数组，检测循环；运行目录`config.json`保存完全展开的唯一有效配置。`configs/plan_b.json`及`configs/plan_c_screen.json`可分别传给`benchmark/run.py development --config ... --out <新目录>`，默认benchmark仍只跑原25策略。`extension_comparisons.csv`与`extension_screen.csv`保存新增匹配比较、既定增长/风险筛选及全部检查布尔值；这些为反复使用开发总体的探索性证据。
 
 
-提交前补充：B诊断用`warmup`明确区分短历史与`fallback`异常；C当前及未来A估计无效同样进入吸收复核。冻结B/C时客户证据仍标为OOF诊断，冻结比较列表包含该配置完整通过开发评价的B/C策略族；C仅筛选H30时无条件禁止冻结C。预测独立重建与B内层选择可分别运行`scripts/verify_extensions.py <run>`、`scripts/verify_plan_b_selection.py <B_run>`；`compare_extension_runs.py <旧运行> <新运行>`核对接口修复前后全部金融指标，均只允许开发分区且验证JSON只新建。
+提交前补充：B诊断用`warmup`明确区分短历史与`fallback`异常；C当前及未来A估计无效同样进入吸收复核。冻结B/C时客户证据仍标为OOF诊断，冻结比较列表包含该配置完整完成开发评价的B/C策略族；C仅筛选H30时无条件禁止冻结C。预测独立重建与B内层选择可分别运行`scripts/verify_extensions.py <run>`、`scripts/verify_plan_b_selection.py <B_run>`；`compare_extension_runs.py <旧运行> <新运行>`核对接口修复前后全部金融指标，均只允许开发分区且验证JSON只新建。
 
 
 B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A“向锚配置靠拢”的说明，因为新动作可能离开A锚；短历史/异常回退及窄动作eta0继续原样复用A决策。该修正只改变解释文本，须以新源码hash另存运行并核对金融指标一致。

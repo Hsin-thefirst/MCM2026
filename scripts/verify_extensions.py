@@ -43,6 +43,7 @@ def verify(run):
                 assert fallback==row.fallback
                 np.testing.assert_allclose(delta,row.delta,atol=1e-14)
                 if prediction is not None: np.testing.assert_allclose(prediction,row.prediction,atol=1e-14)
+                else: assert pd.isna(row.prediction)
                 actual=real_returns(s.observations[row.period-1])
                 np.testing.assert_allclose(actual[0]-actual[2],row.actual,atol=1e-14)
                 assert row.scenario_id not in fitted['train_ids']
@@ -50,10 +51,10 @@ def verify(run):
         diagnostics=[]
         for signal,group in predictions.groupby('signal_model'):
             denominator=((group.actual-group.constant)**2).sum()
-            improvement=1-((group.actual-group.prediction)**2).sum()/denominator
+            improvement=1-((group.actual-group.prediction.fillna(group.constant))**2).sum()/denominator
             positive=0
             for _,fold in group.groupby('fold'):
-                positive+=int(((fold.actual-fold.prediction)**2).sum()<((fold.actual-fold.constant)**2).sum())
+                positive+=int(((fold.actual-fold.prediction.fillna(fold.constant))**2).sum()<((fold.actual-fold.constant)**2).sum())
             diagnostics.append(dict(signal_model=signal,oos_r2=improvement,positive_folds=positive,
                                     fallback_rate=float(group.fallback.mean()),n=len(group)))
         pd.DataFrame(diagnostics).to_csv(out/'signal_diagnostics.csv',index=False)

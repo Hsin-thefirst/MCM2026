@@ -276,49 +276,95 @@
   {
     "run": "development_plan_b_v2",
     "date": "2026-10-17",
-    "status": "registered_before_run",
+    "status": "verified_historical_interface_revision",
     "parent": "development_plan_b_v1",
     "config": "configs/plan_b.json",
     "holdout_used": false,
     "purpose": "提交前接口修复与源码hash对齐重跑：冻结B/C客户证据标注及比较列表，C尚未完成全部期限时强制拒绝冻结；A无效价值在C未来模拟中也进入吸收人工复核，B区分短历史warmup与异常回退。",
     "search_budget": "严格复用父实验全部候选、参数、分区、费用、指标和筛选标准；无新增金融搜索。",
     "selection": "完全与父实验一致。",
-    "stopping_rule": "重跑后要求全部金融指标与父运行精确一致；若发现实际差异则保留并说明，不能删除旧结果。重建B预测/全部内层选择、C净值门槛/历史回撤状态、账本与市场重放后提交。C父主比较未通过，因此仅重复原H30验证，不启动新期限或新参数。"
+    "stopping_rule": "重跑后要求全部金融指标与父运行精确一致；若发现实际差异则保留并说明，不能删除旧结果。重建B预测/全部内层选择、C净值门槛/历史回撤状态、账本与市场重放后提交。C父主比较未通过，因此仅重复原H30验证，不启动新期限或新参数。",
+    "code_sha256": "7cffa77610d13b2e57990987d0df8fb750bed4aa44abf01a64747c80ad952436",
+    "verification": "65项统一测试；全部金融指标与v1精确一致，自动账本/划分/证书审计通过。后续v3只更改客户说明，进一步独立核验记录于v3。",
+    "stopping_rule_satisfied": true
   },
   {
     "run": "development_plan_c_screen_v2",
     "date": "2026-10-17",
-    "status": "registered_before_run",
+    "status": "verified_historical_interface_revision",
     "parent": "development_plan_c_screen_v1",
     "config": "configs/plan_c_screen.json",
     "holdout_used": false,
     "purpose": "提交前接口修复与源码hash对齐重跑：冻结B/C客户证据标注及比较列表，C尚未完成全部期限时强制拒绝冻结；A无效价值在C未来模拟中也进入吸收人工复核，B区分短历史warmup与异常回退。",
     "search_budget": "严格复用父实验全部候选、参数、分区、费用、指标和筛选标准；无新增金融搜索。",
     "selection": "完全与父实验一致。",
-    "stopping_rule": "重跑后要求全部金融指标与父运行精确一致；若发现实际差异则保留并说明，不能删除旧结果。重建B预测/全部内层选择、C净值门槛/历史回撤状态、账本与市场重放后提交。C父主比较未通过，因此仅重复原H30验证，不启动新期限或新参数。"
+    "stopping_rule": "重跑后要求全部金融指标与父运行精确一致；若发现实际差异则保留并说明，不能删除旧结果。重建B预测/全部内层选择、C净值门槛/历史回撤状态、账本与市场重放后提交。C父主比较未通过，因此仅重复原H30验证，不启动新期限或新参数。",
+    "code_sha256": "7cffa77610d13b2e57990987d0df8fb750bed4aa44abf01a64747c80ad952436",
+    "verification": "65项统一测试；全部金融指标与v1精确一致，自动账本/划分/证书审计通过。后续v3只更改客户说明，进一步独立核验记录于v3。",
+    "stopping_rule_satisfied": true
   },
   {
     "run": "development_plan_b_v3",
     "date": "2026-10-17",
-    "status": "registered_before_run",
+    "status": "current_verified_development_not_promoted",
     "parent": "development_plan_b_v2",
     "config": "configs/plan_b.json",
     "holdout_used": false,
     "purpose": "仅修正B/C交易英文说明：预测倾斜或防御动作不一定靠近A锚，不能沿用A的该项描述。金融算法、候选和参数全部不变；源码对齐重跑。",
     "search_budget": "严格复用父批次。未追加候选、强度、期限或费用，不根据外层结果重选。",
     "selection": "与v1/v2完全相同；C仍只重复H30停止验证，不扩大搜索。",
-    "stopping_rule": "金融指标与v2精确一致，65项统一测试与全部独立核验通过后提交；保留v1/v2历史记录。"
+    "stopping_rule": "金融指标与v2精确一致，65项统一测试与全部独立核验通过后提交；保留v1/v2历史记录。",
+    "code_sha256": "66e01184fafb1b90a062bc0fc0e42eb31ea28a4bcb31169b8dd2073b427c11b4",
+    "verification": {
+      "unified_tests": 65,
+      "metric_rows": 37800,
+      "decision_rows": 740160,
+      "audited_paths": 29640,
+      "all_financial_metrics_identical_to_v2": true,
+      "extension_checks": {
+        "all_checks_passed": true,
+        "historic_drawdown_state_checks": 0,
+        "unchanged_baseline_financial_rows": 27000,
+        "zero_signal_annual_records": 24120,
+        "reconstructed_oof_predictions": 10080,
+        "net_planning_gate_checks": 0,
+        "holdout_used": false
+      },
+      "runtime_seconds": 364.6416235850047
+    },
+    "finding": "与v1/v2金融指标完全一致；B两个所选动作族未晋级，C三步对一步主比较未晋级，按停止规则不扩展全期限。",
+    "stopping_rule_satisfied": true
   },
   {
     "run": "development_plan_c_screen_v3",
     "date": "2026-10-17",
-    "status": "registered_before_run",
+    "status": "current_verified_screen_stopped",
     "parent": "development_plan_c_screen_v2",
     "config": "configs/plan_c_screen.json",
     "holdout_used": false,
     "purpose": "仅修正B/C交易英文说明：预测倾斜或防御动作不一定靠近A锚，不能沿用A的该项描述。金融算法、候选和参数全部不变；源码对齐重跑。",
     "search_budget": "严格复用父批次。未追加候选、强度、期限或费用，不根据外层结果重选。",
     "selection": "与v1/v2完全相同；C仍只重复H30停止验证，不扩大搜索。",
-    "stopping_rule": "金融指标与v2精确一致，65项统一测试与全部独立核验通过后提交；保留v1/v2历史记录。"
+    "stopping_rule": "金融指标与v2精确一致，65项统一测试与全部独立核验通过后提交；保留v1/v2历史记录。",
+    "code_sha256": "66e01184fafb1b90a062bc0fc0e42eb31ea28a4bcb31169b8dd2073b427c11b4",
+    "verification": {
+      "unified_tests": 65,
+      "metric_rows": 18960,
+      "decision_rows": 257760,
+      "audited_paths": 10800,
+      "all_financial_metrics_identical_to_v2": true,
+      "extension_checks": {
+        "all_checks_passed": true,
+        "historic_drawdown_state_checks": 27708,
+        "unchanged_baseline_financial_rows": 18000,
+        "zero_signal_annual_records": 0,
+        "reconstructed_oof_predictions": 0,
+        "net_planning_gate_checks": 27708,
+        "holdout_used": false
+      },
+      "runtime_seconds": 516.860537444998
+    },
+    "finding": "与v1/v2金融指标完全一致；B两个所选动作族未晋级，C三步对一步主比较未晋级，按停止规则不扩展全期限。",
+    "stopping_rule_satisfied": true
   }
 ]
