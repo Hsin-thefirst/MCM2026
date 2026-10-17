@@ -381,7 +381,7 @@
   {
     "run": "development_submission_v1",
     "date": "2026-10-17",
-    "status": "registered_before_run",
+    "status": "verified_development_selection_complete",
     "config": "configs/submission.json",
     "holdout_used": false,
     "purpose": "执行用户批准的有限优化计划，形成可冻结提交程序；报告和论文继续暂停。",
@@ -419,6 +419,110 @@
     },
     "evaluation": "五期限官方/双倍费用；H30其余0/0.125%/1%费用；原25策略与同锚对照全部保留。",
     "stopping_rule": "完成一批与独立核验后结束搜索；未通过晋级则保留A。只修复实现错误并记录，不增候选。开发结束后冻结、最终一次性评价，之后不调参。",
-    "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14"
+    "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+    "verification": {
+      "validation.json": {
+        "phase": "development",
+        "audited_paths": 35160,
+        "metric_rows": 51480,
+        "decision_rows": 789840,
+        "maximum_numeric_discrepancy": 1.3642420526593924e-12,
+        "all_checks_passed": true,
+        "scope": "All saved accounting paths, metric recurrences, uniqueness, CV splits and outer CVaR feasibility; market returns checked separately in replay tests."
+      },
+      "independent_replay.json": {
+        "all_checks_passed": true,
+        "market_rows_replayed": 789840,
+        "max_holding_discrepancy": 1.8189894035458565e-12,
+        "independently_computed_reference_metrics": 1560,
+        "holdout_used": false,
+        "scope": "All saved return transitions and cumulative inflation; scalar independent equal-weight recurrence for every cost/horizon/scenario."
+      },
+      "independent_plan_a.json": {
+        "all_checks_passed": true,
+        "certified_allocations": 217,
+        "certified_infeasible": 8,
+        "certified_inner_infeasible": 26,
+        "unavailable_trials": 10,
+        "selected_inner_feasible": 15,
+        "legacy_rows_identical": 18360,
+        "maximum_optimality_gap": 2.47241790582442e-09,
+        "maximum_lp_primal_residual": 5.487381660174151e-10,
+        "maximum_lp_dual_residual": 5.833111771380572e-13,
+        "holdout_used": false
+      },
+      "submission_verification.json": {
+        "all_checks_passed": true,
+        "inner_selections": [
+          {
+            "fold": 0,
+            "rule": "submission_b_long05",
+            "feasible": true
+          },
+          {
+            "fold": 1,
+            "rule": "submission_b_long05",
+            "feasible": true
+          },
+          {
+            "fold": 2,
+            "rule": "submission_a_band",
+            "feasible": true
+          },
+          {
+            "fold": 3,
+            "rule": "submission_b_long05",
+            "feasible": true
+          },
+          {
+            "fold": 4,
+            "rule": "submission_b_long05",
+            "feasible": true
+          }
+        ],
+        "inner_horizon_checks": 200,
+        "unchanged_a_rows": 27000,
+        "unchanged_c1_rows": 240,
+        "short_zero_signal_rows": 960,
+        "cap_checks": 57293,
+        "net_value_checks": 85973,
+        "historic_state_checks": 85973,
+        "reconstructed_signal_fits": 5,
+        "holdout_used": false
+      }
+    },
+    "unified_tests": 74,
+    "runtime_seconds": 1595.8082113379933,
+    "selected_policy": "plan_a_balanced",
+    "finding": "S8增长增量0.0552个百分点未过晋级，保留A并停止金融搜索。C10%限幅降低费用但短期约束失败；客户E因显式40%战略bills代理及风险筛选转均衡，其余A/D人工、B/C保守。",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "submission_freeze_v1",
+    "date": "2026-10-17",
+    "status": "registered_before_execution",
+    "phase": "freeze",
+    "config": "configs/submission.json",
+    "development_run": "development_submission_v1",
+    "selected_policy": "plan_a_balanced",
+    "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+    "holdout_used": false,
+    "purpose": "执行已批准的冻结与一次性最终评价；开发选型已终止，不再调整金融程序。",
+    "search_budget": "无新增搜索；全120内层选择与重拟合是固定程序，最终只评价121–180。",
+    "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。"
+  },
+  {
+    "run": "final_submission_v1",
+    "date": "2026-10-17",
+    "status": "registered_before_execution",
+    "phase": "final",
+    "config": "configs/submission.json",
+    "development_run": "development_submission_v1",
+    "selected_policy": "plan_a_balanced",
+    "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+    "holdout_used": false,
+    "purpose": "执行已批准的冻结与一次性最终评价；开发选型已终止，不再调整金融程序。",
+    "search_budget": "无新增搜索；全120内层选择与重拟合是固定程序，最终只评价121–180。",
+    "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。"
   }
 ]

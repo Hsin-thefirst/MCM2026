@@ -145,3 +145,5 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 `submission_comparisons.csv`、`submission_screen.csv`保存全部匹配比较与原增长/风险晋级条件；`submission_decision.json`按预声明规则只在内层选择程序与校准A之间确定拟提交版本，不从外层逐个挑战者中挑赢家。冻结沿用该实际策略ID，保留全部已完成开发的扩展参照，最终客户分配不重选。报告生成继续关闭。
 
 `scripts/verify_submission.py <development_run>`独立重建全部8规则×5期限×5外折的选择约束、一标准误、旧A/C1金融结果及限幅/净价值/回撤记忆，并复拟合训练信号。`scripts/verify_saved_final.py <final_run>`仅从保存账本复核最终核算和冻结客户分配，不重读市场数据。`scripts/package_submission.py --development-run ... --bundle ... --final-run ... --out ...`在核验通过后打包源码和数值证据，检查50MB上限及逐文件hash；详见[提交与复现](SUBMISSION.md)。
+
+开发目录中的`suitability.csv`为配置默认研究候选的映射；依据预声明采用决定另外保存`selected_suitability.csv`、`selected_suitability_risk.csv`作为实际提交候选诊断。正式冻结仍用实际策略ID重算，冻结包的`frozen_suitability`是最终客户分配依据；最终输出只追加评价，不重新推荐。

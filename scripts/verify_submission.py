@@ -95,13 +95,13 @@ def verify(run):
     common = metrics.merge(prior[KEYS], on=KEYS, validate='one_to_one').sort_values(KEYS).reset_index(drop=True)
     prior = prior.sort_values(KEYS).reset_index(drop=True)
     columns = [c for c in prior if c != 'policy_inference_seconds']
-    np.testing.assert_array_equal(common[columns].to_numpy(), prior[columns].to_numpy())
+    pd.testing.assert_frame_equal(common[columns], prior[columns], check_dtype=False, check_exact=True)
     old_c = pd.read_csv(ROOT/'benchmark/outputs/development_plan_c_screen_v3/scenario_metrics.csv')
     old_c = old_c[old_c.policy == 'plan_c_l1'].copy()
     old_c['policy'] = 'submission_c_full'
     match = metrics.merge(old_c[KEYS], on=KEYS, validate='one_to_one').sort_values(KEYS).reset_index(drop=True)
     old_c = old_c.sort_values(KEYS).reset_index(drop=True)
-    np.testing.assert_array_equal(match[columns].to_numpy(), old_c[columns].to_numpy())
+    pd.testing.assert_frame_equal(match[columns], old_c[columns], check_dtype=False, check_exact=True)
     caps = gates = zero = historic_checks = 0
     for _, group in records[records.policy.str.startswith('submission_')].groupby(
             ['policy', 'scenario_id', 'cost_rate', 'simulation_horizon']):
