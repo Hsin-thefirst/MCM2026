@@ -114,3 +114,17 @@ CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为
 输出只能新建，复现时使用新的目录；核验工具要求预测结果在策略目录同级的`predictability/`，历史参照从`development_consolidated/scenario_metrics.csv`读取。`--self-check-only`可仅执行预测器的合成因果前缀检查。策略探针使用`configs/strategy_planning.json`，预测器为本批固定ridge10、5年窗口、seed20261014的诊断，manifest记录其精确设置。
 
 固定网格数组保存为`static_grid_paths.npz`，索引为权重×情景；按每个训练折选择权重，正式费用选定后不随敏感性费率重选。带宽规则仅为诊断参照。门控候选使用原Balanced初始配置、官方单纯形与固定风险参数；年度轨迹只保存至30年，因为本批执行规则不依赖期限。所有逐点区间均为探索性诊断，不替代原晋级协议。
+
+
+## 计划B/C接口（2026-10-17）
+
+契约版本1.1：`PolicyContext.historical_max_drawdown`为决策前历史最大实际回撤（默认0，兼容旧构造），引擎同时纳入费用时点和年度终点；当前回撤与历史最大回撤分别保留。`PeriodRecord.policy_diagnostics`默认None，CSV按JSON保存B信号/回退及C规划净价值/费用分解；初始配置与待人工复核期无策略诊断。
+
+`signals.py`统一维护原12因果特征与Ridge10实现；探针继续导出原函数。`model.signals`冻结训练ID、三预测器的标准化/系数/同目标期均值。B固定及内层所选动作族共10策略，均继承同一A均衡锚、协方差、gamma、复核与安全边际。宽动作零信号单独作为参照。训练不足/异常不静默重拟合，短历史或标准化超阈值回退A并记录。
+
+`model.scenario_control`冻结训练ID、联合实际收益路径及每期限防御配置。C四策略共享A锚及后续执行；一步/三步、风险系数1/0固定。C先比较H30，`plan_c.evaluation_horizons`仅限制C评价输出，不改变A五期限训练/调参或客户诊断。C筛选不全的配置禁止冻结C候选；真实最终评价仍走原冻结流程。
+
+配置可用`extends`相对当前文件继承，递归合并对象、替换数组，检测循环；运行目录`config.json`保存完全展开的唯一有效配置。`configs/plan_b.json`及`configs/plan_c_screen.json`可分别传给`benchmark/run.py development --config ... --out <新目录>`，默认benchmark仍只跑原25策略。`extension_comparisons.csv`与`extension_screen.csv`保存新增匹配比较、既定增长/风险筛选及全部检查布尔值；这些为反复使用开发总体的探索性证据。
+
+
+提交前补充：B诊断用`warmup`明确区分短历史与`fallback`异常；C当前及未来A估计无效同样进入吸收复核。冻结B/C时客户证据仍标为OOF诊断，冻结比较列表包含该配置完整通过开发评价的B/C策略族；C仅筛选H30时无条件禁止冻结C。预测独立重建与B内层选择可分别运行`scripts/verify_extensions.py <run>`、`scripts/verify_plan_b_selection.py <B_run>`；`compare_extension_runs.py <旧运行> <新运行>`核对接口修复前后全部金融指标，均只允许开发分区且验证JSON只新建。

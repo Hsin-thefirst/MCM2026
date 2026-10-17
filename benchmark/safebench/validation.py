@@ -43,6 +43,8 @@ def comparisons_and_screen(out,config):
                 positive_folds=sum(d>0 for d in deltas),status='investigate_for_promotion' if all(checks.values()) else 'not_established',
                 note='Exploratory growth-route screen only; service suitability and independent final evaluation still required.'))
     pd.DataFrame(screens).to_csv(out/'promotion_screen.csv',index=False)
+    from .extensions import extension_comparisons
+    extension_comparisons(out,config)
     if config.get('plan_a',{}).get('enabled') and 'plan_a_balanced' in set(main.policy):
         settings=config['plan_a']['risk_promotion']; risk_screens=[]
         high=metrics[(metrics.horizon==30)&np.isclose(metrics.cost_rate,.005)]
@@ -84,7 +86,8 @@ def audit_outputs(out):
     if 'evaluated_policies' in manifest:
         expected_keys={(p,s,h,cost) for p in manifest['evaluated_policies'] for s in expected
                        for cost in [c['cost_rate']]+c['sensitivity_costs']
-                       for h in (c['horizons'] if cost==c['cost_rate'] else [30])}
+                       for h in (c['horizons'] if cost==c['cost_rate'] else [30])
+                       if not p.startswith('plan_c_') or h in c.get('plan_c',{}).get('evaluation_horizons',c['horizons'])}
         assert set(m[['policy','scenario_id','horizon','cost_rate']].itertuples(index=False,name=None))==expected_keys
     audit_paths=0; maximum_error=0.
     assets=['equity','bond','bill']
@@ -154,6 +157,8 @@ def audit_outputs(out):
         fitted=json.loads((out/'fitted_models.json').read_text())
         assert all(f['model']['cvar_feasible'] and f['model']['cvar_estimate']<=c['cvar_limit']+1e-10 for f in fitted)
         for f in fitted:
+            for key in ('signals','scenario_control'):
+                if key in f['model']: assert f['model'][key]['train_ids']==f['model']['train_ids']
             if 'plan_a' not in f['model']: continue
             assert f['model']['plan_a']['train_ids']==f['model']['train_ids']
             for entry in f['model']['plan_a']['entries'].values():

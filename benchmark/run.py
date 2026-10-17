@@ -23,7 +23,8 @@ def main():
     for path in (args.out,args.bundle):
         if not path.resolve().is_relative_to(BASE.resolve()):
             parser.error('Output/bundle paths must remain inside benchmark')
-    config=json.loads(args.config.read_text())
+    from safebench.configuration import load_config
+    config=load_config(args.config)
     if args.command=='development': run_development(config,args.data,args.out)
     elif args.command=='report':
         from safebench.report import generate_report

@@ -21,37 +21,8 @@ from safeinvest.contracts import ASSETS, MarketObservation, Scenario
 from safebench.data import folds, load_partition
 
 
-SEED = 20261014
-RIDGE = 10.0
-FEATURE_NAMES = (
-    "last_real_equity", "last_real_bond", "last_real_bill", "last_inflation",
-    "window_real_equity_mean", "window_real_bond_mean", "window_real_bill_mean",
-    "window_real_equity_std", "window_real_bond_std", "window_real_bill_std",
-    "window_inflation_mean", "history_length",
-)
-TARGET_NAMES = tuple(f"real_return_{a}" for a in ASSETS) + tuple(
-    f"squared_real_return_{a}" for a in ASSETS
-)
-
-
-def real_returns(observation: MarketObservation) -> np.ndarray:
-    return (1.0 + np.asarray(observation.nominal_returns)) / (1.0 + observation.inflation) - 1.0
-
-
-def causal_features(history: tuple[MarketObservation, ...]) -> np.ndarray:
-    """Receive only observations available immediately before the decision year."""
-    if len(history) < 2:
-        raise ValueError("At least two observed years are required")
-    window = history[-5:]
-    rows = np.asarray([real_returns(o) for o in window])
-    return np.concatenate([
-        real_returns(history[-1]),
-        [history[-1].inflation],
-        rows.mean(axis=0),
-        rows.std(axis=0, ddof=0),
-        [np.mean([o.inflation for o in window]), len(history)],
-    ])
-
+from safebench.signals import (SEED, RIDGE, FEATURE_NAMES, TARGET_NAMES, real_returns,
+                                causal_features, fit_ridge, predict)
 
 def design(scenarios: tuple[Scenario, ...]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     features, targets, keys = [], [], []
@@ -63,30 +34,6 @@ def design(scenarios: tuple[Scenario, ...]) -> tuple[np.ndarray, np.ndarray, np.
             targets.append(np.concatenate([row, row ** 2]))
             keys.append([scenario.scenario_id, observation.period])
     return np.asarray(features), np.asarray(targets), np.asarray(keys, dtype=int)
-
-
-def fit_ridge(features: np.ndarray, targets: np.ndarray) -> dict:
-    feature_mean = features.mean(axis=0)
-    feature_scale = features.std(axis=0, ddof=0)
-    feature_scale = np.where(feature_scale > 0.0, feature_scale, 1.0)
-    target_mean = targets.mean(axis=0)
-    standardized = (features - feature_mean) / feature_scale
-    coefficients = np.linalg.solve(
-        standardized.T @ standardized + RIDGE * np.eye(standardized.shape[1]),
-        standardized.T @ (targets - target_mean),
-    )
-    return {
-        "feature_mean": feature_mean,
-        "feature_scale": feature_scale,
-        "target_mean": target_mean,
-        "coefficients": coefficients,
-    }
-
-
-def predict(features: np.ndarray, model: dict) -> np.ndarray:
-    return (
-        (features - model["feature_mean"]) / model["feature_scale"]
-    ) @ model["coefficients"] + model["target_mean"]
 
 
 def synthetic_self_check() -> dict:
@@ -206,7 +153,7 @@ def main() -> None:
     ).reset_index()
     stability.to_csv(output / "coefficient_stability.csv", index=False)
     json_write(output / "fitted_models.json", model_rows)
-    code_paths = [Path(__file__).resolve(), ROOT / "benchmark/safebench/data.py", ROOT / "src/safeinvest/contracts.py"]
+    code_paths = [Path(__file__).resolve(), ROOT / "benchmark/safebench/data.py", ROOT / "benchmark/safebench/signals.py", ROOT / "src/safeinvest/contracts.py"]
     manifest = {
         "created_at": datetime.now(timezone.utc).isoformat(), "phase": "development",
         "seed": SEED, "outer_folds": 5, "ridge": RIDGE,

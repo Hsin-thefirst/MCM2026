@@ -1,0 +1,5 @@
+{
+  "extends": "benchmark.json",
+  "plan_b": {"enabled": true, "ood_limit": 10.0},
+  "plan_c": {"enabled": false}
+}

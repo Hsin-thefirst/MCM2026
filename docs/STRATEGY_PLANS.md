@@ -279,3 +279,14 @@ Y_end是把已发生历史与预测未来合在一起的最大对数回撤。当
 - Nystrup等：[Multi-Period Portfolio Selection with Drawdown Control](https://web.stanford.edu/~boyd/papers/multiperiod_portfolio_drawdown.html)。
 - Busseti、Ryu与Boyd：[Risk-Constrained Kelly Gambling](https://web.stanford.edu/~boyd/papers/pdf/kelly.pdf)。
 - Cawley与Talbot：[On Over-fitting in Model Selection and Subsequent Selection Bias](https://www.jmlr.org/papers/v11/cawley10a.html)。
+
+
+## 2026-10-17 B/C实施锁定
+
+用户授权继续完成B/C；从校准A新建`feat/plan-bc-evaluation`，本轮保持A完全固定，不同时执行建议中的期限分组调参。具体候选、主比较、验收和停止条件已在`benchmark/experiment_registry.json`的`development_plan_b_v1`与`development_plan_c_screen_v1`运行前登记。
+
+B：三eta×两动作族、各族内层所选及两个诊断，共10增量策略。内层先取原A均衡参数，再于同64训练/32验证分区拟合信号，跨情景平均期限差执行配对一标准误，倾向较小eta；风险、收益损失相对各族无信号对照检查。eta0窄动作严格复现A。各标准化特征绝对值上限10，异常回退A并留痕。
+
+C：相同训练联合路径、动作与后续A，L1/L3×kappa1/0；先H30与双倍费用筛选。A仍按全部五期限原配置训练与选择，C的H30输出过滤不能改变A。只有L3对L1主比较通过原增长或风险路线，才另登记全期限完整费用运行。原先建议的信号结合、转移模型及更多风险系数本轮不执行。
+
+合成数据专项验证包括预测因果前缀、原A精确重现、全部64序列与独立标量A续接、回撤记忆、费用只扣一次、相同资产收益应持有、终点缩短规划深度及C未来收益扰动。96训练路径、L3单次合成计时约0.031秒，无需削减未来情景。

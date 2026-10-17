@@ -201,6 +201,21 @@ class FinalWorkflowTests(unittest.TestCase):
                 freeze(config,data,'plan_a_conservative',root/'mapping_check.json',dev)
                 self.assertEqual(mapped.call_args.args[2],dict(conservative='plan_a_conservative',
                                  balanced='plan_a_balanced',growth='plan_a_growth'))
+            extended=dict(config,plan_b=dict(enabled=True,ood_limit=10.),plan_c=dict(enabled=False))
+            (dev/'manifest.json').write_text(json.dumps(manifest(extended,sha,list(range(1,121)),'development')))
+            with patch('safebench.experiment.tune',return_value=(snapshot['params'],[],[])), \
+                 patch('safebench.experiment.fit_model',return_value=snapshot['model']), \
+                 patch('safebench.experiment.suitability',return_value=(pd.DataFrame(snapshot['frozen_suitability']),None)) as mapped:
+                freeze(extended,data,'plan_b_narrow',root/'signal_mapping_check.json',dev)
+                self.assertEqual(mapped.call_args.args[2]['balanced'],'plan_b_narrow')
+                self.assertIn('plan_b_narrow_0',json.loads((root/'signal_mapping_check.json').read_text())['final_comparators'])
+            screened=dict(extended,plan_c=dict(enabled=True,evaluation_horizons=[30]))
+            (dev/'manifest.json').write_text(json.dumps(manifest(screened,sha,list(range(1,121)),'development')))
+            with patch('safebench.experiment.tune',return_value=(snapshot['params'],[],[])), \
+                 patch('safebench.experiment.fit_model',return_value=snapshot['model']):
+                with self.assertRaisesRegex(ValueError,'full-horizon development'):
+                    freeze(screened,data,'plan_c_l3',root/'incomplete_control.json',dev)
+            (dev/'manifest.json').write_text(json.dumps(manifest(config,sha,list(range(1,121)),'development')))
             frozen_code_hash=code_digest()
             with patch('safebench.experiment.BASE',root),patch('safebench.experiment.code_digest',return_value=frozen_code_hash),patch('safebench.report.generate_report'):
                 with self.assertRaises(PermissionError): run_final(bundle,data,root/'no_ack',False)

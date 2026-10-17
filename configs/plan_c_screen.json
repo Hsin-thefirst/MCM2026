@@ -1,0 +1,6 @@
+{
+  "extends": "benchmark.json",
+  "sensitivity_costs": [0.005],
+  "plan_b": {"enabled": false},
+  "plan_c": {"enabled": true, "evaluation_horizons": [30]}
+}

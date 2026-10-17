@@ -23,6 +23,7 @@ def simulate(scenario, policy, initial_target, config):
     h = (0.,0.,config.initial_wealth)
     target = tuple(initial_target)
     inflation, peak, pending = 1., config.initial_wealth, False
+    max_drawdown = 0.
     records = []
     initial = None
     for t in range(1, config.horizon+1):
@@ -32,13 +33,15 @@ def simulate(scenario, policy, initial_target, config):
         if not all(math.isfinite(x) and x > -1 for x in (*o.nominal_returns,o.inflation)):
             raise ValueError('Invalid market observation')
         ctx = PolicyContext(t,scenario.observations[:t-1],h,target,inflation,peak,pending,
-                            config.transaction_cost_rate)
+                            config.transaction_cost_rate,max_drawdown)
+        diagnostics = None
         if t == 1:
             decision = Decision(Action.REBALANCE,('INITIAL_ALLOCATION',),'Initial allocation.',target)
         elif pending:
             decision = Decision(Action.KEEP,('REVIEW_PENDING',),'Hold existing assets while review is pending.')
         else:
             decision = policy.decide(ctx)
+            diagnostics = getattr(policy, "last_diagnostics", None)
         if not isinstance(decision, Decision) or not isinstance(decision.action, Action):
             raise ValueError('Invalid policy decision')
         pre = h
@@ -61,6 +64,7 @@ def simulate(scenario, policy, initial_target, config):
         if initial is None:
             initial = trade
         # Include all fee-time marks in MDD/peak accounting, as well as annual marks.
+        max_drawdown = max(max_drawdown,1-sum(h)/inflation/peak)
         peak = max(peak,sum(h)/inflation)
         post = h
         h = tuple(x*(1+r) for x,r in zip(h,o.nominal_returns))
@@ -68,11 +72,12 @@ def simulate(scenario, policy, initial_target, config):
         wealth = sum(h)/inflation
         if not math.isfinite(wealth) or wealth <= 0:
             raise ValueError('Invalid wealth path')
+        max_drawdown = max(max_drawdown,1-wealth/peak)
         peak = max(peak,wealth)
         records.append(PeriodRecord(t,decision.action,target,pre,post,h,trade.moved_amount,
                                     trade.transaction_cost,inflation,wealth,pending,
                                     decision.reason_codes,decision.explanation,
-                                    decision.estimated_benefit,decision.estimated_cost))
+                                    decision.estimated_benefit,decision.estimated_cost,diagnostics))
     return SimulationResult(scenario.scenario_id,policy.name,config,tuple(initial_target),
                             initial.moved_amount,initial.transaction_cost,
                             initial.post_trade_holdings,tuple(records))
