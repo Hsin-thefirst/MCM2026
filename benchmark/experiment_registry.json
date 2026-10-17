@@ -205,5 +205,36 @@
     "verification": "分区、划分配置与共同风险线一致；内层产品/折7→15通过，两版外层风险均15/15通过。",
     "finding": "风险选择校准更稳定，未证明整体金融表现更优；不能以0→15直接归因于模型改善。",
     "stopping_rule_satisfied": true
+  },
+  {
+    "run": "strategy_review_20261017",
+    "date": "2026-10-17",
+    "status": "completed_saved_evidence_review",
+    "holdout_used": false,
+    "new_fits": false,
+    "new_benchmark": false,
+    "purpose": "A成功边界复盘与B/C具体设计，仅重算保存预测的收益差R2、已有候选约束及公式例子。",
+    "sources": {
+      "benchmark/outputs/strategy_planning_20261016/predictability/oof_predictions.csv": "5b094f7487b34fbb1a536a10d6d5529dceb6c0a22f99774e7e7c545f18ffa8e2",
+      "benchmark/outputs/development_plan_a_calibrated_v1/tuning_trials.csv": "f8fdde5f1d804e7cd9e4fa522c5f4b007b6b2bdc5926b98ca5bb112e4940261c"
+    },
+    "calculations": {
+      "relative_r2_equity_bill": 0.0124831571041768,
+      "relative_r2_bond_bill": -0.0012895897182416682,
+      "relative_r2_equity_bond": 0.0021136993528031445,
+      "positive_prediction_folds": {
+        "equity_bill": 5,
+        "bond_bill": 1,
+        "equity_bond": 2
+      },
+      "balanced_failed_candidate_horizon_rows": {
+        "5": 6,
+        "6": 7
+      },
+      "risk_excess_rows_among_these": 4
+    },
+    "finding": "A框架与校准成功，自动更新价值尚未建立。B应显式加入条件收益线性倾斜，并拆开动作扩展效应；C需历史最大回撤状态，主比较为相同动作/估计下L3对L1。",
+    "next_plans": "docs/STRATEGY_PLANS.md；均为建议方案，尚未锁定B/C实际运行配置或执行实现。",
+    "stopping_rule_satisfied": true
   }
 ]
