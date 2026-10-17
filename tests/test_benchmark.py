@@ -187,9 +187,20 @@ class FinalWorkflowTests(unittest.TestCase):
             config=dict(CONFIG,inner_folds=2,tuning_grid=[CONFIG['tuning_grid'][0]],bootstrap=50,sensitivity_costs=[.005])
             _,sha=load_partition(data)
             (dev/'manifest.json').write_text(json.dumps(manifest(config,sha,list(range(1,121)),'development')))
-            pd.DataFrame([dict(profile_id='A',horizon=5,loss_tolerance=.1,liquidity='high',portfolio='human_review',explanation='fixture')]).to_csv(dev/'suitability.csv',index=False)
+            pd.DataFrame([
+                dict(profile_id='A',horizon=5,loss_tolerance=.1,liquidity='high',portfolio='human_review',policy='human_review',explanation='fixture'),
+                dict(profile_id='B',horizon=5,loss_tolerance=.25,liquidity='medium',portfolio='conservative',policy='plan_a_conservative',explanation='fixture')
+            ]).to_csv(dev/'suitability.csv',index=False)
             bundle=root/'frozen.json'
             freeze(config,data,'balanced_hold',bundle,dev)
+            snapshot=json.loads(bundle.read_text())
+            pd.DataFrame({'fixture':[1]}).to_csv(dev/'scenario_metrics.csv',index=False)
+            with patch('safebench.experiment.tune',return_value=(snapshot['params'],[],[])), \
+                 patch('safebench.experiment.fit_model',return_value=snapshot['model']), \
+                 patch('safebench.experiment.suitability',return_value=(pd.DataFrame(snapshot['frozen_suitability']),None)) as mapped:
+                freeze(config,data,'plan_a_conservative',root/'mapping_check.json',dev)
+                self.assertEqual(mapped.call_args.args[2],dict(conservative='plan_a_conservative',
+                                 balanced='plan_a_balanced',growth='plan_a_growth'))
             frozen_code_hash=code_digest()
             with patch('safebench.experiment.BASE',root),patch('safebench.experiment.code_digest',return_value=frozen_code_hash),patch('safebench.report.generate_report'):
                 with self.assertRaises(PermissionError): run_final(bundle,data,root/'no_ack',False)
@@ -200,6 +211,14 @@ class FinalWorkflowTests(unittest.TestCase):
             self.assertEqual(set(result.scenario_id),set(range(121,181)))
             self.assertTrue((result.real_cagr<=0).all())
             self.assertTrue(json.loads((root/'final/validation.json').read_text())['all_checks_passed'])
+            assigned=pd.read_csv(root/'final/suitability.csv').set_index('profile_id')
+            self.assertEqual(assigned.loc['B','policy'],'plan_a_conservative')
+            self.assertEqual(assigned.loc['B','final_median_growth'],0.)
+            self.assertFalse((root/'final/report.html').exists())
+            # Removing a whole strategy must fail even if the remaining ledger is valid.
+            result[result.policy!='plan_a_growth'].to_csv(root/'final/scenario_metrics.csv',index=False)
+            from safebench.validation import audit_outputs
+            with self.assertRaises(AssertionError): audit_outputs(root/'final')
     def test_cvar_infeasible_fails_closed(self):
         config=dict(CONFIG,cvar_limit=-.5)
         with self.assertRaisesRegex(RuntimeError,'infeasible'):

@@ -46,10 +46,14 @@ def fit_model(scenarios,config):
         raise RuntimeError('CVaR cap infeasible on declared grid; no silent fallback')
     index=int(np.argmax(np.where(feasible,weights@mu,-np.inf)))
     inv=1/np.sqrt(np.diag(cov)); inv/=inv.sum()
-    return dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
+    model = dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
                 minvar=optimize(mu,cov,minimum_variance=True),inverse_vol=tuple(inv),
                 meanvar=optimize(mu,cov,gamma=config['fixed_gamma']),cvar=tuple(weights[index]),
                 cvar_feasible=bool(feasible.any()),cvar_estimate=float(tails[index]))
+    from .plan_a import enabled, fit_plan_a
+    if enabled(config):
+        model['plan_a'] = fit_plan_a(scenarios, config)
+    return model
 
 @dataclass
 class StaticPolicy:
@@ -117,7 +121,15 @@ POLICY_NAMES=['equal_annual','equal_hold','bills_hold','conservative_annual','ba
               'balanced_hold','balanced_periodic','balanced_threshold','minimum_variance','inverse_volatility',
               'mean_variance','cvar_constrained','balanced_gate','cost_aware','adaptive','adaptive_review']
 
-def make_policy(name,model,params,config):
+def policy_names(config):
+    from .plan_a import enabled, POLICIES
+    return POLICY_NAMES + (POLICIES if enabled(config) else [])
+
+
+def make_policy(name,model,params,config,horizon=None):
+    from .plan_a import POLICIES, PlanAPolicy
+    if name in POLICIES:
+        return PlanAPolicy(name, model, params, config, horizon)
     fixed={'equal_annual':(EQUAL,'annual'),'equal_hold':(EQUAL,'hold'),'bills_hold':((0.,0.,1.),'hold'),
            **{p+'_annual':(w,'annual') for p,w in PORTFOLIOS.items()},
            'balanced_hold':(PORTFOLIOS['balanced'],'hold'),'balanced_periodic':(PORTFOLIOS['balanced'],'periodic'),

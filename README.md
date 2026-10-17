@@ -4,7 +4,11 @@
 
 [题目](2026_MCM_SafeInvest.pdf) · [数据说明](docs/DATA.md) · [基准报告](benchmark/outputs/development_consolidated/report.html) · [实验结论](docs/FINDINGS.md) · [工作记录](LOG.md)
 
-已实现 17 种基准策略、年度回测引擎、嵌套情景交叉验证、客户期限评价、配对区间、成本敏感性及受控最终评价。开发结果中，成本感知策略增长更高，但回撤也更大；尚无门控候选同时满足预设增长与下行风险晋级条件。
+已实现17种基准策略与计划A的8种产品/对照、年度回测引擎、嵌套情景交叉验证、客户期限评价、配对区间、成本敏感性及受控最终评价。计划A增加连续凸路径风险配置、成本门控部分再平衡与实际策略的客户适配；目前仍无候选通过预设晋级条件。
+
+2026-10-16：[解题路线与研发计划](docs/STRATEGY_PLANS.md)补充了固定配置、部分再平衡、弱预测信号及回撤反馈的小规模验证；用于选择下一步研究方向，不替代正式Benchmark晋级。当前仅解题，暂停报告与论文制作。
+
+2026-10-17：计划A首轮开发完成，结果见[实验记录](docs/FINDINGS.md#计划a首轮开发2026-10-17)。H30均衡版中位实际增长4.6206%、P90回撤42.5352%、后续交易率54.48%；风险预算校准尚未通过。当前配置不自动生成报告；最终源码对应运行`development_plan_a_v2`，年度顺序与约束诊断位于`plan_a_diagnostics_v1`。
 
 **情景 1–120 用于开发，121–180 只供冻结后的最终评价。日常测试使用生成数据或开发分区。**
 
@@ -29,7 +33,9 @@ make audit RUN=benchmark/outputs/my_run
 make replay RUN=benchmark/outputs/my_run
 ```
 
-打开输出目录中的 `report.html` 查看中文报告；英文图表标签便于比赛提交引用。`make report/audit/replay` 默认指向 `development_consolidated`。可通过 `PYTHON=/path/to/python` 指定解释器，也可直接执行 `python benchmark/run.py --help`。
+当前`generate_report=false`，实验只保存数值证据；显式执行`make report`才生成HTML及图表。`make report/audit/replay`默认指向历史`development_consolidated`，新实验请传`RUN`。可通过`PYTHON=/path/to/python`指定解释器，也可直接执行`python benchmark/run.py --help`。
+
+计划A的独立优化核验：`.venv/bin/python scripts/verify_plan_a.py benchmark/outputs/development_plan_a_v2`。固定已选参数的诊断复现：`.venv/bin/python scripts/diagnose_plan_a.py benchmark/outputs/development_plan_a_v2 --out benchmark/outputs/my_plan_a_diagnostic`。
 
 配置统一在 [configs/benchmark.json](configs/benchmark.json)，客户问卷在 [configs/profiles.json](configs/profiles.json)。从其他目录调用时使用脚本和输出的绝对路径，默认输入按项目位置解析。真实最终评价不属于普通测试/实验命令，必须按 [实验协议](docs/PROTOCOL.md) 冻结后执行。
 

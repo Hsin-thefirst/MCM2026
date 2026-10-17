@@ -1,0 +1,18 @@
+{
+  "seed": 20261014,
+  "folds": 5,
+  "horizons": [5, 6, 15, 25, 30],
+  "costs": [0.0025, 0.005],
+  "grid_step": 0.05,
+  "risk_budgets": [0.25, 0.35, 0.45],
+  "static_modes": ["annual", "hold", "band_full", "band_edge"],
+  "band": 0.05,
+  "gammas": [3.0, 5.0, 8.0],
+  "gate_modes": ["constant", "ridge_half", "drawdown"],
+  "buffer": 0.0001,
+  "drawdown_scale": 0.4,
+  "drawdown_response": 2.0,
+  "bootstrap": 4000,
+  "scope": "仅1–120开发情景；固定少量设置全部报告；探索性方案筛选，不宣称晋级。固定配置风险预算按训练折P90回撤选择，含费用逐期限评价。",
+  "predictability": {"ridge": 10.0, "history_window": 5, "minimum_target_period": 3}
+}

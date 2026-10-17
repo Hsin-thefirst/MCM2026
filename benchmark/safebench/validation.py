@@ -10,8 +10,10 @@ def comparisons_and_screen(out,config):
     metrics=pd.read_csv(out/'scenario_metrics.csv')
     main=metrics[(metrics.horizon==30)&np.isclose(metrics.cost_rate,config['cost_rate'])]
     all_pairs=[]; screens=[]
-    candidates=['balanced_gate','cost_aware','adaptive','adaptive_review']
-    for ref in ['balanced_annual','balanced_hold']:
+    candidates=['balanced_gate','cost_aware','adaptive','adaptive_review',
+                'plan_a_balanced','plan_a_full_gate','plan_a_no_review']
+    references=['balanced_annual','balanced_hold']+(['plan_a_annual'] if 'plan_a_annual' in set(main.policy) else [])
+    for ref in references:
         pairs=paired_comparisons(main,config['seed'],config['bootstrap'],baseline=ref)
         pairs['reference']=ref
         all_pairs.append(pairs)
@@ -41,6 +43,29 @@ def comparisons_and_screen(out,config):
                 positive_folds=sum(d>0 for d in deltas),status='investigate_for_promotion' if all(checks.values()) else 'not_established',
                 note='Exploratory growth-route screen only; service suitability and independent final evaluation still required.'))
     pd.DataFrame(screens).to_csv(out/'promotion_screen.csv',index=False)
+    if config.get('plan_a',{}).get('enabled') and 'plan_a_balanced' in set(main.policy):
+        settings=config['plan_a']['risk_promotion']; risk_screens=[]
+        high=metrics[(metrics.horizon==30)&np.isclose(metrics.cost_rate,.005)]
+        for ref in ['balanced_annual','plan_a_annual']:
+            for candidate in ['plan_a_balanced','plan_a_full_gate','plan_a_no_review']:
+                table=pairs[(pairs.policy==candidate)&(pairs.reference==ref)].set_index('metric')
+                growth,p10,loss=[table.loc[k] for k in ['median_growth','p10_growth','p90_loss']]
+                improving=0
+                for _,g in main[main.policy.isin([ref,candidate])].groupby('fold'):
+                    q=g.groupby('policy').real_max_drawdown.quantile(.9)
+                    improving+=int(q[candidate]<q[ref])
+                hc=high[high.policy==candidate]; hr=high[high.policy==ref]
+                checks=dict(practical_risk=bool(loss.difference<=-settings['minimum_p90_reduction']),
+                    risk_upper_negative=bool(loss.family_upper<0),
+                    growth_noninferior=bool(growth.family_lower>=-settings['maximum_growth_loss']),
+                    p10_noninferior=bool(p10.family_lower>=-settings['maximum_p10_loss']),
+                    fold_stability=improving>=4,
+                    doubled_cost=bool(hc.real_max_drawdown.quantile(.9)<hr.real_max_drawdown.quantile(.9) and
+                        hc.real_cagr.median()>=hr.real_cagr.median()-settings['maximum_growth_loss']),
+                    review_rate=bool(main[main.policy==candidate].review.mean()<=settings['maximum_review_rate']))
+                risk_screens.append(dict(policy=candidate,reference=ref,**checks,improving_folds=improving,
+                    status='investigate_for_promotion' if all(checks.values()) else 'not_established'))
+        pd.DataFrame(risk_screens).to_csv(out/'risk_promotion_screen.csv',index=False)
 
 def audit_outputs(out):
     """Recompute wealth and metrics with independent scalar recurrences for all saved paths."""
@@ -50,11 +75,21 @@ def audit_outputs(out):
     expected=set(manifest['scenario_ids'])
     assert set(m.scenario_id)==expected
     assert not m.duplicated(['policy','scenario_id','horizon','cost_rate']).any()
-    assert not r.duplicated(['policy','scenario_id','period','cost_rate']).any()
+    if 'simulation_horizon' not in r:
+        r['simulation_horizon']=r.groupby(['policy','scenario_id','cost_rate']).period.transform('max')
+    if 'simulation_horizon' not in m:
+        lengths=r.groupby(['policy','scenario_id','cost_rate']).simulation_horizon.max().rename('simulation_horizon').reset_index()
+        m=m.merge(lengths,on=['policy','scenario_id','cost_rate'],validate='many_to_one')
+    assert not r.duplicated(['policy','scenario_id','period','cost_rate','simulation_horizon']).any()
+    if 'evaluated_policies' in manifest:
+        expected_keys={(p,s,h,cost) for p in manifest['evaluated_policies'] for s in expected
+                       for cost in [c['cost_rate']]+c['sensitivity_costs']
+                       for h in (c['horizons'] if cost==c['cost_rate'] else [30])}
+        assert set(m[['policy','scenario_id','horizon','cost_rate']].itertuples(index=False,name=None))==expected_keys
     audit_paths=0; maximum_error=0.
     assets=['equity','bond','bill']
-    r=r.sort_values(['policy','scenario_id','cost_rate','period']).reset_index(drop=True)
-    groups=['policy','scenario_id','cost_rate']
+    r=r.sort_values(['policy','scenario_id','cost_rate','simulation_horizon','period']).reset_index(drop=True)
+    groups=['policy','scenario_id','cost_rate','simulation_horizon']
     pre=r[['pre_trade_holdings_'+a for a in assets]].to_numpy()
     post=r[['post_trade_holdings_'+a for a in assets]].to_numpy()
     end=r[['end_holdings_'+a for a in assets]].to_numpy()
@@ -72,10 +107,17 @@ def audit_outputs(out):
     np.testing.assert_allclose(fees,r.transaction_cost,atol=1e-9)
     np.testing.assert_allclose(q,r.moved_amount,atol=1e-8)
     np.testing.assert_allclose(post.sum(axis=1)+fees,pre.sum(axis=1),atol=1e-8)
-    lookup={(p,int(s),float(cost)):g for (p,s,cost),g in m.groupby(groups)}
-    for (policy,sid,cost),g in r.groupby(groups):
+    if 'requires_benefit_gate' in r:
+        gated=r.requires_benefit_gate.to_numpy(dtype=bool)&trading&(r.period.to_numpy()>1)
+        assert np.isfinite(r.loc[gated,['estimated_benefit','estimated_cost','required_buffer']].to_numpy()).all()
+        np.testing.assert_allclose(r.loc[gated,'estimated_cost'],fees[gated]/pre.sum(axis=1)[gated],atol=1e-10,rtol=1e-10)
+        assert (r.loc[gated,'estimated_benefit']>r.loc[gated,'estimated_cost']+r.loc[gated,'required_buffer']).all()
+    lookup={(p,int(s),float(cost),int(h)):g for (p,s,cost,h),g in m.groupby(groups)}
+    assert set(lookup)==set(r.groupby(groups).groups)
+    for (policy,sid,cost,simulation_horizon),g in r.groupby(groups):
+        assert g.period.to_list()==list(range(1,int(simulation_horizon)+1))
         initial=c['initial_wealth']; peak=initial; mdd=0.; fees=0.; realfees=0.; infl=1.; wealths=[initial]; trades=0
-        metric_by_h={row.horizon:row for row in lookup[(policy,int(sid),float(cost))].itertuples()}
+        metric_by_h={row.horizon:row for row in lookup[(policy,int(sid),float(cost),int(simulation_horizon))].itertuples()}
         for row in g.itertuples():
             fee=row.transaction_cost
             if row.period>1 and row.moved_amount>1e-10*initial: trades+=1
@@ -111,6 +153,13 @@ def audit_outputs(out):
         assert sorted(seen)==sorted(expected)
         fitted=json.loads((out/'fitted_models.json').read_text())
         assert all(f['model']['cvar_feasible'] and f['model']['cvar_estimate']<=c['cvar_limit']+1e-10 for f in fitted)
+        for f in fitted:
+            if 'plan_a' not in f['model']: continue
+            assert f['model']['plan_a']['train_ids']==f['model']['train_ids']
+            for entry in f['model']['plan_a']['entries'].values():
+                assert entry['risk']<=entry['risk_budget']+c['plan_a']['solver']['feasibility_tolerance']
+                assert entry['optimality_gap']<=c['plan_a']['solver']['objective_tolerance']
+                assert entry['status']=='optimal_within_tolerance'
     result=dict(phase=manifest['phase'],audited_paths=audit_paths,metric_rows=len(m),decision_rows=len(r),
                 maximum_numeric_discrepancy=maximum_error,all_checks_passed=True,
                 scope='All saved accounting paths, metric recurrences, uniqueness, CV splits and outer CVaR feasibility; market returns checked separately in replay tests.')

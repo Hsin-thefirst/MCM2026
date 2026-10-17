@@ -41,5 +41,93 @@
     "changes_after_results": "Configuration and utility paths, CLI defaults and report presentation only; trading rules, search space and financial computations unchanged. Historical artifacts retained without rewriting manifests.",
     "verification": "39 tests pass; all 18,360 metric rows exactly match development_integrated; 10,200 paths audited; 306,000 market transitions replayed and 1,080 independent scalar reference checks passed. Current code hash matches manifest.",
     "holdout_used": false
+  },
+  {
+    "run": "strategy_planning_20261016",
+    "date": "2026-10-16",
+    "purpose": "解题方案可行性诊断：固定配置风险前沿、交易区域、线性预测及回撤反馈。仅保存代码和数值证据，不生成报告/论文。",
+    "status": "completed_exploratory_planning",
+    "holdout_used": false,
+    "config": "configs/strategy_planning.json",
+    "informed_by": "已知Benchmark和历史MPC分支结果；审查agent在内存中做过3年特征ridge诊断（收益有微弱正向信号），未保存完整证据，视为事后探索依据，不称本轮完全盲预注册。",
+    "search_budget": "5折整情景；固定配置完整5%单纯形231点、4种交易规则、3个P90预算、5期限；门控gamma3/5/8与无信号/半强度ridge/回撤反馈共9候选；两档费用；预测器固定ridge10与5年特征，不搜索。",
+    "selection": "固定配置在96条训练情景选择满足预算且平均对数增长最高的网格权重，24条验证情景评价；不可行明确标记。9个门控设置全部报告，不根据外层选择后宣称独立胜出。",
+    "stopping_rule": "完成这一批方案诊断即汇总计划，不因外层结果继续加参数；数学性质与合成/独立标量核验可追加。",
+    "finding": "部分再平衡同权重参照H30：3.8487%/P90回撤34.1437%，年度3.6866%/34.5942%；Ridge gamma5为4.1795%/35.5710%，固定gamma5为4.0330%/38.0083%。后者增长区间跨零且五个单折中位增长均略降，不宣称晋级。",
+    "verification": "42项make test通过；3360条预测、静态与门控各14400行期限指标、86400条决策；26115次收益门槛检查；2160行旧参照完全一致；84条静态向量/标量路径最大误差7.78e-16。",
+    "diagnostics": "保存网格复用形成同权重对照及逐点4000次配对bootstrap，不新拟合或扩展候选。",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "development_plan_a_v1",
+    "date": "2026-10-17",
+    "status": "completed_verified_development",
+    "holdout_used": false,
+    "purpose": "计划A：连续凸路径对数回撤CVaR配置、成本门控部分再平衡、三类产品实际期限适配及同配置消融。",
+    "informed_by": "strategy_planning_20261016及原Benchmark和MPC分支历史结果；同一开发总体的后续研究。",
+    "search_budget": {
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "risk_ratios": [
+        0.9,
+        1.0
+      ],
+      "tracking_gammas": [
+        4.0,
+        12.0
+      ],
+      "move_fractions": [
+        0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "products": 3,
+      "horizons": [
+        5,
+        6,
+        15,
+        25,
+        30
+      ]
+    },
+    "method": "无费用固定再平衡子问题的平均对数增长最大化，约束路径最大对数回撤CVaR90；切平面LP下界与可行上界控制误差。连续解在含费策略上另检验；逆优化战略偏好的二次价值门槛，不把偏好先验称为预测。",
+    "selection": "内层各产品按所有期限：执行路径对数回撤ES不超过平均训练预算+.005，相对同权重年度中位增长损失≤.001、P10损失≤.002，复核率≤.1；可行者平均对数增长最高，否则最小标准化违约并标记未通过。对照严格继承主候选参数。",
+    "promotion": "保留原增长筛选，并预声明相对Balanced年度风险路线：P90下降≥.03、中位增长损失≤.005、P10损失≤.002，多候选区间、至少4折风险下降、翻倍费用和复核率共同检验；不输出虚构官方总分。",
+    "stopping_rule": "完成这一完整开发批次及独立核验后汇总，不按外层结果增加参数；实现错误可另登记修复，不读取真实最终留出集。",
+    "verification": "51项测试；27000行指标、498960条年度决策、18840条路径；150个独立优化证书，18360行旧策略完全一致。",
+    "finding": "均衡版H30中位实际CAGR4.6206%、P90回撤42.5352%，未通过增长/风险晋级；15个产品/外折选择均不合格。",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "plan_a_diagnostics_v1",
+    "date": "2026-10-17",
+    "status": "completed_exploratory_diagnostic",
+    "holdout_used": false,
+    "parent": "development_plan_a_v1",
+    "purpose": "复算已选参数的内层约束失败明细；固定外层模型进行年度顺序压力诊断。",
+    "timing": "主实验已开始，已见前四折参数全部不合格；尚未看到主实验汇总。此诊断不作为独立确认。",
+    "search_budget": "不调参：15组已选产品/折的原内层验证复算；H30官方费用，7策略，原顺序/逆序/固定seed20261017+scenario_id联合打乱。",
+    "selection": "沿用主实验全部参数，不依据压力结果更换。资产收益与通胀按年度整体重排，逐时策略仍只接收过去。",
+    "stopping_rule": "定位约束失败及顺序敏感性后停止，不新增候选或宣称新的独立样本。",
+    "verification": "15组选择违约分数重现、840行原指标重现；2520行顺序压力指标。",
+    "finding": "75项产品/期限/折检查中48项尾部风险超预算，其余条件全部通过；均衡版逆序/打乱中位增长4.5068%/4.4621%，不足以支持稳定增益。",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "development_plan_a_v2",
+    "date": "2026-10-17",
+    "status": "current_verified_development",
+    "holdout_used": false,
+    "parent": "development_plan_a_v1",
+    "purpose": "提交前修正冻结接口：选择保守或成长产品不应替换均衡产品映射。开发算法、参数、候选和所有筛选标准与v1完全相同；重跑以让最终源码hash与实验一致。",
+    "search_budget": "严格复用v1配置，无新增搜索；要求全部27000行金融指标与v1一致。",
+    "selection": "与v1相同。",
+    "stopping_rule": "确认接口修正及数值一致性后提交，不再次调参。",
+    "verification": "51项统一测试和冻结映射专项回归通过；18840条路径/498960条决策核验；150个优化证书通过，18360行旧基准一致；全部27000行金融指标与v1完全一致。",
+    "code_sha256": "9d051f00cb1c5f6987ae43cc729c10ff68b5778199729e3165ccfddc1b3ceb90",
+    "finding": "与v1相同；均衡增长4.6206%、P90回撤42.5352%，未通过晋级或内层风险预算校准。",
+    "stopping_rule_satisfied": true
   }
 ]

@@ -14,8 +14,9 @@ from safeinvest.contracts import SimulationConfig
 from . import ROOT
 from .data import load_partition, folds, real_rows
 from .engine import simulate
-from .metrics import compute_metrics, summarize, paired_comparisons, pareto_flags, binomial_upper
-from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS
+from .metrics import compute_metrics, summarize, paired_comparisons, pareto_flags, binomial_upper, expected_shortfall
+from .policies import fit_model, make_policy, POLICY_NAMES, PORTFOLIOS, policy_names
+from . import plan_a
 
 BASE=ROOT/'benchmark'
 TUNED=('balanced_gate','cost_aware','adaptive','adaptive_review')
@@ -33,47 +34,56 @@ def code_digest():
 def versions():
     return {p:importlib.metadata.version(p) for p in ['numpy','scipy','pandas','matplotlib']}
 
-def manifest(config,data_hash,ids,phase):
+def manifest(config,data_hash,ids,phase,names=None):
     return dict(created_utc=datetime.now(timezone.utc).isoformat(),phase=phase,scenario_ids=ids,
                 partition_sha256=data_hash,config_sha256=digest(config),code_sha256=code_digest(),
                 python=platform.python_version(),dependencies=versions(),seed=config['seed'],
                 git_commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True).stdout.strip(),
-                holdout_used=phase=='final')
+                holdout_used=phase=='final',evaluated_policies=names or policy_names(config))
 
 def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fold=0,keep_records=True):
-    names=names or POLICY_NAMES
+    names=names or policy_names(config)
     cost=config['cost_rate'] if cost is None else cost
     horizons=horizons or config['horizons']
     output,records=[],[]
     for name in names:
-        selected=params.get(name,config['tuning_grid'][0])
+        default=plan_a.parameter_grid(config)[0] if name in plan_a.POLICIES else config['tuning_grid'][0]
+        selected=params.get(name,default)
         for s in scenarios:
             if s.scenario_id in model['train_ids']:
                 raise ValueError('Evaluation scenario overlaps fitted training scenarios')
-            p=make_policy(name,model,selected,config)
-            cfg=SimulationConfig(max(horizons),config['initial_wealth'],cost)
-            full=simulate(s,p,p.initial_target,cfg)
-            # All current policies are horizon-independent. Future horizon-conditioned policies must rerun each H.
-            for h in horizons:
-                result=replace(full,config=replace(cfg,horizon=h),records=full.records[:h])
-                row=compute_metrics(result); row['fold']=fold
-                output.append(row)
-            if keep_records:
-                for r in full.records:
-                    row=asdict(r)
-                    for field in ('target_weights','pre_trade_holdings','post_trade_holdings','end_holdings'):
-                        values=row.pop(field)
-                        row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
-                    row.update(scenario_id=s.scenario_id,policy=name,cost_rate=cost,fold=fold)
-                    row['action']=r.action.value
-                    row['reason_codes']=json.dumps(row['reason_codes'])
-                    records.append(row)
+            simulation_horizons = horizons if name in plan_a.POLICIES else [max(horizons)]
+            for simulation_horizon in simulation_horizons:
+                p=make_policy(name,model,selected,config,horizon=simulation_horizon)
+                cfg=SimulationConfig(simulation_horizon,config['initial_wealth'],cost)
+                full=simulate(s,p,p.initial_target,cfg)
+                for h in ([simulation_horizon] if name in plan_a.POLICIES else horizons):
+                    result=replace(full,config=replace(cfg,horizon=h),records=full.records[:h])
+                    row=compute_metrics(result)
+                    row.update(fold=fold,simulation_horizon=simulation_horizon,
+                               policy_decision_calls=getattr(p,'decision_calls',0),
+                               policy_inference_seconds=getattr(p,'inference_seconds',0.))
+                    if name in plan_a.POLICIES:
+                        product=name.removeprefix('plan_a_') if name in ['plan_a_'+x for x in plan_a.PRODUCTS] else 'balanced'
+                        row['plan_a_risk_budget']=model['plan_a']['entries'][f"{product}:{h}:{selected['risk_ratio']:g}"]['risk_budget']
+                    output.append(row)
+                if keep_records:
+                    for r in full.records:
+                        row=asdict(r)
+                        for field in ('target_weights','pre_trade_holdings','post_trade_holdings','end_holdings'):
+                            values=row.pop(field)
+                            row.update({field+'_'+asset:v for asset,v in zip(('equity','bond','bill'),values)})
+                        row.update(scenario_id=s.scenario_id,policy=name,cost_rate=cost,fold=fold,simulation_horizon=simulation_horizon,
+                                   required_buffer=getattr(p,'buffer',0.),requires_benefit_gate=getattr(p,'requires_benefit_gate',False))
+                        row['action']=r.action.value
+                        row['reason_codes']=json.dumps(row['reason_codes'])
+                        records.append(row)
     return pd.DataFrame(output),pd.DataFrame(records)
 
 def tune(scenarios,config,seed):
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
-    collected=[]; audits=[]
+    collected=[]; audits=[]; plan_scores=[]
     for inner,valid_ids in enumerate(groups):
         train=[s for sid,s in by_id.items() if sid not in valid_ids]
         valid=[by_id[sid] for sid in valid_ids]
@@ -84,6 +94,22 @@ def tune(scenarios,config,seed):
                                 horizons=[30],keep_records=False)
             metrics['trial']=trial
             collected.append(metrics)
+        if plan_a.enabled(config):
+            # Reuse only this inner-training fit. Every product is evaluated at its actual horizons.
+            for trial, params in enumerate(plan_a.parameter_grid(config)):
+                for product in plan_a.PRODUCTS:
+                    name='plan_a_'+product
+                    metrics,_=evaluate(valid,model,{name:params},config,names=[name],keep_records=False)
+                    controls=[]
+                    for s in valid:
+                        for h in config['horizons']:
+                            p=plan_a.PlanAPolicy(name,model,params,config,h,product=product,mode='annual',review=False)
+                            r=simulate(s,p,p.initial_target,SimulationConfig(h,config['initial_wealth'],config['cost_rate']))
+                            controls.append(dict(scenario_id=s.scenario_id,horizon=h,
+                                                 annual_growth=compute_metrics(r)['real_cagr']))
+                    metrics=metrics.merge(pd.DataFrame(controls),on=['scenario_id','horizon'],validate='one_to_one')
+                    metrics['trial']=trial
+                    plan_scores.append(metrics)
     scores=pd.concat(collected,ignore_index=True)
     scores['utility']=scores.real_cagr-config['selection_drawdown_penalty']*scores.real_max_drawdown
     rows=[]; chosen={}
@@ -102,15 +128,44 @@ def tune(scenarios,config,seed):
                              best_trial=best,paired_gap_se=se,one_se_eligible=ok))
         selected=max(eligible,key=lambda i:(config['tuning_grid'][i]['buffer'],config['tuning_grid'][i]['gamma'],-i))
         chosen[name]=config['tuning_grid'][selected]
+    if plan_scores:
+        settings=config['plan_a']['selection']
+        trials=plan_a.parameter_grid(config)
+        scores=pd.concat(plan_scores,ignore_index=True)
+        for name, group in scores.groupby('policy'):
+            choices=[]
+            for trial, block in group.groupby('trial'):
+                violations=[]
+                for h, g in block.groupby('horizon'):
+                    risk=expected_shortfall(-np.log1p(-g.real_max_drawdown.to_numpy()),config['plan_a']['alpha'])
+                    budget=g.plan_a_risk_budget.mean()
+                    violations.extend([
+                        max(0.,(risk-budget-settings['log_risk_slack'])/max(budget,.01)),
+                        max(0.,(g.annual_growth.median()-g.real_cagr.median()-settings['median_growth_loss'])/settings['median_growth_loss']),
+                        max(0.,(g.annual_growth.quantile(.1)-g.real_cagr.quantile(.1)-settings['p10_growth_loss'])/settings['p10_growth_loss']),
+                        max(0.,(g.review.mean()-settings['maximum_review_rate'])/settings['maximum_review_rate'])])
+                violation=float(sum(violations)); feasible=violation<=1e-10
+                score=float(np.log1p(block.real_cagr).mean())
+                choices.append((int(trial),feasible,violation,score))
+                rows.append(dict(policy=name,trial=int(trial),mean_utility=score,
+                                 selection_feasible=feasible,constraint_violation=violation))
+            winner=min(choices,key=lambda x:(not x[1],x[2] if not x[1] else 0.,-x[3],x[0]))
+            chosen[name]=dict(trials[winner[0]],selection_feasible=winner[1],constraint_violation=winner[2])
+        for name in plan_a.CONTROLS:
+            chosen[name]=dict(chosen['plan_a_balanced'])
     return chosen,rows,audits
 
-def suitability(metrics,config):
+def suitability(metrics,config,policy_map=None):
     profiles=json.loads((ROOT/'configs/profiles.json').read_text())
     rows=[]; risk=[]
+    if policy_map is None:
+        use_plan=plan_a.enabled(config) and all('plan_a_'+p in set(metrics.policy) for p in PORTFOLIOS)
+        policy_map={p:('plan_a_'+p if use_plan else p+'_annual') for p in PORTFOLIOS}
     for p in profiles:
         candidates=[]
         for portfolio in PORTFOLIOS:
-            g=metrics[(metrics.policy==portfolio+'_annual')&(metrics.horizon==p['horizon'])&
+            policy=policy_map[portfolio]
+            g=metrics[(metrics.policy==policy)&(metrics.horizon==p['horizon'])&
                       np.isclose(metrics.cost_rate,config['cost_rate'])]
             if len(g)==0: raise ValueError('Missing suitability horizon')
             k=int((g.real_max_drawdown>p['loss_tolerance']).sum())
@@ -120,7 +175,8 @@ def suitability(metrics,config):
             liquidity_ok=p['liquidity']!='high' or portfolio=='conservative'
             horizon_ok=portfolio!='growth' or p['horizon']>=15
             eligible=upper<=config['suitability_max_breach_probability'] and liquidity_ok and horizon_ok
-            risk.append(dict(profile=p['profile_id'],portfolio=portfolio,horizon=p['horizon'],n=len(g),
+            evidence='OOF diagnostic; refit coverage not guaranteed' if policy.startswith('plan_a_') else 'Fixed-policy scenario sample'
+            risk.append(dict(profile=p['profile_id'],portfolio=portfolio,policy=policy,evidence=evidence,horizon=p['horizon'],n=len(g),
                 breaches=k,breach_probability=k/len(g),upper_bound=upper,confidence=confidence,
                 tolerance=p['loss_tolerance'],eligible=eligible,liquidity_ok=liquidity_ok,horizon_ok=horizon_ok,
                 median_growth=g.real_cagr.median()))
@@ -128,7 +184,7 @@ def suitability(metrics,config):
         choice=max(candidates)[1] if candidates else 'human_review'
         reason=('Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.'
                 if candidates else 'No portfolio passes the conservative development risk screen and liquidity/horizon rules.')
-        rows.append(dict(**p,portfolio=choice,explanation=reason))
+        rows.append(dict(**p,portfolio=choice,policy=policy_map.get(choice,'human_review'),explanation=reason))
     return pd.DataFrame(rows),pd.DataFrame(risk)
 
 def run_development(config,data_path,out):
@@ -170,12 +226,13 @@ def run_development(config,data_path,out):
     comparisons_and_screen(out,config)
     audit_outputs(out)
     dump(out/'runtime.json',dict(seconds=time.perf_counter()-started))
-    from .report import generate_report
-    generate_report(out)
+    if config.get('generate_report',True):
+        from .report import generate_report
+        generate_report(out)
     return out
 
 def freeze(config,data_path,policy,output,development_run):
-    if policy not in POLICY_NAMES:
+    if policy not in policy_names(config):
         raise ValueError('Unknown candidate')
     prior=json.loads((Path(development_run)/'manifest.json').read_text())
     if prior['phase']!='development' or prior['code_sha256']!=code_digest() or prior['config_sha256']!=digest(config):
@@ -185,11 +242,18 @@ def freeze(config,data_path,policy,output,development_run):
         raise ValueError('Development data changed')
     params,trials,audit=tune(scenarios,config,config['seed']+1000)
     model=fit_model(scenarios,config)
+    assignments=pd.read_csv(Path(development_run)/'suitability.csv').to_dict('records')
+    if plan_a.enabled(config) and (Path(development_run)/'scenario_metrics.csv').exists():
+        mapping={p:'plan_a_'+p for p in PORTFOLIOS}
+        if policy in plan_a.CONTROLS or policy=='plan_a_balanced': mapping['balanced']=policy
+        assignments=suitability(pd.read_csv(Path(development_run)/'scenario_metrics.csv'),config,mapping)[0].to_dict('records')
+    comparators=['equal_annual','conservative_annual','balanced_annual','growth_annual','balanced_hold']
+    if plan_a.enabled(config): comparators+=plan_a.POLICIES
     bundle=dict(schema=1,selected_policy=policy,config=config,model=model,params=params,
                 code_sha256=code_digest(),dependencies=versions(),development_sha256=data_hash,
                 development_run=str(Path(development_run).resolve()),final_scenarios=list(range(121,181)),
-                final_comparators=['equal_annual','conservative_annual','balanced_annual','growth_annual','balanced_hold'],
-                frozen_suitability=pd.read_csv(Path(development_run)/'suitability.csv').to_dict('records'),
+                final_comparators=comparators,
+                frozen_suitability=assignments,
                 tuning_trials=trials,tuning_splits=audit,
                 protocol='One final evaluation; no adjustments after exposure; failed executions also consume the lock.')
     bundle['bundle_sha256']=digest(bundle)
@@ -232,14 +296,14 @@ def run_final(bundle_path,data_path,out,acknowledge):
     records.to_csv(out/'decisions.csv.gz',index=False,compression={'method':'gzip','mtime':0})
     pareto_flags(summarize(metrics)).to_csv(out/'summary.csv',index=False)
     paired_comparisons(metrics,config['seed'],config['bootstrap']).to_csv(out/'paired_comparisons.csv',index=False)
-    dump(out/'manifest.json',manifest(config,final_hash,[s.scenario_id for s in scenarios],'final'))
+    dump(out/'manifest.json',manifest(config,final_hash,[s.scenario_id for s in scenarios],'final',names))
     dump(out/'config.json',config); dump(out/'frozen_bundle.json',raw)
     # Evaluate the development-frozen assignments; do not reassign using final outcomes.
     assignment_rows=[]
     for profile in b['frozen_suitability']:
         row=dict(profile)
         if profile['portfolio']!='human_review':
-            group=metrics[(metrics.policy==profile['portfolio']+'_annual') &
+            group=metrics[(metrics.policy==profile.get('policy',profile['portfolio']+'_annual')) &
                           (metrics.horizon==profile['horizon']) & np.isclose(metrics.cost_rate,config['cost_rate'])]
             row['final_breach_probability']=float((group.real_max_drawdown>profile['loss_tolerance']).mean())
             row['final_median_growth']=float(group.real_cagr.median())
@@ -247,5 +311,6 @@ def run_final(bundle_path,data_path,out,acknowledge):
     pd.DataFrame(assignment_rows).to_csv(out/'suitability.csv',index=False)
     from .validation import audit_outputs
     audit_outputs(out)
-    from .report import generate_report
-    generate_report(out)
+    if config.get('generate_report',True):
+        from .report import generate_report
+        generate_report(out)

@@ -2,9 +2,20 @@
   "seed": 20261014,
   "outer_folds": 5,
   "inner_folds": 3,
-  "horizons": [5, 6, 15, 25, 30],
+  "horizons": [
+    5,
+    6,
+    15,
+    25,
+    30
+  ],
   "cost_rate": 0.0025,
-  "sensitivity_costs": [0.0, 0.00125, 0.005, 0.01],
+  "sensitivity_costs": [
+    0.0,
+    0.00125,
+    0.005,
+    0.01
+  ],
   "bootstrap": 4000,
   "initial_wealth": 100.0,
   "covariance_shrinkage": 0.25,
@@ -16,14 +27,77 @@
   "prior_strength": 30,
   "review_drawdown": 0.25,
   "tuning_grid": [
-    {"gamma": 3.0, "buffer": 0.0, "window": 5},
-    {"gamma": 3.0, "buffer": 0.001, "window": 5},
-    {"gamma": 8.0, "buffer": 0.0, "window": 5},
-    {"gamma": 8.0, "buffer": 0.001, "window": 5}
+    {
+      "gamma": 3.0,
+      "buffer": 0.0,
+      "window": 5
+    },
+    {
+      "gamma": 3.0,
+      "buffer": 0.001,
+      "window": 5
+    },
+    {
+      "gamma": 8.0,
+      "buffer": 0.0,
+      "window": 5
+    },
+    {
+      "gamma": 8.0,
+      "buffer": 0.001,
+      "window": 5
+    }
   ],
-  "selection_drawdown_penalty": 0.10,
-  "suitability_max_breach_probability": 0.20,
+  "selection_drawdown_penalty": 0.1,
+  "suitability_max_breach_probability": 0.2,
   "suitability_confidence": 0.95,
   "minimum_growth_improvement": 0.001,
-  "maximum_p90_loss_increase": 0.01
+  "maximum_p90_loss_increase": 0.01,
+  "generate_report": false,
+  "plan_a": {
+    "enabled": true,
+    "alpha": 0.9,
+    "risk_ratios": [
+      0.9,
+      1.0
+    ],
+    "tracking_gammas": [
+      4.0,
+      12.0
+    ],
+    "bill_floors": {
+      "conservative": 0.4,
+      "balanced": 0.0,
+      "growth": 0.0
+    },
+    "move_fractions": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "buffer": 0.0001,
+    "band": 0.05,
+    "review_multiple": 1.5,
+    "review_minimum": 0.1,
+    "review_maximum": 0.75,
+    "solver": {
+      "objective_tolerance": 1e-06,
+      "feasibility_tolerance": 1e-08,
+      "max_iterations": 300
+    },
+    "selection": {
+      "log_risk_slack": 0.005,
+      "median_growth_loss": 0.001,
+      "p10_growth_loss": 0.002,
+      "maximum_review_rate": 0.1
+    },
+    "risk_promotion": {
+      "minimum_p90_reduction": 0.03,
+      "maximum_growth_loss": 0.005,
+      "maximum_p10_loss": 0.002,
+      "maximum_review_rate": 0.1
+    }
+  }
 }
