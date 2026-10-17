@@ -129,5 +129,81 @@
     "code_sha256": "9d051f00cb1c5f6987ae43cc729c10ff68b5778199729e3165ccfddc1b3ceb90",
     "finding": "与v1相同；均衡增长4.6206%、P90回撤42.5352%，未通过晋级或内层风险预算校准。",
     "stopping_rule_satisfied": true
+  },
+  {
+    "run": "plan_a_calibration_diagnostic_v1",
+    "date": "2026-10-17",
+    "status": "completed_training_diagnostic",
+    "holdout_used": false,
+    "purpose": "计划A预算校准前置诊断：仅已有外折训练分区，比较固定锚无费/含费/门控风险，并核验更紧训练预算的网格可行域。",
+    "search_budget": "复用5个已存外层模型，三产品五期限；231点网格仅检查风险下限，不按验证表现选择候选。",
+    "selection": "不选择策略，不更改旧结果。",
+    "stopping_rule": "保存一次诊断后固定正式校准实验候选，不追加外层筛选。",
+    "finding": "外层训练231点网格的保守产品最低可行风险比例最大约0.8158，均衡0.4560、成长0.3155。更严格保守预算可能不可行，需保留失败而不能静默替代。",
+    "verification": "231点训练可行域诊断完成；execution/复现旧选择并保存训练无费/含费/执行与验证风险分解。"
+  },
+  {
+    "run": "development_plan_a_calibrated_v1",
+    "date": "2026-10-17",
+    "status": "current_verified_development",
+    "holdout_used": false,
+    "parent": "development_plan_a_v2",
+    "purpose": "分离固定产品验证风险目标与训练安全余量，校准完整含费执行；保留不可行候选证据。",
+    "informed_by": "上一轮48/75项超预算、复核及顺序诊断；前置诊断仅查看已有外层训练分区的风险可行域。",
+    "search_budget": {
+      "outer_folds": 5,
+      "inner_folds": 3,
+      "training_risk_ratios": [
+        0.75,
+        0.85,
+        0.95
+      ],
+      "validation_risk_ratio": 1.0,
+      "tracking_gammas": [
+        4.0,
+        12.0
+      ],
+      "products": 3,
+      "horizons": [
+        5,
+        6,
+        15,
+        25,
+        30
+      ],
+      "policies": 25
+    },
+    "selection": "验证风险线固定为同训练样本原产品配置的最大对数回撤CVaR90（比例1）+.005，所有训练比例共享；训练预算分别留25%/15%/5%余量。收益损失、复核条件与上一轮一致。所有内层及重拟合均可行者才排名，失败候选明确记录；无合格执行候选时仍标记未通过。",
+    "promotion": "沿用原增长与风险路线全部标准，不根据新结果改阈值。必须区分原验收线变化和真实金融指标改善。",
+    "diagnostics": "保存每候选五期限的风险及收益约束分解；复算所选参数、费用敏感性与固定模型年度顺序压力。",
+    "stopping_rule": "完成这一批与独立核验后停止，不依据外层结果扩展参数；只读取开发1–120，不生成报告或论文。",
+    "verification": "53项统一测试；27000行指标、498960条年度记录、18840条路径；217个可行/8个不可行外层证书、26个内层不可行证据通过；15个选择与排名独立重算通过；18360行旧基准一致。",
+    "finding": "同风险线内层合格产品/折7/15→15/15；两版15项汇总外层风险均通过。均衡增长4.3401%、P10 1.5589%、P90回撤42.2199%、交易率54.08%；金融表现晋级仍未通过，存在增长换风险取舍。",
+    "code_sha256": "2d9db0f590e0ac640607af7b97730e70761cab8dc57d1b237cdf14a1b94974e7",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "plan_a_calibrated_diagnostics_v1",
+    "date": "2026-10-17",
+    "status": "completed_predeclared_diagnostic",
+    "parent": "development_plan_a_calibrated_v1",
+    "holdout_used": false,
+    "purpose": "主实验预先登记的固定参数复算、训练执行/泛化风险分解及年度顺序压力，单独目录保存。",
+    "search_budget": "复现15组内层选择；7策略×120条开发情景×H30×原/逆/固定seed打乱顺序；不搜索参数。",
+    "verification": "75项内层期限条件全部通过；840行原指标重现；2520行压力指标与75项训练网格风险可行域诊断。",
+    "finding": "均衡逆序/打乱增长4.3583%/4.2957%、P90回撤42.6600%/41.5730%，仍为增长与风险取舍。",
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "plan_a_calibrated_comparison_v1",
+    "date": "2026-10-17",
+    "status": "completed_posthoc_descriptive_comparison",
+    "parent": "development_plan_a_calibrated_v1",
+    "holdout_used": false,
+    "purpose": "仅使用保存的历史和当前结果，统一验证风险线后比较通过率，避免把验收线变化算成改进。",
+    "search_budget": "不拟合、不选择；两版各75项内层条件、15项外层风险及225行汇总财务对照。",
+    "verification": "分区、划分配置与共同风险线一致；内层产品/折7→15通过，两版外层风险均15/15通过。",
+    "finding": "风险选择校准更稳定，未证明整体金融表现更优；不能以0→15直接归因于模型改善。",
+    "stopping_rule_satisfied": true
   }
 ]

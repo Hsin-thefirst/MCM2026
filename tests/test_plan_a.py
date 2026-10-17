@@ -4,14 +4,15 @@ import json
 import unittest
 
 import numpy as np
+import pandas as pd
 
 from safeinvest.contracts import Action, MarketObservation, PolicyContext, Scenario, SimulationConfig
 from safebench import ROOT
 from safebench.engine import simulate
-from safebench.experiment import evaluate
+from safebench.experiment import evaluate, tune
 from safebench.metrics import compute_metrics
 from safebench.plan_a import (PlanAPolicy, annual_statistics, fit_plan_a, log_path_values,
-                             solve_allocation)
+                             solve_allocation, selection_constraints, AllocationInfeasible)
 from safebench.policies import StaticPolicy
 
 CONFIG = json.loads((ROOT / 'configs/benchmark.json').read_text())
@@ -135,6 +136,49 @@ class PlanAExecutionTests(unittest.TestCase):
         self.assertAlmostEqual(initial.loc[30, 'target_weights_equity'], .6)
         with self.assertRaises(ValueError):
             PlanAPolicy('plan_a_balanced', model_fixture(), {}, CONFIG, None)
+
+
+class CalibrationTests(unittest.TestCase):
+    def test_training_margin_does_not_change_validation_goal(self):
+        config=json.loads(json.dumps(CONFIG)); config['horizons']=[5]
+        block=pd.DataFrame([dict(scenario_id=i,horizon=5,real_max_drawdown=1-np.exp(-.4),
+            real_cagr=.02,annual_growth=.02,review=0.,plan_a_risk_budget=.3,
+            plan_a_validation_budget=.5) for i in range(1,7)])
+        violation, details=selection_constraints(block,config)
+        self.assertEqual(violation,0.)
+        self.assertAlmostEqual(details[0]['validation_budget'],.5)
+        changed=block.assign(plan_a_risk_budget=.45)
+        self.assertEqual(selection_constraints(changed,config)[0],violation)
+        self.assertGreater(selection_constraints(block.assign(real_max_drawdown=1-np.exp(-.6)),config)[0],0.)
+        with self.assertRaises(ValueError): selection_constraints(pd.concat([block,block.iloc[:1]]),config)
+
+    def test_infeasible_candidates_are_preserved_and_never_selected(self):
+        config=json.loads(json.dumps(CONFIG))
+        config.update(horizons=[5,30],inner_folds=2,tuning_grid=[CONFIG['tuning_grid'][0]])
+        config['plan_a'].update(risk_ratios=[.5,1.],tracking_gammas=[4.],validation_risk_ratio=1.)
+        scenarios=[Scenario(s,tuple(MarketObservation(s,t,(-.01,-.01,-.01),0.) for t in range(1,31)))
+                   for s in range(1,7)]
+        fitted=fit_plan_a(scenarios,config)
+        bad=fitted['entries']['balanced:5:0.5']
+        self.assertEqual(bad['status'],'infeasible')
+        self.assertNotIn('weights',bad)
+        self.assertIn('matrix',bad['failure_certificate'])
+        model=dict(train_ids=list(range(1,7)),plan_a=fitted,mu=[-.01]*3,cov=np.eye(3).tolist())
+        with self.assertRaises(AllocationInfeasible):
+            PlanAPolicy('plan_a_balanced',model,dict(risk_ratio=.5,tracking_gamma=4.),config,5)
+        params, trials, audits=tune(scenarios,config,41)
+        for product in ['conservative','balanced','growth']:
+            name='plan_a_'+product
+            self.assertEqual(params[name]['risk_ratio'],1.)
+            self.assertTrue(params[name]['selection_feasible'])
+            failed=[x for x in trials if x['policy']==name and x['trial']==0]
+            self.assertFalse(failed[0]['allocation_feasible'])
+            chosen=[x for x in trials if x['policy']==name and x['trial']==1][0]
+            self.assertEqual(len(json.loads(chosen['horizon_constraints'])),2)
+        self.assertTrue(all(x['infeasible_allocations'] for x in audits))
+        config['plan_a']['risk_ratios']=[.5]
+        with self.assertRaisesRegex(RuntimeError,'No feasible strategic allocation'):
+            tune(scenarios,config,41)
 
 
 if __name__ == '__main__':

@@ -13,9 +13,9 @@ import pandas as pd
 from safebench import ROOT
 from safebench.data import load_partition
 from safebench.engine import simulate
-from safebench.experiment import dump, evaluate
+from safebench.experiment import dump, evaluate, code_digest
 from safebench.metrics import compute_metrics, expected_shortfall, summarize
-from safebench.plan_a import PlanAPolicy, PRODUCTS
+from safebench.plan_a import PlanAPolicy, PRODUCTS, annual_statistics, grid_values, REFERENCES
 from safebench.policies import fit_model
 from safeinvest.contracts import SimulationConfig
 
@@ -38,12 +38,26 @@ def main():
     by_id = {s.scenario_id: s for s in scenarios}
     dump(args.out / 'manifest.json', dict(parent_run=str(args.run), parent_manifest=manifest,
          script_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), holdout_used=False,
+         diagnostic_code_sha256=code_digest(),
          purpose='Reproduce selected inner-validation constraints; fixed-fit order stress, no tuning',
          order_seeds=[20261017], orders=['original', 'reverse', 'shuffle']))
-    constraints, stress = [], []
+    constraints, stress, decomposition, floors = [], [], [], []
     settings = config['plan_a']['selection']
     for split, fit in zip(splits, fits):
         assert split['outer_fold'] == fit['fold']
+        training_sample=np.array([[(1+np.array(o.nominal_returns))/(1+o.inflation)-1
+            for o in by_id[sid].observations] for sid in split['train_ids']])
+        weights=np.array([(i/20,j/20,(20-i-j)/20) for i in range(21) for j in range(21-i)])
+        for h in config['horizons']:
+            _, risks=grid_values(training_sample[:,:h],weights,config['plan_a']['alpha'])
+            for product in PRODUCTS:
+                floor=config['plan_a']['bill_floors'][product]
+                minimum=float(risks[weights[:,2]>=floor-1e-12].min())
+                entry=next(e for e in fit['model']['plan_a']['entries'].values()
+                           if e['product']==product and e['horizon']==h)
+                reference=entry['reference_risk']
+                floors.append(dict(fold=fit['fold'],product=product,horizon=h,min_grid_risk=minimum,
+                    reference_risk=reference,minimum_ratio=minimum/reference if reference>0 else None))
         pieces = []
         for inner in split['inner']:
             model = fit_model([by_id[s] for s in inner['train_ids']], config)
@@ -63,7 +77,7 @@ def main():
             violation = 0.
             for h, g in block.groupby('horizon'):
                 risk = expected_shortfall(-np.log1p(-g.real_max_drawdown.to_numpy()), config['plan_a']['alpha'])
-                budget = g.plan_a_risk_budget.mean()
+                budget = g.plan_a_validation_budget.mean() if 'plan_a_validation_budget' in g else g.plan_a_risk_budget.mean()
                 median_loss = g.annual_growth.median() - g.real_cagr.median()
                 p10_loss = g.annual_growth.quantile(.1) - g.real_cagr.quantile(.1)
                 rate = g.review.mean()
@@ -72,6 +86,7 @@ def main():
                     max(0., (p10_loss-settings['p10_growth_loss'])/settings['p10_growth_loss']),
                     max(0., (rate-settings['maximum_review_rate'])/settings['maximum_review_rate'])])
                 constraints.append(dict(fold=fit['fold'], policy=name, horizon=h, log_risk=risk,
+                    training_budget=g.plan_a_risk_budget.mean(), validation_budget=budget,
                     risk_limit=budget+settings['log_risk_slack'], median_growth_loss=median_loss,
                     p10_growth_loss=p10_loss, review_rate=rate,
                     risk_pass=risk<=budget+settings['log_risk_slack']+1e-10,
@@ -94,8 +109,31 @@ def main():
                                   horizons=[30], fold=fit['fold'], keep_records=False)
             metrics['order'] = order
             stress.append(metrics)
+            if order == 'original':
+                for product in PRODUCTS:
+                    name='plan_a_'+product; params=fit['params'][name]
+                    entry=fit['model']['plan_a']['entries'][f"{product}:30:{params['risk_ratio']:g}"]
+                    training_drawdowns=[]
+                    for sid in split['train_ids']:
+                        p=PlanAPolicy(name,fit['model'],params,config,30)
+                        r=simulate(by_id[sid],p,p.initial_target,SimulationConfig(30,config['initial_wealth'],config['cost_rate']))
+                        training_drawdowns.append(compute_metrics(r)['real_max_drawdown'])
+                    sample=np.array([[(1+np.array(o.nominal_returns))/(1+o.inflation)-1
+                                      for o in s.observations] for s in valid])
+                    annual=annual_statistics(sample,np.array(entry['weights']),config['cost_rate'],config['plan_a']['alpha'])
+                    train_risk=expected_shortfall(-np.log1p(-np.array(training_drawdowns)),config['plan_a']['alpha'])
+                    valid_risk=expected_shortfall(-np.log1p(-metrics[metrics.policy==name].real_max_drawdown.to_numpy()),config['plan_a']['alpha'])
+                    decomposition.append(dict(fold=fit['fold'],policy=name,horizon=30,
+                        training_budget=entry['risk_budget'],validation_budget=entry.get('validation_budget',entry['risk_budget']),
+                        train_strategic_risk=entry['risk'],train_annual_fee_risk=entry['annual_with_fees']['log_drawdown_es'],
+                        train_execution_risk=train_risk,validation_annual_fee_risk=annual['log_drawdown_es'],
+                        validation_execution_risk=valid_risk,
+                        training_execution_gap=train_risk-entry['annual_with_fees']['log_drawdown_es'],
+                        generalization_gap=valid_risk-train_risk))
         print('Diagnosed fold', fit['fold'] + 1, flush=True)
     pd.DataFrame(constraints).to_csv(args.out / 'selected_constraints.csv', index=False)
+    pd.DataFrame(decomposition).to_csv(args.out / 'risk_decomposition.csv', index=False)
+    pd.DataFrame(floors).to_csv(args.out / 'training_risk_floors.csv', index=False)
     stress = pd.concat(stress, ignore_index=True)
     stress.to_csv(args.out / 'order_stress_metrics.csv', index=False)
     pd.concat([summarize(g).assign(order=order) for order, g in stress.groupby('order')],

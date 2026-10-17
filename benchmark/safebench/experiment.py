@@ -65,7 +65,9 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
                                policy_inference_seconds=getattr(p,'inference_seconds',0.))
                     if name in plan_a.POLICIES:
                         product=name.removeprefix('plan_a_') if name in ['plan_a_'+x for x in plan_a.PRODUCTS] else 'balanced'
-                        row['plan_a_risk_budget']=model['plan_a']['entries'][f"{product}:{h}:{selected['risk_ratio']:g}"]['risk_budget']
+                        entry=model['plan_a']['entries'][f"{product}:{h}:{selected['risk_ratio']:g}"]
+                        row['plan_a_risk_budget']=entry['risk_budget']
+                        row['plan_a_validation_budget']=entry.get('validation_budget',entry['risk_budget'])
                     output.append(row)
                 if keep_records:
                     for r in full.records:
@@ -80,15 +82,21 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
                         records.append(row)
     return pd.DataFrame(output),pd.DataFrame(records)
 
-def tune(scenarios,config,seed):
+def tune(scenarios,config,seed,refit_model=None):
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
-    collected=[]; audits=[]; plan_scores=[]
+    collected=[]; audits=[]; plan_scores=[]; unavailable={}
+    if plan_a.enabled(config) and refit_model is None:
+        refit_model=fit_model(scenarios,config)
+    if refit_model is not None and set(refit_model['train_ids'])!=set(by_id):
+        raise ValueError('Refit model must use exactly the tuning population')
     for inner,valid_ids in enumerate(groups):
         train=[s for sid,s in by_id.items() if sid not in valid_ids]
         valid=[by_id[sid] for sid in valid_ids]
         model=fit_model(train,config)
         audits.append(dict(inner_fold=inner,train_ids=model['train_ids'],validation_ids=valid_ids))
+        if plan_a.enabled(config):
+            audits[-1]['infeasible_allocations']={k:v for k,v in model['plan_a']['entries'].items() if v['status']=='infeasible'}
         for trial,params in enumerate(config['tuning_grid']):
             metrics,_=evaluate(valid,model,{n:params for n in TUNED},config,names=list(TUNED),
                                 horizons=[30],keep_records=False)
@@ -99,6 +107,9 @@ def tune(scenarios,config,seed):
             for trial, params in enumerate(plan_a.parameter_grid(config)):
                 for product in plan_a.PRODUCTS:
                     name='plan_a_'+product
+                    if not plan_a.allocation_available(model,product,params,config['horizons']):
+                        unavailable.setdefault((name,trial),[]).append(inner)
+                        continue
                     metrics,_=evaluate(valid,model,{name:params},config,names=[name],keep_records=False)
                     controls=[]
                     for s in valid:
@@ -128,27 +139,31 @@ def tune(scenarios,config,seed):
                              best_trial=best,paired_gap_se=se,one_se_eligible=ok))
         selected=max(eligible,key=lambda i:(config['tuning_grid'][i]['buffer'],config['tuning_grid'][i]['gamma'],-i))
         chosen[name]=config['tuning_grid'][selected]
-    if plan_scores:
-        settings=config['plan_a']['selection']
+    if plan_a.enabled(config):
         trials=plan_a.parameter_grid(config)
-        scores=pd.concat(plan_scores,ignore_index=True)
-        for name, group in scores.groupby('policy'):
+        scores=pd.concat(plan_scores,ignore_index=True) if plan_scores else pd.DataFrame()
+        for product in plan_a.PRODUCTS:
+            name='plan_a_'+product
             choices=[]
-            for trial, block in group.groupby('trial'):
-                violations=[]
-                for h, g in block.groupby('horizon'):
-                    risk=expected_shortfall(-np.log1p(-g.real_max_drawdown.to_numpy()),config['plan_a']['alpha'])
-                    budget=g.plan_a_risk_budget.mean()
-                    violations.extend([
-                        max(0.,(risk-budget-settings['log_risk_slack'])/max(budget,.01)),
-                        max(0.,(g.annual_growth.median()-g.real_cagr.median()-settings['median_growth_loss'])/settings['median_growth_loss']),
-                        max(0.,(g.annual_growth.quantile(.1)-g.real_cagr.quantile(.1)-settings['p10_growth_loss'])/settings['p10_growth_loss']),
-                        max(0.,(g.review.mean()-settings['maximum_review_rate'])/settings['maximum_review_rate'])])
-                violation=float(sum(violations)); feasible=violation<=1e-10
+            for trial, trial_params in enumerate(trials):
+                failed=unavailable.get((name,trial),[])
+                refit_ok=plan_a.allocation_available(refit_model,product,trial_params,config['horizons'])
+                if failed or not refit_ok:
+                    rows.append(dict(policy=name,trial=trial,selection_feasible=False,allocation_feasible=False,
+                        inner_infeasible_folds=json.dumps(failed),refit_feasible=refit_ok))
+                    continue
+                block=scores[(scores.policy==name)&(scores.trial==trial)]
+                if len(block)!=len(scenarios)*len(config['horizons']):
+                    raise ValueError('Incomplete inner validation; candidate cannot be ranked')
+                violation, details=plan_a.selection_constraints(block,config)
+                feasible=violation<=1e-10
                 score=float(np.log1p(block.real_cagr).mean())
                 choices.append((int(trial),feasible,violation,score))
                 rows.append(dict(policy=name,trial=int(trial),mean_utility=score,
-                                 selection_feasible=feasible,constraint_violation=violation))
+                                 selection_feasible=feasible,constraint_violation=violation,
+                                 allocation_feasible=True,refit_feasible=True,horizon_constraints=json.dumps(details)))
+            if not choices:
+                raise RuntimeError('No feasible strategic allocation across inner fits and refit: '+name)
             winner=min(choices,key=lambda x:(not x[1],x[2] if not x[1] else 0.,-x[3],x[0]))
             chosen[name]=dict(trials[winner[0]],selection_feasible=winner[1],constraint_violation=winner[2])
         for name in plan_a.CONTROLS:
@@ -201,8 +216,8 @@ def run_development(config,data_path,out):
     for outer,valid_ids in enumerate(folds(ids,config['outer_folds'],config['seed'])):
         train=[s for s in scenarios if s.scenario_id not in valid_ids]
         valid=[s for s in scenarios if s.scenario_id in valid_ids]
-        params,trials,inner_audit=tune(train,config,config['seed']+outer+1)
         model=fit_model(train,config)
+        params,trials,inner_audit=tune(train,config,config['seed']+outer+1,refit_model=model)
         print('Outer fold',outer+1,'selected',params,flush=True)
         fitted.append(dict(fold=outer,model=model,params=params))
         audit.append(dict(outer_fold=outer,train_ids=model['train_ids'],validation_ids=valid_ids,inner=inner_audit))
@@ -240,8 +255,8 @@ def freeze(config,data_path,policy,output,development_run):
     scenarios,data_hash=load_partition(data_path)
     if data_hash!=prior['partition_sha256']:
         raise ValueError('Development data changed')
-    params,trials,audit=tune(scenarios,config,config['seed']+1000)
     model=fit_model(scenarios,config)
+    params,trials,audit=tune(scenarios,config,config['seed']+1000,refit_model=model)
     assignments=pd.read_csv(Path(development_run)/'suitability.csv').to_dict('records')
     if plan_a.enabled(config) and (Path(development_run)/'scenario_metrics.csv').exists():
         mapping={p:'plan_a_'+p for p in PORTFOLIOS}

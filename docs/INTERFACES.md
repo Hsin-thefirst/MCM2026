@@ -17,7 +17,8 @@
 | `benchmark/safebench/validation.py` | 独立账本核验及晋级检查 |
 | `benchmark/safebench/report.py` | 中文 HTML 展示与可用于英文提交的图表 |
 | `scripts/verify_benchmark.py` | 独立市场重放和标量等权计算 |
-| `scripts/verify_plan_a.py` | 独立穷举回撤区间、LP原始/对偶证书及旧参照一致性 |
+| `scripts/verify_plan_a.py` | 独立穷举回撤、核验参照风险与可行/不可行证书、调参排名及旧参照一致性 |
+| `scripts/compare_plan_a_runs.py` | 从保存结果按相同风险线比较历史与当前版本，不重新拟合 |
 | `configs/benchmark.json` / `configs/profiles.json` | 唯一实验配置 / 客户问卷 |
 
 两种加载器职责不同：完整网格加载器保留既有公共 API，分区加载器为开发隔离而只解析所选数据。不要先全量读取真实 CSV 再划分来做开发。benchmark 代码复用公共类型；没有第二套 contracts。
@@ -62,6 +63,12 @@ make_policy(name, model, params, config, horizon=None) -> policy  # exposes init
 
 `fit_model` 在 `plan_a.enabled=true` 时增加 `model['plan_a']`：训练IDs、训练耗时及以`产品:H:风险比例`为键的配置。每个配置保存权重、无费用风险及预算、含费用年度诊断、复核阈值、网格差、凸目标上下界、收敛间隙与LP约束/对偶证书。`solve_allocation(returns, budget, alpha=.9, bill_floor=0., options=None, cached_grid=None)`接收情景×年度×3的实际收益数组；预算不可行或未收敛均报错。完整执行策略的样本外风险另行评价。
 
+2026-10-17校准扩展：可选`plan_a.validation_risk_ratio`固定验证目标，条目保存`validation_budget`，指标新增`plan_a_validation_budget`；`risk_budget`/`plan_a_risk_budget`仍表示训练战略预算。缺少新配置时保持旧版按候选训练预算验收的行为。当前验证比例1.0、训练比例0.75/0.85/0.95，分别留25%/15%/5%余量；这些都是研究参数。
+
+连续求解的已证明不可行以`AllocationInfeasible(RuntimeError)`携带LP松弛证据；`fit_plan_a`将该候选保存为`status=infeasible`、`failure_certificate`且不提供权重。其余求解错误仍终止。工厂拒绝执行不可行条目；调参排除任一内层训练或全训练重拟合不可行的完整候选，不删验证情景。`tune(scenarios, config, seed, refit_model=None)`可复用同一训练总体的模型，仅按训练可行性过滤，不接收外层验证结果；无可执行候选时报错。
+
+`selection_constraints(block, config)`返回总违约量和各期限诊断；所有候选共享验证风险线，候选训练安全余量不影响该线。`tuning_trials.csv`新增`allocation_feasible`、`refit_feasible`、`inner_infeasible_folds`和JSON格式`horizon_constraints`；`splits.json`保留各内层的不可行配置证据，`fitted_models.json`保留外层对应证据。独立优化核验同时统计可行和不可行证书。
+
 ## 指标与输出映射
 
 公共 `ScenarioMetrics` / `EvaluationSummary` 结构仍为 v1。benchmark 为容纳额外指标返回 dict/DataFrame，`policy_name` 对应 CSV 的 `policy`；`real_cagr`、`real_max_drawdown`、`real_return_volatility`、`terminal_real_wealth`、`trade_rate`、`total_nominal_cost` 保留对应含义。
@@ -88,7 +95,9 @@ CSV 使用 UTF-8、无索引；三维权重/持仓拆成资产列，原因码为
 
 `suitability`在计划A开启且三产品结果齐备时使用三个实际执行策略，并保存`policy`和证据类型。冻结沿用明确的策略ID，最终评价不改客户分配。OOF二项上界是筛选诊断，不能解释为重拟合策略的覆盖保证。
 
-当前配置`generate_report=false`，开发实验不生成报告或论文。优化核验命令：`.venv/bin/python scripts/verify_plan_a.py benchmark/outputs/development_plan_a_v2`。`scripts/diagnose_plan_a.py <run> --out <new_directory>`复算已选参数的内层约束并保持模型不变做年度顺序压力测试；保存`selected_constraints.csv`、`order_stress_metrics.csv`、`order_stress_summary.csv`及原指标重现核验，输出只能新建，不再调参。
+当前配置`generate_report=false`，开发实验不生成报告或论文。优化核验命令：`.venv/bin/python scripts/verify_plan_a.py benchmark/outputs/development_plan_a_calibrated_v1`。`scripts/diagnose_plan_a.py <run> --out <new_directory>`复算已选参数的内层约束并保持模型不变做年度顺序压力测试；保存`selected_constraints.csv`、`order_stress_metrics.csv`、`order_stress_summary.csv`及原指标重现核验。新增`risk_decomposition.csv`对H30各产品/外折分开记录训练无费配置风险、含费年度风险、含费执行风险与验证风险；训练路径只作诊断，不参与外层评分。输出只能新建，不再调参。
+
+诊断另存`training_risk_floors.csv`，以231点网格检查各训练分区的风险可行域，仅用于诊断，不代表连续最小风险证明。`compare_plan_a_runs.py --previous <旧运行> --previous-diagnostics <旧诊断> --current <新运行> --current-diagnostics <新诊断> --out <新目录>`以新版本固定验证比例重新检验两版已有的内层/外层结果，先核对分区、划分配置与相同风险线；保存`common_inner_risk_screen.csv`、`common_outer_risk.csv`、`financial_comparison.csv`及核验JSON。不把换验收线造成的通过率变化当成金融改善，输出同样只能新建。
 
 冻结 artifact 保存训练状态、参数、代码与依赖版本、客户分配及最终比较列表；最终独占锁在读取真实最终收益前创建。目录重构后保留旧 manifest，不以新 hash 伪装旧实验；当前代码只从版本匹配的开发运行冻结。
 

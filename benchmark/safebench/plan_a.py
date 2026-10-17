@@ -15,6 +15,13 @@ POLICIES = ["plan_a_" + p for p in PRODUCTS] + [
 CONTROLS = POLICIES[3:]
 
 
+class AllocationInfeasible(RuntimeError):
+    """A contradictory outer approximation proves the strategic budget infeasible."""
+    def __init__(self, message, certificate=None):
+        super().__init__(message)
+        self.certificate = certificate
+
+
 def enabled(config):
     return config.get("plan_a", {}).get("enabled", False)
 
@@ -118,7 +125,8 @@ def solve_allocation(returns, budget, alpha=.9, bill_floor=0., options=None, cac
                      method="highs", options={"primal_feasibility_tolerance": 1e-9,
                                               "dual_feasibility_tolerance": 1e-9})
         if lp.status == 2:
-            raise RuntimeError("Plan A path-risk budget infeasible (linear relaxation certificate)")
+            raise AllocationInfeasible("Plan A path-risk budget infeasible (linear relaxation certificate)",
+                dict(matrix=matrix, rhs=rhs, bill_floor=bill_floor))
         if not lp.success:
             raise RuntimeError("Plan A LP failed: " + lp.message)
         lower_bound = float(lp.fun)
@@ -182,16 +190,58 @@ def fit_plan_a(scenarios, config):
         for product in PRODUCTS:
             reference = log_path_values(sample, np.asarray(REFERENCES[product]), alpha)["risk"]
             for ratio in settings["risk_ratios"]:
-                fit = solve_allocation(sample, reference * ratio, alpha,
-                                       settings["bill_floors"][product], settings["solver"], cached)
+                validation_budget = reference * settings.get("validation_risk_ratio", ratio)
+                if "validation_risk_ratio" in settings and ratio > settings["validation_risk_ratio"] + 1e-12:
+                    raise ValueError("Training risk budget cannot exceed the fixed validation budget")
+                try:
+                    fit = solve_allocation(sample, reference * ratio, alpha,
+                                           settings["bill_floors"][product], settings["solver"], cached)
+                except AllocationInfeasible as error:
+                    entries[f"{product}:{h}:{ratio:g}"] = dict(status="infeasible", horizon=h,
+                        product=product, risk_ratio=ratio, reference_risk=reference,
+                        risk_budget=reference * ratio, validation_budget=validation_budget,
+                        failure_certificate=error.certificate, reason=str(error))
+                    continue
                 annual = annual_statistics(sample, np.asarray(fit["weights"]), config["cost_rate"], alpha)
                 fit.update(reference_risk=reference, risk_ratio=ratio, horizon=h, product=product,
+                           validation_budget=validation_budget,
                            annual_with_fees=annual,
                            review_threshold=min(settings["review_maximum"],
                                max(settings["review_minimum"], settings["review_multiple"] * annual["p90_drawdown"])))
                 entries[f"{product}:{h}:{ratio:g}"] = fit
     return dict(train_ids=[s.scenario_id for s in scenarios], entries=entries,
                 training_seconds=time.perf_counter() - started)
+
+
+def allocation_available(model, product, params, horizons):
+    return all(model["plan_a"]["entries"][f"{product}:{h}:{params['risk_ratio']:g}"].get("status") != "infeasible"
+               for h in horizons)
+
+
+def selection_constraints(block, config):
+    """Evaluate fixed validation targets; training margins never move this goalpost."""
+    settings = config['plan_a']['selection']
+    details = []
+    for h, g in block.groupby('horizon'):
+        if set(g.scenario_id) != set(block.scenario_id) or g.scenario_id.duplicated().any():
+            raise ValueError('Incomplete or duplicated inner-validation horizon')
+        risk = expected_shortfall(-np.log1p(-g.real_max_drawdown.to_numpy()), config['plan_a']['alpha'])
+        column = 'plan_a_validation_budget' if 'plan_a_validation_budget' in g else 'plan_a_risk_budget'
+        budget = float(g[column].mean())
+        median_loss = float(g.annual_growth.median()-g.real_cagr.median())
+        p10_loss = float(g.annual_growth.quantile(.1)-g.real_cagr.quantile(.1))
+        rate = float(g.review.mean())
+        violation = sum([max(0., (risk-budget-settings['log_risk_slack'])/max(budget, .01)),
+            max(0., (median_loss-settings['median_growth_loss'])/settings['median_growth_loss']),
+            max(0., (p10_loss-settings['p10_growth_loss'])/settings['p10_growth_loss']),
+            max(0., (rate-settings['maximum_review_rate'])/settings['maximum_review_rate'])])
+        details.append(dict(horizon=int(h), log_risk=risk, validation_budget=budget,
+            training_budget=float(g.plan_a_risk_budget.mean()), risk_limit=budget+settings['log_risk_slack'],
+            median_growth_loss=median_loss, p10_growth_loss=p10_loss, review_rate=rate,
+            constraint_violation=float(violation), feasible=violation<=1e-10))
+    if {x['horizon'] for x in details} != set(config['horizons']):
+        raise ValueError('Missing configured horizon in selection')
+    return float(sum(x['constraint_violation'] for x in details)), details
 
 
 class PlanAPolicy:
@@ -202,6 +252,8 @@ class PlanAPolicy:
         if set(model["train_ids"]) != set(model["plan_a"]["train_ids"]):
             raise ValueError("Plan A model training IDs differ")
         entry = model["plan_a"]["entries"][f"{product}:{horizon}:{params['risk_ratio']:g}"]
+        if entry.get("status") == "infeasible":
+            raise AllocationInfeasible("Cannot execute an infeasible strategic allocation")
         self.name = name
         self.initial_target = tuple(entry["weights"])
         self.anchor = np.asarray(self.initial_target)

@@ -157,9 +157,28 @@ def audit_outputs(out):
             if 'plan_a' not in f['model']: continue
             assert f['model']['plan_a']['train_ids']==f['model']['train_ids']
             for entry in f['model']['plan_a']['entries'].values():
+                if entry['status']=='infeasible':
+                    from scipy.optimize import linprog
+                    cert=entry['failure_certificate']
+                    fit=linprog([0.,0.,0.,1.],A_ub=cert['matrix'],b_ub=cert['rhs'],
+                        A_eq=[[1.,1.,1.,0.]],b_eq=[1.],
+                        bounds=[(0.,1.),(0.,1.),(cert['bill_floor'],1.),(None,None)],method='highs')
+                    assert fit.status==2 and 'weights' not in entry
+                    continue
                 assert entry['risk']<=entry['risk_budget']+c['plan_a']['solver']['feasibility_tolerance']
                 assert entry['optimality_gap']<=c['plan_a']['solver']['objective_tolerance']
                 assert entry['status']=='optimal_within_tolerance'
+            for product in ('conservative','balanced','growth'):
+                params=f['params']['plan_a_'+product]
+                for h in c['horizons']:
+                    selected=f['model']['plan_a']['entries'][f"{product}:{h}:{params['risk_ratio']:g}"]
+                    assert selected['status']=='optimal_within_tolerance'
+            if 'validation_risk_ratio' in c['plan_a']:
+                for product in ('conservative','balanced','growth'):
+                    for h in c['horizons']:
+                        entries=[e for e in f['model']['plan_a']['entries'].values()
+                                 if e['product']==product and e['horizon']==h]
+                        assert len({e['validation_budget'] for e in entries})==1
     result=dict(phase=manifest['phase'],audited_paths=audit_paths,metric_rows=len(m),decision_rows=len(r),
                 maximum_numeric_discrepancy=maximum_error,all_checks_passed=True,
                 scope='All saved accounting paths, metric recurrences, uniqueness, CV splits and outer CVaR feasibility; market returns checked separately in replay tests.')

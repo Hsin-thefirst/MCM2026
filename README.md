@@ -10,6 +10,8 @@
 
 2026-10-17：计划A首轮开发完成，结果见[实验记录](docs/FINDINGS.md#计划a首轮开发2026-10-17)。H30均衡版中位实际增长4.6206%、P90回撤42.5352%、后续交易率54.48%；风险预算校准尚未通过。当前配置不自动生成报告；最终源码对应运行`development_plan_a_v2`，年度顺序与约束诊断位于`plan_a_diagnostics_v1`。
 
+同日后续：[风险预算校准](docs/FINDINGS.md#计划a风险校准2026-10-17)分开固定验证目标与训练安全余量，同一风险线下内层合格产品/折从7/15增至15/15。均衡版增长4.3401%、P90回撤42.2199%，降低部分风险并付出收益代价，仍未通过统计晋级。当前源码和配置对应`development_plan_a_calibrated_v1`；`plan_a_calibrated_diagnostics_v1`保存执行分解与顺序压力，`plan_a_calibrated_comparison_v1`保存同风险线对照。
+
 **情景 1–120 用于开发，121–180 只供冻结后的最终评价。日常测试使用生成数据或开发分区。**
 
 ## 安装与运行
@@ -35,7 +37,7 @@ make replay RUN=benchmark/outputs/my_run
 
 当前`generate_report=false`，实验只保存数值证据；显式执行`make report`才生成HTML及图表。`make report/audit/replay`默认指向历史`development_consolidated`，新实验请传`RUN`。可通过`PYTHON=/path/to/python`指定解释器，也可直接执行`python benchmark/run.py --help`。
 
-计划A的独立优化核验：`.venv/bin/python scripts/verify_plan_a.py benchmark/outputs/development_plan_a_v2`。固定已选参数的诊断复现：`.venv/bin/python scripts/diagnose_plan_a.py benchmark/outputs/development_plan_a_v2 --out benchmark/outputs/my_plan_a_diagnostic`。
+计划A的独立优化核验：`.venv/bin/python scripts/verify_plan_a.py benchmark/outputs/development_plan_a_calibrated_v1`。固定已选参数的诊断复现：`.venv/bin/python scripts/diagnose_plan_a.py benchmark/outputs/development_plan_a_calibrated_v1 --out benchmark/outputs/my_plan_a_diagnostic`。
 
 配置统一在 [configs/benchmark.json](configs/benchmark.json)，客户问卷在 [configs/profiles.json](configs/profiles.json)。从其他目录调用时使用脚本和输出的绝对路径，默认输入按项目位置解析。真实最终评价不属于普通测试/实验命令，必须按 [实验协议](docs/PROTOCOL.md) 冻结后执行。
 
