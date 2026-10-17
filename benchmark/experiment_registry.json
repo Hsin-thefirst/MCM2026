@@ -500,7 +500,7 @@
   {
     "run": "submission_freeze_v1",
     "date": "2026-10-17",
-    "status": "registered_before_execution",
+    "status": "verified_frozen",
     "phase": "freeze",
     "config": "configs/submission.json",
     "development_run": "development_submission_v1",
@@ -509,7 +509,81 @@
     "holdout_used": false,
     "purpose": "执行已批准的冻结与一次性最终评价；开发选型已终止，不再调整金融程序。",
     "search_budget": "无新增搜索；全120内层选择与重拟合是固定程序，最终只评价121–180。",
-    "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。"
+    "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。",
+    "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+    "verification": {
+      "all_checks_passed": true,
+      "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+      "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+      "selected_policy": "plan_a_balanced",
+      "trained_scenarios": 120,
+      "actual_customer_targets": [
+        {
+          "profile": "B",
+          "policy": "plan_a_conservative",
+          "horizon": 15,
+          "weights": [
+            0.22670204598599838,
+            0.0723190192046538,
+            0.7009789348093478
+          ],
+          "strategic_bill_min": 0.7009789348093478
+        },
+        {
+          "profile": "C",
+          "policy": "plan_a_conservative",
+          "horizon": 30,
+          "weights": [
+            0.26477552730917714,
+            0.028501816817046947,
+            0.7067226558737758
+          ],
+          "strategic_bill_min": 0.7067226558737758
+        },
+        {
+          "profile": "E",
+          "policy": "plan_a_balanced",
+          "horizon": 6,
+          "weights": [
+            0.5325051374331248,
+            0.044605903710422175,
+            0.4228889588564531
+          ],
+          "strategic_bill_min": 0.4228889588564531
+        }
+      ],
+      "parameters": {
+        "plan_a_balanced": {
+          "constraint_violation": 0.0,
+          "risk_ratio": 0.95,
+          "selection_feasible": true,
+          "tracking_gamma": 4.0
+        },
+        "plan_a_conservative": {
+          "constraint_violation": 0.0,
+          "risk_ratio": 0.95,
+          "selection_feasible": true,
+          "tracking_gamma": 4.0
+        },
+        "plan_a_growth": {
+          "constraint_violation": 0.0,
+          "risk_ratio": 0.95,
+          "selection_feasible": true,
+          "tracking_gamma": 4.0
+        },
+        "submission_selected": {
+          "constraint_violation": 0.0,
+          "execution_rule": "submission_b_long05",
+          "execution_selection_feasible": true,
+          "risk_ratio": 0.95,
+          "selection_feasible": true,
+          "tracking_gamma": 4.0
+        }
+      },
+      "frozen_customer_map_matches_development": true,
+      "final_used": false
+    },
+    "stopping_rule_satisfied": true
   },
   {
     "run": "final_submission_v1",
@@ -523,6 +597,7 @@
     "holdout_used": false,
     "purpose": "执行已批准的冻结与一次性最终评价；开发选型已终止，不再调整金融程序。",
     "search_budget": "无新增搜索；全120内层选择与重拟合是固定程序，最终只评价121–180。",
-    "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。"
+    "stopping_rule": "核对冻结hash、实际目标及客户映射后最终运行一次；失败也保留最终锁，不删锁或换模型。全部最终指标如实保留，之后只核验保存结果与打包，不再调参。",
+    "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5"
   }
 ]
