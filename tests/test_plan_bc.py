@@ -135,6 +135,19 @@ class ControlTests(unittest.TestCase):
         terminal=np.asarray(c.holdings)[None,:]*np.prod(1+p.future[:,1:5,:],axis=1)
         np.testing.assert_allclose(r['growth'][0],np.log(terminal.sum(axis=1)/100.).mean(),atol=1e-12)
 
+    def test_l3_contains_every_l1_plan_with_identical_continuation(self):
+        _,config,model,params=fixture()
+        p=PlanCPolicy('plan_c_l3',model,params,config,30)
+        c=PolicyContext(2,(),(65.,20.,15.),(.5,.3,.2),1.,100.,False,.005,.1)
+        for kappa in (0.,1.):
+            shallow=rollout(p,c,1,kappa)
+            deep=rollout(p,c,3,kappa)
+            for first in range(4):
+                index=np.flatnonzero((deep['sequences']==[first,1,1]).all(axis=1))[0]
+                for field in ('objective','growth','risk','costs'):
+                    self.assertAlmostEqual(shallow[field][first],deep[field][index],places=12)
+            self.assertGreaterEqual(deep['objective'].max()+1e-12,shallow['objective'].max())
+
     def test_historic_drawdown_memory_and_truncation(self):
         _,config,model,params=fixture()
         p=PlanCPolicy('plan_c_l3',model,params,config,5)

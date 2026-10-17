@@ -296,5 +296,29 @@
     "search_budget": "严格复用父实验全部候选、参数、分区、费用、指标和筛选标准；无新增金融搜索。",
     "selection": "完全与父实验一致。",
     "stopping_rule": "重跑后要求全部金融指标与父运行精确一致；若发现实际差异则保留并说明，不能删除旧结果。重建B预测/全部内层选择、C净值门槛/历史回撤状态、账本与市场重放后提交。C父主比较未通过，因此仅重复原H30验证，不启动新期限或新参数。"
+  },
+  {
+    "run": "development_plan_b_v3",
+    "date": "2026-10-17",
+    "status": "registered_before_run",
+    "parent": "development_plan_b_v2",
+    "config": "configs/plan_b.json",
+    "holdout_used": false,
+    "purpose": "仅修正B/C交易英文说明：预测倾斜或防御动作不一定靠近A锚，不能沿用A的该项描述。金融算法、候选和参数全部不变；源码对齐重跑。",
+    "search_budget": "严格复用父批次。未追加候选、强度、期限或费用，不根据外层结果重选。",
+    "selection": "与v1/v2完全相同；C仍只重复H30停止验证，不扩大搜索。",
+    "stopping_rule": "金融指标与v2精确一致，65项统一测试与全部独立核验通过后提交；保留v1/v2历史记录。"
+  },
+  {
+    "run": "development_plan_c_screen_v3",
+    "date": "2026-10-17",
+    "status": "registered_before_run",
+    "parent": "development_plan_c_screen_v2",
+    "config": "configs/plan_c_screen.json",
+    "holdout_used": false,
+    "purpose": "仅修正B/C交易英文说明：预测倾斜或防御动作不一定靠近A锚，不能沿用A的该项描述。金融算法、候选和参数全部不变；源码对齐重跑。",
+    "search_budget": "严格复用父批次。未追加候选、强度、期限或费用，不根据外层结果重选。",
+    "selection": "与v1/v2完全相同；C仍只重复H30停止验证，不扩大搜索。",
+    "stopping_rule": "金融指标与v2精确一致，65项统一测试与全部独立核验通过后提交；保留v1/v2历史记录。"
   }
 ]

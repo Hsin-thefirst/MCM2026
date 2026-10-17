@@ -1,4 +1,5 @@
 """Shared-action finite scenario MPC with a frozen Plan A continuation."""
+from dataclasses import replace
 from itertools import product
 import numpy as np
 from safeinvest.contracts import Action, Decision
@@ -117,4 +118,5 @@ class PlanCPolicy(PlanAPolicy):
             first_action_values=[float(np.max(j[seq[:, 0] == a])) for a in range(4)])
         if seq[winner, 0] == 0 or benefit <= cost+self.buffer:
             return Decision(Action.KEEP, ('PLAN_C_BELOW_COST',), 'The projected net improvement does not cover the safety margin. Hold the existing investments.', estimated_benefit=benefit, estimated_cost=cost)
-        return self._trade(c, result['targets'][winner], benefit, cost, 'PLAN_C_NET_PATH_VALUE')
+        decision = self._trade(c, result['targets'][winner], benefit, cost, 'PLAN_C_NET_PATH_VALUE')
+        return replace(decision, explanation='This adjustment has higher projected value after accounting for trading costs and potential purchasing-power losses. Projections are uncertain; investment losses remain possible.')

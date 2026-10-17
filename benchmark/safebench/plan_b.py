@@ -1,4 +1,5 @@
 """Fixed ridge tilt with matched action-family controls and training-only state."""
+from dataclasses import replace
 import numpy as np
 from safeinvest.contracts import Action, Decision
 from .plan_a import PlanAPolicy
@@ -54,4 +55,5 @@ class PlanBPolicy(PlanAPolicy):
         self.last_diagnostics.update(candidate_count=len(targets), chosen_index=index)
         if benefit <= cost+self.buffer:
             return Decision(Action.KEEP, ('PLAN_B_BELOW_COST',), 'The estimated improvement does not cover trading costs and the safety margin.', estimated_benefit=benefit, estimated_cost=cost)
-        return self._trade(c, targets[index], benefit, cost, 'PLAN_B_SIGNAL_TILT')
+        decision = self._trade(c, targets[index], benefit, cost, 'PLAN_B_SIGNAL_TILT')
+        return replace(decision, explanation='This adjustment balances a cautious return estimate with your strategic risk preference. Its estimated benefit exceeds trading costs and the safety margin. Estimates are uncertain; investment losses remain possible.')
