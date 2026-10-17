@@ -646,5 +646,33 @@
     "customer_assignments_unchanged": true,
     "final_manifest_commit": "ea36e6959f5c055561190da4e4e4a0b532767954",
     "finding": "H30已冻A增长4.1548%/P10 1.6443%/P90回撤48.0160%/交易率35.34%；等权3.3761%/1.4987%/39.5260%/100%。收益风险都更高，不据最终改选。客户保持A/D人工、B/C保守、E均衡。"
+  },
+  {
+    "run": "source_submission_release_v1",
+    "date": "2026-10-17",
+    "phase": "packaging",
+    "status": "verified_source_release",
+    "holdout_used": true,
+    "new_financial_search": false,
+    "final_evaluation_repeated": false,
+    "selected_policy": "plan_a_balanced",
+    "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+    "verification": {
+      "path": "/home/hsin/Projects/MCM2026/dist/SafeInvest_source.zip",
+      "size_bytes": 45514426,
+      "sha256": "631dec29afdc9029747516e3005b7aaafdcf0c5a10710243c0d12995d418999a",
+      "files": 117,
+      "all_checks_passed": true,
+      "selected_policy": "plan_a_balanced",
+      "extracted_code_matches_frozen": true,
+      "extracted_unified_tests": 74,
+      "extracted_test_seconds": 97.756,
+      "byte_identical_rebuild": true,
+      "reproduction_references_present": true,
+      "final_evaluation_repeated": false,
+      "core_code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14"
+    },
+    "purpose": "交付冻结金融v1的可复现源码ZIP；补齐历史数值参照及题目PDF，原样复制赛题数据，不做新分析。",
+    "stopping_rule_satisfied": true
   }
 ]

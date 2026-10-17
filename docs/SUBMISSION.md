@@ -38,9 +38,11 @@ make test
 在开发与最终核验都完成后运行：
 
 ```bash
-.venv/bin/python scripts/package_submission.py --development-run benchmark/outputs/development_submission_v1 --bundle benchmark/submission_frozen_v1.json --final-run benchmark/outputs/final_submission_v1 --out dist/SafeInvest_source_v1.zip
+.venv/bin/python scripts/package_submission.py --development-run benchmark/outputs/development_submission_v1 --bundle benchmark/submission_frozen_v1.json --final-run benchmark/outputs/final_submission_v1 --out dist/SafeInvest_source.zip
 ```
 
 打包工具核验源码hash、冻结包、最终锁和数值审计的一致性，保存源码、配置、原始赛题数据、测试、复现说明、紧凑开发证据与完整最终账本。原开发年度账本保留在工作区，不放入源码ZIP；可用同配置重现。压缩包严格小于50,000,000字节，逐文件SHA256与CRC核验，清单为`PACKAGE_MANIFEST.json`，包外另存verification JSON。
+
+独立核验需要的历史参照也随包保留：原Benchmark、校准A、C筛查v3三个目录的原始`scenario_metrics.csv`与`manifest.json`。只复制已有数值快照，不修改其内容或hash。正式源码包补齐历史复现依赖与题目PDF；早期打包草稿不是交付版本，金融模型、冻结包及最终评价仍为同一次v1。
 
 源码包不含虚拟环境、Git历史、缓存、密钥或论文。比赛所需团队信息、来源与AI使用披露须在最终提交材料中如实填写；本轮按用户要求继续暂停论文制作。

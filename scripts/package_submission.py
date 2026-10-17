@@ -35,7 +35,7 @@ def build(development, bundle_path, final, output):
         raise ValueError('Saved final evidence must pass independent checks')
     files = {ROOT/p for p in ('README.md', 'LOG.md', 'AGENTS.md', 'Makefile', 'pyproject.toml',
                               'requirements.lock.txt', 'benchmark/run.py', 'benchmark/experiment_registry.json',
-                              'data/SafeInvest_Synthetic_Data.csv')}
+                              'data/SafeInvest_Synthetic_Data.csv', '2026_MCM_SafeInvest.pdf')}
     for directory, patterns in [('src', ('*.py',)), ('benchmark/safebench', ('*.py',)),
                                 ('configs', ('*.json',)), ('tests', ('*.py',)), ('scripts', ('*.py',)),
                                 ('docs', ('*.md', '*.txt'))]:
@@ -44,6 +44,13 @@ def build(development, bundle_path, final, output):
     # Development ledgers remain in the workspace; source and compact evidence fit the size limit.
     files.update(p for p in development.iterdir() if p.is_file() and p.suffix in ('.csv', '.json'))
     files.update(p for p in final.iterdir() if p.is_file() and (p.suffix in ('.csv', '.json') or p.name == 'decisions.csv.gz'))
+    # The independent verifiers compare against immutable historical numeric references.
+    for run in ('development_consolidated', 'development_plan_a_calibrated_v1', 'development_plan_c_screen_v3'):
+        for name in ('scenario_metrics.csv', 'manifest.json'):
+            reference = ROOT/'benchmark/outputs'/run/name
+            if not reference.is_file():
+                raise ValueError('Missing historical verification reference: '+str(reference))
+            files.add(reference)
     files.update([bundle_path.resolve(), lock])
     contents = {}
     for path in sorted(files):

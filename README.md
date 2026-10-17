@@ -2,7 +2,7 @@
 
 2026 MCM A 题：构建可解释、考虑风险和交易成本的自动投资顾问。
 
-[题目](2026_MCM_SafeInvest.pdf) · [数据说明](docs/DATA.md) · [基准报告](benchmark/outputs/development_consolidated/report.html) · [实验结论](docs/FINDINGS.md) · [工作记录](LOG.md)
+[题目](2026_MCM_SafeInvest.pdf) · [数据说明](docs/DATA.md) · [基准数值](benchmark/outputs/development_consolidated/scenario_metrics.csv) · [实验结论](docs/FINDINGS.md) · [工作记录](LOG.md)
 
 已实现17种基准策略、计划A的8种产品/对照、B的10种信号挑战及C的4种规划对照；提供年度回测引擎、嵌套情景交叉验证、客户期限评价、配对区间、成本敏感性及受控最终评价。计划A增加连续凸路径风险配置、成本门控部分再平衡与实际策略的客户适配；目前仍无候选通过预设晋级条件。
 
@@ -19,6 +19,8 @@
 提交前[有限优化计划](docs/STRATEGY_PLANS.md#2026-10-17-面向提交的最后一轮优化计划)已在`feat/submission-policy`执行：八条执行规则与一个内层选择程序，保留原25策略，共33策略、51,480条指标及789,840条年度记录。74项统一测试、独立市场/优化证书/内层选择/限幅核验全部通过。S8的开发H30增长4.3953%、P90回撤41.8682%，未通过晋级，按预声明保留校准A；客户E改为均衡，其余A/D人工、B/C保守。全120重拟合及实际客户目标核验后冻结，最终60情景只评价一次：A的H30中位实际增长4.1548%、P10增长1.6443%、P90回撤48.0160%、后续交易率35.34%；等权年度为3.3761%/1.4987%/39.5260%/100%。增长和风险都更高，未据最终结果改选。详见[本轮结果](docs/FINDINGS.md#提交候选有限优化2026-10-17)与[最终评价](docs/FINDINGS.md#冻结与一次性最终评价2026-10-17)。报告与论文继续暂停。
 
 复现此版使用`configs/submission.json`，开发运行`benchmark/outputs/development_submission_v1`；默认benchmark仍只评价原25策略。冻结、数值核验和源码包入口见[提交与复现](docs/SUBMISSION.md)。
+
+正式[源码ZIP](dist/SafeInvest_source.zip)为45,514,426字节（45.5MB），含117文件；[交付校验](dist/SafeInvest_source.verification.json)记录CRC/SHA256、解压后的74项统一测试及字节完全相同的独立重打包。归档保留冻结包和最终锁，论文继续暂停。
 
 ## 安装与运行
 
