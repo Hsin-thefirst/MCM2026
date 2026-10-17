@@ -20,6 +20,48 @@ from test_plan_bc import fixture
 
 
 class SubmissionTests(unittest.TestCase):
+    def test_frozen_selector_and_short_cost_stress_on_generated_data(self):
+        from unittest.mock import patch
+        from safebench import ROOT
+        from safebench.configuration import load_config
+        from safebench.data import load_partition
+        from safebench.experiment import freeze, run_final, manifest, code_digest
+        from safebench.plan_a import POLICIES as A_NAMES
+        cfg = load_config(ROOT/'configs/submission.json')
+        cfg.update(horizons=[5], sensitivity_costs=[.005], bootstrap=20)
+        cfg['plan_a'].update(risk_ratios=[.95], tracking_gammas=[4.])
+        params = {name:dict(risk_ratio=.95, tracking_gamma=4.) for name in A_NAMES+POLICIES}
+        params['submission_selected'].update(execution_rule='submission_c_cap10', execution_selection_feasible=True)
+        assignment = dict(profile_id='fixture', portfolio='balanced', policy='submission_selected',
+                          horizon=5, loss_tolerance=.25, liquidity='medium')
+        with tempfile.TemporaryDirectory(dir=ROOT/'benchmark') as td:
+            root = Path(td); data = root/'generated.csv'; dev = root/'dev'; dev.mkdir()
+            with data.open('w') as f:
+                f.write('scenario_id,period,equity_return,bond_return,bill_proxy_return,inflation\n')
+                for sid, t in product(range(1,181), range(1,31)):
+                    f.write(f'{sid},{t},0,0,0,0\n')
+            _, sha = load_partition(data)
+            (dev/'manifest.json').write_text(json.dumps(manifest(cfg,sha,list(range(1,121)),'development')))
+            pd.DataFrame([assignment]).to_csv(dev/'suitability.csv',index=False)
+            pd.DataFrame(dict(fixture=[1])).to_csv(dev/'scenario_metrics.csv',index=False)
+            bundle = root/'frozen.json'
+            with patch('safebench.experiment.tune',return_value=(params,[],[])), \
+                 patch('safebench.experiment.suitability',return_value=(pd.DataFrame([assignment]),None)):
+                freeze(cfg,data,'submission_selected',bundle,dev)
+            snapshot = json.loads(bundle.read_text())
+            self.assertEqual(snapshot['params']['submission_selected']['execution_rule'],'submission_c_cap10')
+            fixed_hash = code_digest()
+            with patch('safebench.experiment.BASE',root), \
+                 patch('safebench.experiment.code_digest',return_value=fixed_hash):
+                run_final(bundle,data,root/'final',True)
+                with self.assertRaises(FileExistsError):
+                    run_final(bundle,data,root/'second_final',True)
+            m = pd.read_csv(root/'final/scenario_metrics.csv')
+            self.assertEqual(set(m.horizon),{5})
+            self.assertEqual(set(m.cost_rate),{.0025,.005})
+            self.assertEqual(len(m),21*60*2)
+            self.assertTrue(json.loads((root/'final/validation.json').read_text())['all_checks_passed'])
+
     def test_promotion_screen_retains_baseline_without_evidence(self):
         from safebench.submission_analysis import comparisons_and_screen
         _, config, _, _ = fixture()
