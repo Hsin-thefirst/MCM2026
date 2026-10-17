@@ -588,7 +588,7 @@
   {
     "run": "final_submission_v1",
     "date": "2026-10-17",
-    "status": "final_lock_claimed_evaluation_running",
+    "status": "verified_final_evaluation_complete_no_retuning",
     "phase": "final",
     "config": "configs/submission.json",
     "development_run": "development_submission_v1",
@@ -603,6 +603,48 @@
       "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
       "started": "2026-10-17T09:34:44.220225+00:00"
     },
-    "no_further_financial_tuning": true
+    "no_further_financial_tuning": true,
+    "verification": {
+      "validation.json": {
+        "phase": "final",
+        "audited_paths": 13980,
+        "metric_rows": 16380,
+        "decision_rows": 286920,
+        "maximum_numeric_discrepancy": 9.094947017729282e-13,
+        "all_checks_passed": true,
+        "scope": "All saved accounting paths, metric recurrences, uniqueness, CV splits and outer CVaR feasibility; market returns checked separately in replay tests."
+      },
+      "saved_final_verification.json": {
+        "all_checks_passed": true,
+        "market_data_reopened": false,
+        "policies_reevaluated": false,
+        "saved_transitions_checked": 286920,
+        "cross_policy_return_max_error": 3.637978807091713e-12,
+        "scalar_reference_checks": 780,
+        "frozen_assignments_checked": 5,
+        "scope": "保存账本之间的市场一致性、独立等权核算及冻结客户分配；不重新访问最终市场数据。"
+      },
+      "severe_case.json": {
+        "scenario_id": 155,
+        "peak": 162.33438887727365,
+        "peak_at": "end_6",
+        "trough": 56.50483727002277,
+        "trough_at": "end_30",
+        "max_drawdown": 0.6519231836161286,
+        "terminal_real_wealth": 56.50483727002277,
+        "real_cagr": -0.0188482391251686,
+        "review_threshold": 0.638530018211982,
+        "review_periods": [
+          23
+        ],
+        "trades": 6,
+        "scope": "冻结策略最终严重路径，仅分析保存账本，不重新读取市场或调整策略。"
+      }
+    },
+    "stopping_rule_satisfied": true,
+    "selected_policy_unchanged": true,
+    "customer_assignments_unchanged": true,
+    "final_manifest_commit": "ea36e6959f5c055561190da4e4e4a0b532767954",
+    "finding": "H30已冻A增长4.1548%/P10 1.6443%/P90回撤48.0160%/交易率35.34%；等权3.3761%/1.4987%/39.5260%/100%。收益风险都更高，不据最终改选。客户保持A/D人工、B/C保守、E均衡。"
   }
 ]
