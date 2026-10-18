@@ -9,7 +9,7 @@ import unittest
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from project_tools import inspect_archive, restore_evidence, clean_caches
+from project_tools import inspect_archive, restore_evidence, clean_caches, validate_release
 
 
 def archive(path, files):
@@ -21,6 +21,22 @@ def archive(path, files):
 
 
 class ProjectToolsTests(unittest.TestCase):
+    def test_release_must_match_exact_frozen_bundle_and_safeguards(self):
+        bundle = dict(selected_policy="fixture", bundle_sha256="bundle-a", code_sha256="code-a")
+        release = dict(bundle, status="ready", customer_verification_passed=True,
+                       holdout_reused=False, new_final_evaluation=False)
+        validate_release(release, bundle)
+        for field, value in [("bundle_sha256", "bundle-b"), ("code_sha256", "code-b"),
+                             ("selected_policy", "other"), ("status", "pending"),
+                             ("customer_verification_passed", False), ("holdout_reused", True),
+                             ("new_final_evaluation", True)]:
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_release(dict(release, **{field: value}), bundle)
+        missing = dict(release)
+        missing.pop("holdout_reused")
+        with self.assertRaises(ValueError):
+            validate_release(missing, bundle)
+
     def test_archive_checks_hashes_and_external_receipt(self):
         with tempfile.TemporaryDirectory() as td:
             p = Path(td) / "source.zip"

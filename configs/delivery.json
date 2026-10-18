@@ -10,5 +10,5 @@
     "benchmark/outputs/development_customer_risk_review_v1"
   ],
   "research_guide_run": "benchmark/outputs/development_customer_risk_review_v1",
-  "archive": "dist/SafeInvest_submission.zip"
+  "archive": "dist/SafeInvest_main_source.zip"
 }

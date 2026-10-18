@@ -4,11 +4,11 @@
 
 ## 当前交付版本
 
-- 日常提交包：`dist/SafeInvest_submission.zip`，包含本次整理后的源码、最新讲解、原冻结程序、默认复现证据和后续研究紧凑结果。
-- 包外收据：`dist/SafeInvest_submission.verification.json`记录实际大小、SHA256与文件数；`dist/SafeInvest_submission.reproduction.json`记录独立解压测试和重打包。
+- 日常提交包：`dist/SafeInvest_main_source.zip`，包含本次整理后的源码、最新讲解、原冻结程序、默认复现证据和后续研究紧凑结果。
+- 包外收据：`dist/SafeInvest_main_source.verification.json`记录实际大小、SHA256与文件数；`dist/SafeInvest_main_source.reproduction.json`记录独立解压测试和重打包。
 - 最终金融程序：`plan_a_balanced`，全120重拟合参数risk_ratio=0.95、tracking_gamma=4；A/D人工、B/C保守、E均衡。
 - 最新组员讲解：[SOLUTION_GUIDE.md](SOLUTION_GUIDE.md)。它包含数据解释和写report知识，不是正式英文论文。
-- 历史包：`SafeInvest_source.zip`及`SafeInvest_final_source.zip`仍在dist保留原hash；早期v1/v2草稿移到`dist/archive/`。日常交付使用上面的唯一新包，历史包原74/95项测试结论保持原义。
+- 历史包：`SafeInvest_source.zip`、`SafeInvest_final_source.zip`及`SafeInvest_submission.zip`仍在dist保留原hash；早期v1/v2草稿移到`dist/archive/`。日常交付使用上面的唯一新包，历史包原74/95项测试结论保持原义。
 
 整理后的源码与新包测试数量以本次独立复现收据为准；讲解中的98项属于最后客户风险研发快照，不要和历史包或本轮测试数量混用。
 
@@ -42,7 +42,7 @@ make package
 make verify-package
 ```
 
-默认输出`dist/SafeInvest_submission.zip`。已有包不会被覆盖；新快照使用`make package PACKAGE=dist/SafeInvest_<新版本>.zip`。每次包中的README/LOG/代码都是构建时快照，不会随之后的Git提交自动改变。
+默认输出`dist/SafeInvest_main_source.zip`。已有包不会被覆盖；新快照使用`make package PACKAGE=dist/SafeInvest_<新版本>.zip`。每次包中的README/LOG/代码都是构建时快照，不会随之后的Git提交自动改变。
 
 包内包括：公共/金融/研究源码，配置，测试，中文文档，依赖锁，题目PDF及原数据的原样副本，冻结模型及最终锁，完整原最终账本，默认复现所需数值及历史参照，以及后续研究汇总/失败约束/核验结果。后续研究的大训练缓存、开发年度大账本、虚拟环境、Git历史、缓存和旧ZIP不入包。
 
@@ -55,8 +55,8 @@ make verify-package
 Git只带关键紧凑结果，不传完整实验缓存。拿到团队验证的提交ZIP后：
 
 ```bash
-make verify-package PACKAGE=/path/to/SafeInvest_submission.zip
-make restore PACKAGE=/path/to/SafeInvest_submission.zip
+make verify-package PACKAGE=/path/to/SafeInvest_main_source.zip
+make restore PACKAGE=/path/to/SafeInvest_main_source.zip
 make check
 make guide
 ```

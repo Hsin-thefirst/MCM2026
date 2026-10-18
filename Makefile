@@ -1,12 +1,12 @@
 PYTHON ?= .venv/bin/python
 RUN ?= benchmark/outputs/development_consolidated
-PACKAGE ?= dist/SafeInvest_submission.zip
+PACKAGE ?=
 
 .PHONY: help check test package verify-package restore clean guide benchmark report audit replay
 help:
 	@echo 'make check      检查冻结程序、环境及交付资料；不运行最终评价'
 	@echo 'make test       运行统一测试，不读取真实最终留出集'
-	@echo 'make package    打包当前源码、讲解与数值证据，默认输出 $(PACKAGE)'
+	@echo 'make package    打包当前源码、讲解与数值证据，默认路径见configs/delivery.json'
 	@echo 'make verify-package  核验 PACKAGE 指定ZIP的文件hash与外部收据'
 	@echo 'make restore PACKAGE=<可信ZIP>  仅恢复保存数值证据，不覆盖不同文件'
 	@echo 'make clean      仅清理Python/绘图缓存，保留环境、结果和交付包'
@@ -23,19 +23,19 @@ check:
 	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py check
 
 package:
-	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py package --archive "$(PACKAGE)"
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py package $(if $(PACKAGE),--archive "$(PACKAGE)")
 
 verify-package:
-	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py verify --archive "$(PACKAGE)"
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py verify $(if $(PACKAGE),--archive "$(PACKAGE)")
 
 restore:
-	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py restore --archive "$(PACKAGE)"
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py restore $(if $(PACKAGE),--archive "$(PACKAGE)")
 
 clean:
 	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py clean
 
 guide:
-	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/build_solution_guide.py --research-run benchmark/outputs/development_customer_risk_review_v1 --out docs/SOLUTION_GUIDE.md
+	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) scripts/project_tools.py guide
 
 benchmark:
 	$(PYTHON) benchmark/run.py development --out $(RUN)

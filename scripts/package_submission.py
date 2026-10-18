@@ -9,6 +9,7 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT/'src'), str(ROOT/'benchmark')]
 from safebench.experiment import verify_bundle
+from project_tools import validate_release
 
 
 def build(development, bundle_path, final, output, research_runs=(), release_decision=None):
@@ -71,10 +72,7 @@ def build(development, bundle_path, final, output, research_runs=(), release_dec
         release_decision = Path(release_decision).resolve()
         release_decision.relative_to(ROOT)
         release = json.loads(release_decision.read_text())
-        if release['selected_policy'] != bundle['selected_policy'] or release['holdout_reused']:
-            raise ValueError('Release decision must match the frozen financial program')
-        if release['status'] != 'ready':
-            raise ValueError('Release decision has not completed verification')
+        validate_release(release, raw)
         files.add(release_decision)
     contents = {}
     for path in sorted(files):

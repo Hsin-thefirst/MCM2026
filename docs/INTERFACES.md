@@ -6,6 +6,8 @@
 
 交付配置唯一来源为`configs/delivery.json`，金融接口和hash未变。`scripts/project_tools.py`提供`check/package/verify/restore/clean`，分别由`make check/package/verify-package/restore/clean`调用；`PACKAGE`覆盖ZIP路径，`PYTHON`覆盖解释器。`make guide`调用已有保存数据讲解生成器。
 
+main合并前复核：`make guide`改为调用`project_tools.py guide`并读取交付配置中的`research_guide_run`；默认ZIP路径也只从交付配置读取，Makefile仅在显式传`PACKAGE`时覆盖。`check`通过`validate_release(release, bundle)`要求ready决定的策略、冻结包hash及金融源码hash一致，客户核验成功且没有重用最终集/新最终评价标记。新增校验只检查保存元数据，不更改金融规则。
+
 `check`核对冻结源码/环境/最终锁/发布决定，报告Git checkout是否缺完整保存证据；不读取市场数据。`package`复用原打包器并加入最新客户研究紧凑证据及Git配置，拒绝覆盖已有ZIP；`verify`核对安全成员路径、准确清单、每文件SHA256和存在的外部收据。`restore`先验证同一冻结包/锁及所有目标冲突，仅恢复`benchmark/outputs/`；不覆盖不同证据、源码或配置。`clean`仅删受控缓存名，不进入环境、Git、实验结果或dist，不跟随符号链接且拒删tracked文件。
 
 ZIP仍严格小于50MB、保留最终锁并只包含已保存的最终数值。后续研究大缓存不入Git/ZIP；新clone可阅读紧凑结果和测试，打包/重建讲解前可从可信交付包恢复原默认证据。历史manifest、金融程序及旧ZIP不因整理而重写。

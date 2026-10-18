@@ -115,6 +115,17 @@ def clean_caches(root=ROOT, tracked=()):
     return dict(removed_directories=[str(p.relative_to(root)) for p in targets], reclaimed_bytes=reclaimed)
 
 
+def validate_release(release, bundle):
+    """Bind the delivery decision to the exact frozen model and completed customer check."""
+    if (release.get("status") != "ready" or release.get("selected_policy") != bundle["selected_policy"]
+            or release.get("bundle_sha256") != bundle["bundle_sha256"]
+            or release.get("code_sha256") != bundle["code_sha256"]
+            or release.get("customer_verification_passed") is not True
+            or release.get("holdout_reused") is not False
+            or release.get("new_final_evaluation") is not False):
+        raise ValueError("Release decision does not match the verified frozen program and customer checks")
+
+
 def check_project(root=ROOT):
     from safebench.experiment import verify_bundle
     root = Path(root)
@@ -125,8 +136,7 @@ def check_project(root=ROOT):
     if lock["bundle_sha256"] != raw["bundle_sha256"]:
         raise ValueError("Final lock and frozen model differ")
     release = json.loads((root / settings["release_decision"]).read_text())
-    if release["status"] != "ready" or release["selected_policy"] != bundle["selected_policy"]:
-        raise ValueError("Release is not ready or selected policy differs")
+    validate_release(release, raw)
     required = ["README.md", "LOG.md", "docs/SOLUTION_GUIDE.md", "docs/SUBMISSION.md",
                 "requirements.lock.txt", "pyproject.toml", ".gitignore", ".gitattributes"]
     for name in required:
@@ -146,7 +156,7 @@ def check_project(root=ROOT):
 
 def main():
     parser = argparse.ArgumentParser(description="项目检查、固定源码打包、证据恢复与缓存清理")
-    parser.add_argument("action", choices=["check", "package", "verify", "restore", "clean"])
+    parser.add_argument("action", choices=["check", "package", "verify", "restore", "clean", "guide"])
     parser.add_argument("--archive", type=Path)
     args = parser.parse_args()
     settings = json.loads((ROOT / "configs/delivery.json").read_text())
@@ -161,6 +171,11 @@ def main():
         result.pop("manifest")
     elif args.action == "restore":
         result = restore_evidence(archive)
+    elif args.action == "guide":
+        from build_solution_guide import build
+        destination = ROOT / "docs/SOLUTION_GUIDE.md"
+        destination.write_text(build(ROOT / settings["research_guide_run"]))
+        result = dict(guide=str(destination), saved_results_only=True, market_data_read=False)
     else:
         from package_submission import build
         check_project()

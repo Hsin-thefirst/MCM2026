@@ -32,7 +32,7 @@ make test
 `pyproject.toml`维护依赖范围，`requirements.lock.txt`维护精确验证环境；不另外维护requirements范围列表。
 
 ```bash
-make package          # 当前源码、讲解、冻结模型和证据 → dist/SafeInvest_submission.zip
+make package          # 当前源码、讲解、冻结模型和证据 → dist/SafeInvest_main_source.zip
 make verify-package   # 校验ZIP内全部文件hash和外部收据
 make clean            # 只删Python/绘图缓存，保留环境、全部实验与交付包
 make guide            # 从保存数值重建讲解，需要完整原保存证据
@@ -47,14 +47,14 @@ Git包含源码、配置、题目/数据、讲解、冻结模型、最终锁及�
 刚clone后可以阅读文档、运行测试及`make check`。完整原始指标和账本不随Git传输；打包、重建讲解或重放账本前，从团队交付的可信ZIP恢复：
 
 ```bash
-make verify-package PACKAGE=/path/to/SafeInvest_submission.zip
-make restore PACKAGE=/path/to/SafeInvest_submission.zip
+make verify-package PACKAGE=/path/to/SafeInvest_main_source.zip
+make restore PACKAGE=/path/to/SafeInvest_main_source.zip
 make check
 ```
 
 恢复工具只写`benchmark/outputs/`，核对冻结模型与最终锁，遇到不同的已有证据会停止，不覆盖代码。新ZIP解压目录已包含默认提交程序的完整证据，可直接测试/重建讲解；全部后续研究的大训练缓存仍只在原工作区。
 
-本轮整理分支为`feat/project-delivery-cleanup`。组员在各自feature分支修改；提交代码、配置、测试和文档，勿将`.venv/`、整个`benchmark/outputs/`或`dist/*.zip`强行加入Git。历史研发分支与工作记录见LOG和FINDINGS。
+本版经最终复核后合入`main`。组员在各自feature分支修改；提交代码、配置、测试和文档，勿将`.venv/`、整个`benchmark/outputs/`或`dist/*.zip`强行加入Git。历史研发分支与工作记录见LOG和FINDINGS。
 
 ## 目录职责
 
