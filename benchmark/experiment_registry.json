@@ -854,5 +854,24 @@
     "tests_passed": 84,
     "stopping_rule_satisfied": true,
     "finding": "固定低换手候选H30较旧融合节费41.55%/新划分42.15%，费用翻倍保持；金融区间未通过，新划分一折A内层风险约束失败如实保留。不替换冻结提交。"
+  },
+  {
+    "run": "fusion_calibration_plan_diagnostic_v1",
+    "date": "2026-10-18",
+    "status": "completed_saved_result_diagnostic",
+    "purpose": "核对长期风险失败与短期增长约束的参数冲突，为下一轮计划提供依据。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "independent_confirmation": false,
+    "new_policy_evaluation": false,
+    "source_runs": [
+      "development_fusion_stability_v1",
+      "development_fusion_efficiency_v3"
+    ],
+    "search_budget": "不拟合、不选新参数、不读市场数据；仅重新聚合保存的原A六参数内层约束并读取现有H30汇总。",
+    "finding": "新划分外折index2：五期限共同可行0/6，5/6年可行1/6，15/25/30年可行4/6。分组可解除这批已保存原A约束的冲突；实际低换手融合的可行性和新收益仍待嵌套评价。",
+    "output": "benchmark/outputs/fusion_calibration_plan_diagnostic_v1/diagnostic.json",
+    "output_sha256": "3f8127bf2dd5b1cdd45aefaccdf56def637ded3349f983a2fc0dd8f7a36d6209",
+    "next_step": "计划优先比较当前候选、长期单独按A校准、长期按实际融合执行校准；计划不是新实验已运行或已预登记。"
   }
 ]
