@@ -11,7 +11,7 @@ sys.path[:0] = [str(ROOT/'src'), str(ROOT/'benchmark')]
 from safebench.experiment import verify_bundle
 
 
-def build(development, bundle_path, final, output):
+def build(development, bundle_path, final, output, research_runs=(), release_decision=None):
     development, bundle_path, final, output = map(Path, (development, bundle_path, final, output))
     raw = json.loads(bundle_path.read_text())
     bundle = verify_bundle(raw)
@@ -52,6 +52,29 @@ def build(development, bundle_path, final, output):
                 raise ValueError('Missing historical verification reference: '+str(reference))
             files.add(reference)
     files.update([bundle_path.resolve(), lock])
+    compact_names = {'manifest.json', 'config.json', 'verification.json', 'decision.json',
+                     'selection_verification.csv', 'cost_protection.csv', 'financial_screen.csv',
+                     'summary.csv', 'tuning_trials.json', 'independent_replay.json',
+                     'comparison_h30.csv', 'result_summary.json', 'original_a_inner_reproduction.json',
+                     'customer_verification.json', 'release_decision.json'}
+    research_paths = []
+    for research in map(Path, research_runs):
+        research = research.resolve()
+        research.relative_to(ROOT/'benchmark/outputs')
+        meta = json.loads((research/'manifest.json').read_text())
+        if meta['phase'] != 'development' or meta['holdout_used']:
+            raise ValueError('Research evidence must be development-only')
+        research_paths.append(str(research.relative_to(ROOT)))
+        files.update(p for p in research.rglob('*') if p.is_file() and p.name in compact_names)
+    if release_decision is not None:
+        release_decision = Path(release_decision).resolve()
+        release_decision.relative_to(ROOT)
+        release = json.loads(release_decision.read_text())
+        if release['selected_policy'] != bundle['selected_policy'] or release['holdout_reused']:
+            raise ValueError('Release decision must match the frozen financial program')
+        if release['status'] != 'ready':
+            raise ValueError('Release decision has not completed verification')
+        files.add(release_decision)
     contents = {}
     for path in sorted(files):
         resolved = path.resolve()
@@ -63,6 +86,11 @@ def build(development, bundle_path, final, output):
         bundle_sha256=raw['bundle_sha256'], final_evaluation_completed=True,
         note='源码、冻结程序和数值证据；未包含论文。最终评价锁保留，不得重跑最终集后调参。',
         files={name:hashlib.sha256(data).hexdigest() for name,data in contents.items()})
+    if research_paths:
+        manifest['research_evidence'] = research_paths
+        manifest['research_scope'] = '开发探索的源码、配置、紧凑数值证据；完整研究缓存/账本保留在工作区，不构成新的最终评价。'
+    if release_decision is not None:
+        manifest['release_decision'] = str(release_decision.relative_to(ROOT))
     contents['PACKAGE_MANIFEST.json'] = (json.dumps(manifest, indent=2, ensure_ascii=False)+'\n').encode()
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, 'x', compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
@@ -91,5 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('--bundle', required=True)
     parser.add_argument('--final-run', required=True)
     parser.add_argument('--out', required=True)
+    parser.add_argument('--research-run', action='append', default=[])
+    parser.add_argument('--release-decision')
     args = parser.parse_args()
-    build(args.development_run, args.bundle, args.final_run, args.out)
+    build(args.development_run, args.bundle, args.final_run, args.out, args.research_run, args.release_decision)

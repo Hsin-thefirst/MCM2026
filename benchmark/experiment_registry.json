@@ -987,5 +987,88 @@
       "comparison": "benchmark/outputs/development_fusion_value_extensions_v1/comparison_h30.csv",
       "summary_sha256": "e83a9abeceb742fed2f65d12b529175ce2415e2cc8d4b8027480ba09daaff7e0"
     }
+  },
+  {
+    "run": "development_final_budget_v1",
+    "date": "2026-10-18",
+    "status": "completed_verified_release_selected",
+    "executor": "Codex",
+    "purpose": "用户授权继续迭代至最终提交；最后一轮检验预测风险超额的固定惩罚，完成后收敛打包。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "independent_confirmation": false,
+    "config": "configs/final_budget_iteration.json",
+    "sources": {
+      "scripts/budget_fusion.py": "c16444d0610c8a29984fb895156555ca66da633e501c9818e11b6a9558d2f4aa",
+      "scripts/run_final_budget_iteration.py": "84f230c713d957d1a8b8f038e02461dfc751031dbda4d72d26fe6de9b6c1a43e",
+      "scripts/analyze_fusion_calibration.py": "2c88e62552ba0ac1ce92aa6c52c364d7d5cd59ea1cf7da14acbe1085e8c07c10",
+      "scripts/verify_calibration_ledger.py": "24bde7173ed68b1930b9bf612955068595ba8cafd1675cdccb8fe14096291894",
+      "scripts/fusion_value_extensions.py": "3172609923fda7c03044228ac3fd694088a4406b7b0313f6c235bdee1bc1645a",
+      "configs/final_budget_iteration.json": "1fc3ee12ed8cdba51f0c160473b8298f47caf215f871ceeb8a40151cc5a1c3c2"
+    },
+    "search_budget": "仅两个新程序：预算惩罚+200次bootstrap过滤、相同惩罚使用均值。惩罚系数1/H、buffer.02/cap.10不搜索；每个程序长期共选原六参数。复用两套5外/3内训练模型，34560新内层路径、19200新外层路径，复制21600参照。4子进程仅并行固定任务。",
+    "promotion": "两套划分均相对K0和原冻结A过原增长或风险路线，保留Balanced及同锚年度条件、全部内层可行、短期精确重现、各长期双费用费用比<=1.1；不根据结果放宽阈值。",
+    "customers": "有金融晋级者才检查新均衡与原保守/成长的风险次序及5客户适配；原家族440加K0/K2/不确定性/两个新预算程序，合计16程序×5客户×4流动性口径×2费用=640。无晋级者复核原冻结分配，不宣称客户升级。",
+    "stopping_rule": "完成本批两规则后停止模型搜索。按固定顺序优先预算不确定性、再预算均值；未通过则最终金融程序保留冻结A。完成唯一版本决定、保护文件核验、<=50MB源码包、独立解压make test和重打包；不重跑最终集。",
+    "verification": "3项生成数据专项通过（显式bootstrap/时间单位/退化重现/因果/门槛/短期）；随后统一测试、选择独立重算、完整外层标量重放。",
+    "tests_passed": 95,
+    "inner_paths": 34560,
+    "new_outer_paths": 19200,
+    "copied_reference_paths": 21600,
+    "saved_outer_paths": 40800,
+    "annual_records": 660960,
+    "decision": {
+      "all_primary_groups_feasible": true,
+      "continue_extensions": false,
+      "independent_confirmation": false,
+      "interval_family": "每指标/参照/期限/费用/划分内覆盖两个新程序；条件于OOF拟合，不覆盖历史人工搜索。",
+      "primary_cost_protection": true,
+      "primary_financial_pass_both_splits": false,
+      "program_gates": {
+        "budget_mean": {
+          "calibrated": true,
+          "cost_protected": true,
+          "financial_pass": false
+        },
+        "budget_uncertainty": {
+          "calibrated": true,
+          "cost_protected": true,
+          "financial_pass": false
+        }
+      },
+      "reason": "两个预声明独立扩展完成后停止本轮搜索，按固定顺序检查金融/校准/费用条件，不追加组合。",
+      "replace_frozen_submission": false,
+      "selected_research_policy": "efficient_horizon",
+      "selection_independently_verified": true,
+      "short_constraints_passed": true
+    },
+    "release_decision": {
+      "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+      "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+      "customer_verification_passed": true,
+      "evidence_hashes": {
+        "benchmark/outputs/development_final_budget_v1/customer_verification.json": "8f5450132e5d9ce47430e4fdb23d2cd9284d26657a560f74f23ceba2cdf304c7",
+        "benchmark/outputs/development_final_budget_v1/decision.json": "0b73f7fa5a6feb7e2be48b0d6d4c019dd09bd932b01e1ae929dba41d97d2b723",
+        "benchmark/outputs/final_submission_v1/saved_final_verification.json": "33b525c4029e4f4fc2292665361f8cd7812cb56c2ae0e991bbc46fdcdbab44fa"
+      },
+      "frozen_bundle": "benchmark/submission_frozen_v1.json",
+      "holdout_reused": false,
+      "independent_confirmation_of_research": false,
+      "new_final_evaluation": false,
+      "new_research_paths_audited": 40800,
+      "new_research_winner": null,
+      "protected_hashes": {
+        "benchmark/FINAL_EVALUATION_LOCK.json": "c4e61b0f7e42da6b12b1c9b3256ceb54dc85502741dd79c5db9b0e0e88c65894",
+        "benchmark/submission_frozen_v1.json": "83bcee60aa05fd3f1a61eb553acd310afe8f2232476b1aa540c77af6dbe4e028",
+        "dist/SafeInvest_source.zip": "631dec29afdc9029747516e3005b7aaafdcf0c5a10710243c0d12995d418999a"
+      },
+      "selected_policy": "plan_a_balanced",
+      "selection_reason": "最后两个候选未同时通过预声明校准、费用与金融采用条件，保留已冻结A。",
+      "source_research_decision": "benchmark/outputs/development_final_budget_v1/decision.json",
+      "status": "ready",
+      "tests_passed": 95
+    },
+    "maximum_scalar_error": 2.0463630789890885e-12,
+    "finding": "两个预算规则10/10折内层可行，费用保护通过；仍未同时通过原金融晋级。最终金融程序保留原冻结A，五客户原映射核验通过；本轮停止搜索并进入源码归档。"
   }
 ]

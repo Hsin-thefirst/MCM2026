@@ -1,0 +1,23 @@
+{
+  "source_run": "benchmark/outputs/development_fusion_calibration_v1",
+  "reference_run": "benchmark/outputs/development_fusion_value_extensions_v1",
+  "horizons": [5, 6, 15, 25, 30],
+  "long_horizons": [15, 25, 30],
+  "costs": [0.0025, 0.005],
+  "rule": {"buffer": 0.02, "short_a_max_horizon": 6},
+  "primary": "budget_uncertainty",
+  "diagnostic": "budget_mean",
+  "families": [["budget_uncertainty", "budget_uncertainty"], ["budget_mean", "budget_mean"]],
+  "baseline": "efficient_horizon",
+  "cost_baseline": "efficient_horizon",
+  "bootstrap": 4000,
+  "analysis_seed": 20261020,
+  "maximum_cost_ratio": 1.1,
+  "research_priority": ["budget_uncertainty", "budget_mean"],
+  "short_programs": ["budget_uncertainty", "budget_mean"],
+  "budget_coefficient": 1.0,
+  "workers": 4,
+  "required_release_references": ["plan_a_balanced"],
+  "customer_family_size": 640,
+  "references": ["efficient_horizon", "fusion_uncertainty", "calibration_group_fusion", "plan_a_balanced", "balanced_annual", "plan_a_annual", "k1_anchor_a", "k2_anchor_a", "k1_anchor_annual", "k2_anchor_annual"]
+}

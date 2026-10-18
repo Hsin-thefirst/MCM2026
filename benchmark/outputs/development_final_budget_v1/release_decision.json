@@ -1,0 +1,26 @@
+{
+  "bundle_sha256": "93f9c40803fd2404e1fbdb771d29351d60348e2b44efcdd389be32932dbb0dc5",
+  "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+  "customer_verification_passed": true,
+  "evidence_hashes": {
+    "benchmark/outputs/development_final_budget_v1/customer_verification.json": "8f5450132e5d9ce47430e4fdb23d2cd9284d26657a560f74f23ceba2cdf304c7",
+    "benchmark/outputs/development_final_budget_v1/decision.json": "0b73f7fa5a6feb7e2be48b0d6d4c019dd09bd932b01e1ae929dba41d97d2b723",
+    "benchmark/outputs/final_submission_v1/saved_final_verification.json": "33b525c4029e4f4fc2292665361f8cd7812cb56c2ae0e991bbc46fdcdbab44fa"
+  },
+  "frozen_bundle": "benchmark/submission_frozen_v1.json",
+  "holdout_reused": false,
+  "independent_confirmation_of_research": false,
+  "new_final_evaluation": false,
+  "new_research_paths_audited": 40800,
+  "new_research_winner": null,
+  "protected_hashes": {
+    "benchmark/FINAL_EVALUATION_LOCK.json": "c4e61b0f7e42da6b12b1c9b3256ceb54dc85502741dd79c5db9b0e0e88c65894",
+    "benchmark/submission_frozen_v1.json": "83bcee60aa05fd3f1a61eb553acd310afe8f2232476b1aa540c77af6dbe4e028",
+    "dist/SafeInvest_source.zip": "631dec29afdc9029747516e3005b7aaafdcf0c5a10710243c0d12995d418999a"
+  },
+  "selected_policy": "plan_a_balanced",
+  "selection_reason": "\u6700\u540e\u4e24\u4e2a\u5019\u9009\u672a\u540c\u65f6\u901a\u8fc7\u9884\u58f0\u660e\u6821\u51c6\u3001\u8d39\u7528\u4e0e\u91d1\u878d\u91c7\u7528\u6761\u4ef6\uff0c\u4fdd\u7559\u5df2\u51bb\u7ed3A\u3002",
+  "source_research_decision": "benchmark/outputs/development_final_budget_v1/decision.json",
+  "status": "ready",
+  "tests_passed": 95
+}

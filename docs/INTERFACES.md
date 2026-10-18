@@ -178,4 +178,14 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 
 扩展运行每套划分包含16策略/参照、19,200条外层指标，其中9,600条为复制已审计的参照，9,600条为新评价；账本完整保存。短期两个新程序与当前A逐年完全相同。分析工具可通过配置`families`、`baseline`、`cost_baseline`、`references`和`research_priority`处理该固定扩展：主比较K2，费用保护及额外金融比较仍对原低换手K0，按原优先顺序检查两个程序且完成后停止。新程序的`k2_anchor_*`对应含费A延续，`k1_anchor_*`对应不确定性规则。历史运行的manifest与原hash不修改，可从相应Git提交恢复当时工具。
 
+## 最终收敛的预算惩罚研究（2026-10-18）
+
+`scripts/run_final_budget_iteration.py --out benchmark/outputs/<新目录>`读取`configs/final_budget_iteration.json`，固定比较`budget_uncertainty`和`budget_mean`。沿用2%门槛、10%限幅及短期原A，对预测对数回撤ES超出同训练验证预算的部分施加`max(ES_log-budget,0)/H`价值惩罚；前者在包含该惩罚的200次训练bootstrap中减一个标准差，后者使用均值。系数固定1；实际路径仍按原六参数、原风险/增长/P10条件校准，不提供风险上限保证。
+
+每个内折仅使用对应已存训练模型，六参数任务通过四个独立Python子进程并行，子进程只读开发分区，返回按trial顺序合并的CSV。并行数是运行设置，不是金融参数。每套划分保存17个程序/参照、20,400条外层路径，其中10,800条复制已审计参照；同锚对照分别保留。分析工具可选`required_release_references`，本轮额外要求相对原A通过原金融路线；不根据结果更改标准。两规则完成后作最终采用决定并打包；没有通过者保留原冻结A，最终集不再评价。
+
+打包工具`package_submission.py`增加可重复的`--research-run <开发目录>`与可选`--release-decision <JSON>`。默认四个原参数的行为保持；追加研究目录只纳入白名单中的配置、汇总、约束/选择和核验证据，不包含大账本/模型缓存。发布决定必须为`status=ready`、`holdout_reused=false`且所选金融策略与原冻结包一致，否则拒绝。原金融程序、历史manifest不改写；新源码包与旧包使用不同文件名，独立解压测试并重打包核验。
+
+`scripts/finalize_release.py <最后开发目录> --tests-passed <已通过数量>`在所有新候选未通过采用条件时核对原冻结A、最终锁、保存最终核验及原五客户映射/实际目标，生成不可覆盖的`release_decision.json`和`customer_verification.json`，不打开市场数据或模拟策略。若有新候选通过则拒绝跳过其全开发重拟合和客户检查；不能借此工具静默回退或替换新候选。发布决定中的路径核验数量包含该批明确声明的复用参照。
+
 `scripts/verify_saved_iteration.py <run>`只重放保存的JSONL账本与开发市场，不重新运行策略；独立核验全部年度参照及研究路径的扣费、收益、通胀、回撤、增长、费用和交易率，并保存不可覆盖的`independent_replay.json`。

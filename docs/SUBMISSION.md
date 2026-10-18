@@ -2,6 +2,8 @@
 
 本文维护源码交付与复现入口，不制作论文或数据报告。实际提交策略以冻结包的`selected_policy`及开发运行的`submission_decision.json`为准，不手工挑选外层赢家。
 
+2026-10-18的最终收敛工作位于`feat/final-submission-release`。最后预算惩罚批次完成后，以该运行的`release_decision.json`记录唯一金融程序、客户核验和来源；新候选必须同时通过预先登记的原金融/可行性/费用条件。没有通过者保留原冻结A，不能把新版源码包解释为新模型已经通过最终评价。
+
 当前版本已冻结`plan_a_balanced`，全120选择的训练比例0.95、gamma4，客户A/D人工、B/C保守、E均衡。真实最终评价已经完成一次，结果位于`benchmark/outputs/final_submission_v1`；所含最终锁不得删除。后续只复现固定程序、核验保存结果，不再使用最终表现修改金融模型。
 
 ## 环境及开发复现
@@ -46,3 +48,15 @@ make test
 独立核验需要的历史参照也随包保留：原Benchmark、校准A、C筛查v3三个目录的原始`scenario_metrics.csv`与`manifest.json`。只复制已有数值快照，不修改其内容或hash。正式源码包补齐历史复现依赖与题目PDF；早期打包草稿不是交付版本，金融模型、冻结包及最终评价仍为同一次v1。
 
 源码包不含虚拟环境、Git历史、缓存、密钥或论文。比赛所需团队信息、来源与AI使用披露须在最终提交材料中如实填写；本轮按用户要求继续暂停论文制作。
+
+## 最终收敛源码包
+
+新版交付使用`dist/SafeInvest_final_source.zip`，不覆盖原45.5MB快照。默认金融程序的完整复现依赖和完整原最终账本仍保留；同时附带后续研究的源码、配置、汇总、失败约束与核验JSON。研究大账本和训练模型缓存不放入50MB包，保留在原工作区，所以紧凑研究证据不支持在解压目录直接独立重放全部研究路径。`make test`及`configs/submission.json`默认提交程序的复现依赖完整。
+
+在发布决定为ready且对应原冻结A时，使用：
+
+```bash
+.venv/bin/python scripts/package_submission.py --development-run benchmark/outputs/development_submission_v1 --bundle benchmark/submission_frozen_v1.json --final-run benchmark/outputs/final_submission_v1 --research-run benchmark/outputs/development_fusion_calibration_v1 --research-run benchmark/outputs/development_fusion_value_extensions_v1 --research-run benchmark/outputs/development_final_budget_v1 --release-decision benchmark/outputs/development_final_budget_v1/release_decision.json --out dist/SafeInvest_final_source.zip
+```
+
+新包生成后独立解压，在精确已验证环境执行`make test`；核对金融源码、冻结包、客户分配及全部文件hash/CRC。在解压目录按同一显式输入重打包（输出改为新文件名），应得到完全相同字节。包外verification JSON记录最终大小及hash，另附独立复现JSON；不要在源码包内嵌该包自身hash，避免自引用。已使用的最终集只保留保存证据，不再运行final入口。

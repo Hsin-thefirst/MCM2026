@@ -1,0 +1,25 @@
+{
+  "all_primary_groups_feasible": true,
+  "continue_extensions": false,
+  "independent_confirmation": false,
+  "interval_family": "\u6bcf\u6307\u6807/\u53c2\u7167/\u671f\u9650/\u8d39\u7528/\u5212\u5206\u5185\u8986\u76d6\u4e24\u4e2a\u65b0\u7a0b\u5e8f\uff1b\u6761\u4ef6\u4e8eOOF\u62df\u5408\uff0c\u4e0d\u8986\u76d6\u5386\u53f2\u4eba\u5de5\u641c\u7d22\u3002",
+  "primary_cost_protection": true,
+  "primary_financial_pass_both_splits": false,
+  "program_gates": {
+    "budget_mean": {
+      "calibrated": true,
+      "cost_protected": true,
+      "financial_pass": false
+    },
+    "budget_uncertainty": {
+      "calibrated": true,
+      "cost_protected": true,
+      "financial_pass": false
+    }
+  },
+  "reason": "\u4e24\u4e2a\u9884\u58f0\u660e\u72ec\u7acb\u6269\u5c55\u5b8c\u6210\u540e\u505c\u6b62\u672c\u8f6e\u641c\u7d22\uff0c\u6309\u56fa\u5b9a\u987a\u5e8f\u68c0\u67e5\u91d1\u878d/\u6821\u51c6/\u8d39\u7528\u6761\u4ef6\uff0c\u4e0d\u8ffd\u52a0\u7ec4\u5408\u3002",
+  "replace_frozen_submission": false,
+  "selected_research_policy": "efficient_horizon",
+  "selection_independently_verified": true,
+  "short_constraints_passed": true
+}

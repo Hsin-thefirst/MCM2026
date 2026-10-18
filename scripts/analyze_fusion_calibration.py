@@ -171,9 +171,11 @@ def main():
                 original = table.loc['efficient_horizon']
                 annual = table.loc['balanced_annual']
                 anchor = table.loc[prefix+'_anchor_annual']
+                other_ok = all(bool(table.loc[ref].growth_pass or table.loc[ref].risk_pass)
+                               for ref in settings.get('required_release_references',[]))
                 passed.append(bool((parent.growth_pass or parent.risk_pass) and
                     (original.growth_pass or original.risk_pass) and
-                    (annual.growth_pass or (annual.risk_pass and anchor.risk_pass))))
+                    (annual.growth_pass or (annual.risk_pass and anchor.risk_pass)) and other_ok))
             gates[program] = dict(calibrated=all(c['selection_feasible'] for c in selected) and all(shorts),
                                   cost_protected=all(c['passed'] for c in paid),financial_pass=all(passed))
         decision['program_gates'] = gates

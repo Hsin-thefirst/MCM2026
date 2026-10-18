@@ -1,0 +1,109 @@
+{
+  "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+  "created_utc": "2026-10-18T09:41:45.663610+00:00",
+  "development_sha256": "9c4ad83f5dda86251a754e126528a71dd930ae88ed7cdb8a0663a327b6bfb7c7",
+  "final_already_exposed": true,
+  "holdout_used": false,
+  "independent_confirmation": false,
+  "phase": "development",
+  "policy_count": 17,
+  "protected_hashes": {
+    "benchmark/FINAL_EVALUATION_LOCK.json": "c4e61b0f7e42da6b12b1c9b3256ceb54dc85502741dd79c5db9b0e0e88c65894",
+    "benchmark/submission_frozen_v1.json": "83bcee60aa05fd3f1a61eb553acd310afe8f2232476b1aa540c77af6dbe4e028",
+    "dist/SafeInvest_source.zip": "631dec29afdc9029747516e3005b7aaafdcf0c5a10710243c0d12995d418999a"
+  },
+  "selection": "\u4e24\u4e2a\u56fa\u5b9a\u72ec\u7acb\u89c4\u5219\u5206\u522b\u6309\u5b9e\u9645\u8def\u5f84\u6821\u51c6\u539f\u516d\u53c2\u6570\uff1b\u4e0d\u7ec4\u5408\uff0c\u5168\u90e8\u5b8c\u6210\u540e\u505c\u6b62\u3002",
+  "settings": {
+    "analysis_seed": 20261020,
+    "baseline": "efficient_horizon",
+    "bootstrap": 4000,
+    "budget_coefficient": 1.0,
+    "cost_baseline": "efficient_horizon",
+    "costs": [
+      0.0025,
+      0.005
+    ],
+    "customer_family_size": 640,
+    "diagnostic": "budget_mean",
+    "families": [
+      [
+        "budget_uncertainty",
+        "budget_uncertainty"
+      ],
+      [
+        "budget_mean",
+        "budget_mean"
+      ]
+    ],
+    "horizons": [
+      5,
+      6,
+      15,
+      25,
+      30
+    ],
+    "long_horizons": [
+      15,
+      25,
+      30
+    ],
+    "maximum_cost_ratio": 1.1,
+    "primary": "budget_uncertainty",
+    "reference_run": "benchmark/outputs/development_fusion_value_extensions_v1",
+    "references": [
+      "efficient_horizon",
+      "fusion_uncertainty",
+      "calibration_group_fusion",
+      "plan_a_balanced",
+      "balanced_annual",
+      "plan_a_annual",
+      "k1_anchor_a",
+      "k2_anchor_a",
+      "k1_anchor_annual",
+      "k2_anchor_annual"
+    ],
+    "required_release_references": [
+      "plan_a_balanced"
+    ],
+    "research_priority": [
+      "budget_uncertainty",
+      "budget_mean"
+    ],
+    "rule": {
+      "buffer": 0.02,
+      "short_a_max_horizon": 6
+    },
+    "short_programs": [
+      "budget_uncertainty",
+      "budget_mean"
+    ],
+    "source_run": "benchmark/outputs/development_fusion_calibration_v1",
+    "workers": 4
+  },
+  "sources": {
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/config.json": "e43a823c1296868b2604a1ac55cf05973201ef987105ea6d48a43cf33d2fa52e",
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/fitted_models.json": "790c0e4e768444dc180468bf7047a34e9cf7d28440d1b3915f02b024666870a0",
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/splits.json": "fc6e18d2561cfd6f0356571acc203922ed9d9e7bdf222fb971b4c3939151026b",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/config.json": "56c3cb3dcc34a734ded4d538dc5436c12c5d4e559a6a6934fbfb15a75400df17",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/fitted_models.json": "f71d80348bb37cee0315e00608df4b24269f27aee7f088d1e27e92d0f2f330ce",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/splits.json": "e292193b48eb172c42975975832b47f0eac09e4efb29fd117d6eb9c55a780afe",
+    "benchmark/outputs/development_fusion_calibration_v1/decision.json": "b42a7f730bce3b61e9962ed17e7b7f06a05ea2b923b713a9b0eefe2549d76244",
+    "benchmark/outputs/development_fusion_calibration_v1/manifest.json": "8b764e8981fd6b78273563fd8dbcf550698d7b7dd267a67ae2bcad1d789a93f7",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261014/decisions.jsonl.gz": "aed21112eeb74006d5cc1db6461eea42d9a3c7d69ac46261cfa0b6d1aa27fe6b",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261014/independent_replay.json": "fe009914147c18c702fc243adbf94e3c969c838add75c544187949a14cb5eb2c",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261014/scenario_metrics.csv": "701181ba68d0293cd88128b32380f4dd65abf8b5e52abeeb3f00029e6d411e21",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261019/decisions.jsonl.gz": "99c2c6188d1f9bcba6582d1962e5fd339d6c21f187b5bce05624490f07d36c20",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261019/independent_replay.json": "afa7c327ab6106351fca38eb3c188fc171b0a287e3ea65da3c3ed85a81094992",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261019/scenario_metrics.csv": "2f42be3423af131a06763ceb37f7f8f421bd38d1fdd2698347bc9c16a3df38a7",
+    "configs/final_budget_iteration.json": "1fc3ee12ed8cdba51f0c160473b8298f47caf215f871ceeb8a40151cc5a1c3c2",
+    "configs/fusion_research.json": "147929698fd358c2ddeb7bfdd07b6448478c20b7909ab5d353a337ae2344eae9",
+    "scripts/analyze_fusion_calibration.py": "2c88e62552ba0ac1ce92aa6c52c364d7d5cd59ea1cf7da14acbe1085e8c07c10",
+    "scripts/budget_fusion.py": "c16444d0610c8a29984fb895156555ca66da633e501c9818e11b6a9558d2f4aa",
+    "scripts/efficient_fusion.py": "ea542ffc2374612f17688f33fe228599d1c82f00dcdcd1e4e51ff4e42917c7a9",
+    "scripts/fusion_calibration.py": "605ba0a57f72bbcd8c3a471efd459e10a3bef28448a6c00e3cf4473f7948b847",
+    "scripts/fusion_policy.py": "e28ce3b25b499fb164a837600ae642726b4ab392969cff5f3226b6b48cd74af0",
+    "scripts/fusion_value_extensions.py": "3172609923fda7c03044228ac3fd694088a4406b7b0313f6c235bdee1bc1645a",
+    "scripts/run_final_budget_iteration.py": "84f230c713d957d1a8b8f038e02461dfc751031dbda4d72d26fe6de9b6c1a43e",
+    "scripts/verify_calibration_ledger.py": "24bde7173ed68b1930b9bf612955068595ba8cafd1675cdccb8fe14096291894"
+  }
+}

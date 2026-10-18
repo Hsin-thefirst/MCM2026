@@ -1,0 +1,56 @@
+{
+  "customers": [
+    {
+      "horizon": 5,
+      "policy": "human_review",
+      "portfolio": "human_review",
+      "profile_id": "A"
+    },
+    {
+      "horizon": 15,
+      "initial_weights": [
+        0.22670204598599838,
+        0.0723190192046538,
+        0.7009789348093478
+      ],
+      "policy": "plan_a_conservative",
+      "portfolio": "conservative",
+      "profile_id": "B",
+      "strategic_bill_fraction": 0.7009789348093478
+    },
+    {
+      "horizon": 30,
+      "initial_weights": [
+        0.26477552730917714,
+        0.028501816817046947,
+        0.7067226558737758
+      ],
+      "policy": "plan_a_conservative",
+      "portfolio": "conservative",
+      "profile_id": "C",
+      "strategic_bill_fraction": 0.7067226558737758
+    },
+    {
+      "horizon": 25,
+      "policy": "human_review",
+      "portfolio": "human_review",
+      "profile_id": "D"
+    },
+    {
+      "horizon": 6,
+      "initial_weights": [
+        0.5325051374331248,
+        0.044605903710422175,
+        0.4228889588564531
+      ],
+      "policy": "plan_a_balanced",
+      "portfolio": "balanced",
+      "profile_id": "E",
+      "strategic_bill_fraction": 0.4228889588564531
+    }
+  ],
+  "market_data_read": false,
+  "passed": true,
+  "policies_simulated": false,
+  "scope": "\u539f\u51bb\u7ed3\u5206\u914d\u4e0e\u5df2\u6838\u9a8c\u4fdd\u5b58\u8bc1\u636e\uff1b\u672a\u65b0\u8bc4\u4ef7\u5ba2\u6237\u6216\u6700\u7ec8\u6570\u636e"
+}

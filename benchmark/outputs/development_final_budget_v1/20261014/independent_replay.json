@@ -1,0 +1,12 @@
+{
+  "annual_records": 330480,
+  "cap_checks": 33129,
+  "final_used": false,
+  "gate_checks": 67086,
+  "maximum_error": 1.5916157281026244e-12,
+  "new_policy_evaluation": false,
+  "passed": true,
+  "paths": 20400,
+  "short_exact_paths": 960,
+  "source_sha256": "24bde7173ed68b1930b9bf612955068595ba8cafd1675cdccb8fe14096291894"
+}
