@@ -1,0 +1,21 @@
+{
+  "all_checks_passed": true,
+  "source_code_commit": "929f3a3489cdfb359100f497e75ad9c0598316b5",
+  "archive_sha256": "cd8de86eff506c9c90f089c44adddae3d95110034e558bfd02b52d74dc88a156",
+  "size_bytes": 45944204,
+  "files": 232,
+  "cold_tests_passed": 103,
+  "extracted_modules_verified": true,
+  "guide_rebuild_identical": true,
+  "byte_identical_repack": true,
+  "repacked_sha256": "cd8de86eff506c9c90f089c44adddae3d95110034e558bfd02b52d74dc88a156",
+  "git_only_check_passed": true,
+  "git_only_large_evidence_absent": true,
+  "evidence_restore_files": 57,
+  "restore_only_outputs": true,
+  "restored_check_and_guide_passed": true,
+  "final_market_data_parsed": false,
+  "final_policies_reevaluated": false,
+  "test_log_sha256": "e6c79b616ea1b55474c6229d17c7cb375fa5f6d484fdc6790854e711c126b9ff",
+  "verification_workspace": "/tmp/safeinvest-main-f8bt3fns"
+}
