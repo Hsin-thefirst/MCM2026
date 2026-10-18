@@ -155,3 +155,9 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 研究脚本独立于正式策略工厂，不能据此直接冻结/最终评价。它保存完整年度账本、五期限两费用指标、配对区间和独立标量核验；复现A共同1200条指标。`manifest.json`记录训练来源hash、脚本hash、设置以及最终集已暴露的事实，不能称为新的独立确认。客户映射不改变，也不移植Cai分支的成本豁免或风险筛选放宽。原冻结包/最终锁和核心源码hash保持不变。
 
 `scripts/summarize_fusion.py <run>`只读取已保存指标/账本，生成`screen.csv`与`action_counts.csv`，拒绝覆盖；沿用既有增长/风险筛选阈值，保存逐条件布尔值、折间方向与双倍费用差。筛选不包含新客户采用认证，不构成提交自动选择。
+
+### 融合执行效率迭代（2026-10-18）
+
+`scripts/run_fusion_iteration.py --config configs/fusion_efficiency.json --out benchmark/outputs/<新目录>`复用同样的五折A模型，运行配置中固定的执行规则。`EfficientFusion`保留独立A建议器，新增安全边际只控制最终动作，不改变A候选建议；可配置`reverse_wait=1`在交易下一年拒绝权益方向相反的候选，人工复核仍优先。`efficient_base`复现旧回撤融合1200条指标。
+
+每条实际交易均按该规则的真实buffer核验，保存完整`decisions.jsonl.gz`、指标、比较及标量核算。`scripts/analyze_fusion_iteration.py <run>`生成不覆盖的效率筛选：30%费用下降、增长损失≤0.1个百分点、P90恶化≤1个百分点、至少4/5折费用下降，双倍费用同样满足；另报告区间和旧金融筛选，不把费用改善冒充增长显著提高。旧实验manifest和源码hash不重写，核心冻结流程不变。

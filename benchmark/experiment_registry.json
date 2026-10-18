@@ -706,5 +706,32 @@
     "tests_passed": 78,
     "finding": "三个融合候选五期限对A均未通过原筛选；H30回撤融合4.3244%增长/40.4352% P90、交易70.63%，实际费用较A增加51.6%；保留原提交。",
     "stopping_rule_satisfied": true
+  },
+  {
+    "run": "development_fusion_efficiency_v1",
+    "date": "2026-10-18",
+    "status": "completed_exploratory",
+    "purpose": "用户授权继续迭代，首先隔离执行费用；不改配置锚、预测或最终分区。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "config": "configs/fusion_efficiency.json",
+    "search_budget": "旧融合复现1条+新4固定规则（buffer .001/.003/.01及.001加一年反向等待）；五外折五期限两费用，6000条路径。",
+    "primary_reference": "fusion_drawdown",
+    "secondary_reference": "plan_a_balanced",
+    "criterion": "效率进步：H30费用至少减少30%、增长损失不超过0.1个百分点、P90不增加超过1个百分点，至少4/5折费用下降，双倍费用保持；另保留原金融增长/风险筛选。",
+    "selection": "候选全报告；探索不覆盖人工重复研究偏差，不据最终集选参。",
+    "stopping_rule": "完成此轮后按机制诊断决定下一轮有限候选；不得无限扩参刷出显著性，不能承诺必然胜出。",
+    "verification": {
+      "annual_records": 97200,
+      "base_reproduced_rows": 1200,
+      "cap_checks": 52564,
+      "gate_checks": 52564,
+      "maximum_scalar_error": 5.684341886080801e-13,
+      "passed": true,
+      "paths": 6000,
+      "protected_unchanged": true,
+      "seconds": 95.22194970701821
+    },
+    "finding": "buffer1%费用降低28.94%，增长4.3692%/P90 40.7900%；未过30%效率点阈值或原金融筛选。"
   }
 ]

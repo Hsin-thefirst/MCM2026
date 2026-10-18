@@ -1,0 +1,15 @@
+{
+  "source_run": "benchmark/outputs/development_submission_v1",
+  "fusion_run": "benchmark/outputs/development_fusion_v1",
+  "horizons": [5, 6, 15, 25, 30],
+  "costs": [0.0025, 0.005],
+  "seed": 20261018,
+  "bootstrap": 4000,
+  "rules": {
+    "efficient_base": {"buffer": 0.0001},
+    "efficient_b001": {"buffer": 0.001},
+    "efficient_b003": {"buffer": 0.003},
+    "efficient_b01": {"buffer": 0.01},
+    "efficient_reversal": {"buffer": 0.001, "reverse_wait": 1}
+  }
+}
