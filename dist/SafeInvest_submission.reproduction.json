@@ -1,0 +1,21 @@
+{
+  "all_checks_passed": true,
+  "source_code_commit": "768172ed2b3c825f6b69eeeadce67fab77772550",
+  "archive_sha256": "5c48f372d81ffbd08ec4a3ce6d15ecc3744a76c02f602614dea60724de8ad9cd",
+  "size_bytes": 45942121,
+  "files": 232,
+  "cold_tests_passed": 102,
+  "extracted_modules_verified": true,
+  "guide_rebuild_identical": true,
+  "byte_identical_repack": true,
+  "repacked_sha256": "5c48f372d81ffbd08ec4a3ce6d15ecc3744a76c02f602614dea60724de8ad9cd",
+  "git_only_check_passed": true,
+  "git_only_large_evidence_absent": true,
+  "evidence_restore_files": 57,
+  "restore_only_outputs": true,
+  "restored_check_and_guide_passed": true,
+  "final_market_data_parsed": false,
+  "final_policies_reevaluated": false,
+  "test_log_sha256": "eed226138770d29c796a5a7e2698634e18e0f6773e96d54961c45d75129d750a",
+  "verification_workspace": "/tmp/safeinvest-handoff-e80x_zlf"
+}

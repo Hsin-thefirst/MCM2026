@@ -285,3 +285,10 @@
 - 验证：102项make test通过（36.645秒），包含4项生成归档/目录维护测试；恢复检查补充归档成员与父目录冲突，在任何写入前拒绝。make check通过，讲解重建与文档本地链接通过；原金融核心、冻结模型、最终锁、两版旧ZIP、研究输入及完整历史登记均未变。
 - 文件：新增交付配置、project_tools与维护测试、gitattributes；打包器加入最新客户紧凑证据及Git配置，Makefile/README/提交说明/接口/讲解/待办同步。当前只准备新交付包，不新增金融实验或最终评价。
 - 下一步：以本次固定源码提交构建`dist/SafeInvest_submission.zip`，独立解压检查、102项测试、讲解重建与重打包；完成收据后追加交付记录。
+
+### 2026-10-18 Codex — 整理后的日常提交包与组员交接验证完成
+- 交付：以固定源码提交`768172e`构建`dist/SafeInvest_submission.zip`，45,942,121字节、232文件，SHA256为`5c48f372d81ffbd08ec4a3ce6d15ecc3744a76c02f602614dea60724de8ad9cd`。新包包含最新讲解/客户研究/维护工具和完整默认金融证据，旧正式ZIP及早期草稿原样保留；金融程序仍为冻结A。
+- 独立核验：解压目录导入自身模块，make check及102项make test通过；make guide重建字节一致，按同一配置重打包与新ZIP全部字节相同。校验全部文件hash及归档范围，不包含环境、Git、缓存、旧ZIP或凭据目录。
+- 组员流程：复制仅Git跟踪文件形成独立目录，缺大证据时make check明确报告且通过；从新包验证并恢复57个结果文件，只写outputs、不覆盖代码，之后make check与讲解重建全部通过。没有重新解析最终市场或运行任何金融策略。
+- 文件：包外`SafeInvest_submission.verification.json`与`SafeInvest_submission.reproduction.json`记录大小/hash、固定源码提交及独立验证；源码ZIP不加入Git。本次源提交Git跟踪178文件、5,879,021字节，随后仅追加收据与本日志；约1.9GB历史实验仍忽略保留，不影响Git与提交包。
+- 状态：项目清理、组员阅读入口、Git紧凑证据、统一命令、当前源码打包及独立交接核验完成，代码留在`feat/project-delivery-cleanup`；下一步由团队使用新ZIP准备实际提交，正式英文report仍需团队完成。
