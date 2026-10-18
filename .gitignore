@@ -10,3 +10,13 @@ dist/
 
 # Benchmark rendering cache
 .mplconfig/
+
+# Local editor and test output
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/

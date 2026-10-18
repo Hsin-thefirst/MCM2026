@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.pdf binary
+*.zip binary
+*.gz binary
+*.csv -text
+benchmark/outputs/** -text
+benchmark/submission_frozen_v1.json -text
+benchmark/FINAL_EVALUATION_LOCK.json -text

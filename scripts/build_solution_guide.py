@@ -574,9 +574,11 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 .venv/bin/python scripts/run_customer_r
   benchmark/outputs/development_customer_risk_review_reproduction
 ```
 
-本轮客户实验依赖工作区保留的训练模型/内层缓存，不声称45.8MB旧ZIP能独立重跑全部新研究。旧提交包是固定快照；本文和本轮新研究代码在新分支。金融默认程序与一次性最终证据仍为原冻结A。
+本轮客户实验依赖工作区保留的训练模型/内层缓存，不声称45.8MB旧ZIP能独立重跑全部新研究。金融默认程序与一次性最终证据仍为原冻结A。
 
-最终包`dist/SafeInvest_final_source.zip`为45,828,045字节、207文件，原独立解压95项测试和字节相同重打包已通过；“95项”属于该包，而“98项”属于本次新分支，不能互换。旧包不包含本轮后来新增的讲解文档和客户研究代码。
+历史包`dist/SafeInvest_final_source.zip`为45,828,045字节、207文件，原独立解压95项测试和字节相同重打包已通过；“95项”属于该旧包，“98项”属于本次客户风险研究快照，不能互换。旧包不包含后来新增的讲解文档和客户研究代码。
+
+项目整理后日常交付统一使用`make package`生成`dist/SafeInvest_submission.zip`，包括最新讲解、客户研究代码及紧凑证据。当前整理版本的独立测试数量、大小与hash以包外verification/reproduction收据为准；用`make verify-package`核验。Git clone缺大证据时用`make restore PACKAGE=<可信ZIP>`恢复，详细入口见[SUBMISSION](SUBMISSION.md)。
 
 当前没有新的独立最终数据。若未来继续改金融模型，应由真正未参与研发的新数据确认；不能删除最终锁、重跑121–180，或把新划分叫新holdout。
 

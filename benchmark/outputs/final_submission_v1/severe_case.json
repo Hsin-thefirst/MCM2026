@@ -1,0 +1,16 @@
+{
+  "scenario_id": 155,
+  "peak": 162.33438887727365,
+  "peak_at": "end_6",
+  "trough": 56.50483727002277,
+  "trough_at": "end_30",
+  "max_drawdown": 0.6519231836161286,
+  "terminal_real_wealth": 56.50483727002277,
+  "real_cagr": -0.0188482391251686,
+  "review_threshold": 0.638530018211982,
+  "review_periods": [
+    23
+  ],
+  "trades": 6,
+  "scope": "冻结策略最终严重路径，仅分析保存账本，不重新读取市场或调整策略。"
+}

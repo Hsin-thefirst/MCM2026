@@ -1,0 +1,11 @@
+{
+  "selected_policy": "plan_a_balanced",
+  "adopted_new_execution": false,
+  "primary_screen": false,
+  "original_growth_route": false,
+  "original_risk_route": false,
+  "product_risk_order": true,
+  "holdout_used": false,
+  "rule": "Promote only the preregistered nested selector; otherwise retain calibrated A. No post-hoc choice of individual challengers.",
+  "note": "Development screens are exploratory and do not guarantee final or live performance."
+}

@@ -1,0 +1,14 @@
+{
+  "development_run": "benchmark/outputs/development_submission_v1",
+  "bundle": "benchmark/submission_frozen_v1.json",
+  "final_run": "benchmark/outputs/final_submission_v1",
+  "release_decision": "benchmark/outputs/development_final_budget_v1/release_decision.json",
+  "research_runs": [
+    "benchmark/outputs/development_fusion_calibration_v1",
+    "benchmark/outputs/development_fusion_value_extensions_v1",
+    "benchmark/outputs/development_final_budget_v1",
+    "benchmark/outputs/development_customer_risk_review_v1"
+  ],
+  "research_guide_run": "benchmark/outputs/development_customer_risk_review_v1",
+  "archive": "dist/SafeInvest_submission.zip"
+}

@@ -1,0 +1,9 @@
+{
+  "phase": "final",
+  "audited_paths": 13980,
+  "metric_rows": 16380,
+  "decision_rows": 286920,
+  "maximum_numeric_discrepancy": 9.094947017729282e-13,
+  "all_checks_passed": true,
+  "scope": "All saved accounting paths, metric recurrences, uniqueness, CV splits and outer CVaR feasibility; market returns checked separately in replay tests."
+}

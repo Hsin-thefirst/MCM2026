@@ -33,7 +33,7 @@ def build(development, bundle_path, final, output, research_runs=(), release_dec
             raise ValueError('Independent development checks must pass')
     if not json.loads((final/'saved_final_verification.json').read_text())['all_checks_passed']:
         raise ValueError('Saved final evidence must pass independent checks')
-    files = {ROOT/p for p in ('README.md', 'LOG.md', 'AGENTS.md', 'Makefile', 'pyproject.toml',
+    files = {ROOT/p for p in ('README.md', 'LOG.md', 'AGENTS.md', '.gitignore', '.gitattributes', 'Makefile', 'pyproject.toml',
                               'requirements.lock.txt', 'benchmark/run.py', 'benchmark/experiment_registry.json',
                               'data/SafeInvest_Synthetic_Data.csv', '2026_MCM_SafeInvest.pdf')}
     for directory, patterns in [('src', ('*.py',)), ('benchmark/safebench', ('*.py',)),
@@ -56,7 +56,8 @@ def build(development, bundle_path, final, output, research_runs=(), release_dec
                      'selection_verification.csv', 'cost_protection.csv', 'financial_screen.csv',
                      'summary.csv', 'tuning_trials.json', 'independent_replay.json',
                      'comparison_h30.csv', 'result_summary.json', 'original_a_inner_reproduction.json',
-                     'customer_verification.json', 'release_decision.json'}
+                     'customer_verification.json', 'release_decision.json', 'customer_comparison.csv',
+                     'paired_intervals.csv', 'unavoidable_drawdown.csv', 'selections.json'}
     research_paths = []
     for research in map(Path, research_runs):
         research = research.resolve()

@@ -1,0 +1,6 @@
+profile_id,horizon,loss_tolerance,liquidity,portfolio,policy,explanation
+A,5,0.1,high,human_review,human_review,No portfolio passes the conservative development risk screen and liquidity/horizon rules.
+B,15,0.25,medium,conservative,plan_a_conservative,Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.
+C,30,0.4,low,conservative,plan_a_conservative,Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.
+D,25,0.15,medium,human_review,human_review,No portfolio passes the conservative development risk screen and liquidity/horizon rules.
+E,6,0.35,high,balanced,plan_a_balanced,Choose the eligible portfolio with highest median real growth; loss tolerance is not guaranteed.
