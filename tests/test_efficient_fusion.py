@@ -53,3 +53,14 @@ class EfficientTests(unittest.TestCase):
         np.testing.assert_array_equal(blocked,targets[:,0]<.8)
         p.last_trade_period=1;p.last_equity_direction=1
         p.decide(c);self.assertFalse(any(p.last_diagnostics['reversal_blocked']))
+
+    def test_remaining_scale_value_and_buffer(self):
+        from fusion_policy import hold_values
+        rule=dict(buffer=.01,remaining_scale=True)
+        p=EfficientFusion('efficient_remaining',self.model,self.params,self.config,30,self.base,rule)
+        c=PolicyContext(29,self.scenarios[0].observations[:28],(70.,20.,10.),(.5,.3,.2),1.,100.,False,.005)
+        p.decide(c);d=p.last_diagnostics
+        q,fees,_=hold_values(np.array(d['targets']),np.array([.7,.2,.1]),0.,0.,p.future[:,28:30],2,.005,self.base)
+        np.testing.assert_array_equal(d['values'],q)
+        expected=fees+(1-fees)*(-np.expm1(np.clip(-2*(q-q[0]),-100,100)))
+        np.testing.assert_array_equal(d['benefits'],expected)

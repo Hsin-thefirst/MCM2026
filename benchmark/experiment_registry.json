@@ -733,5 +733,30 @@
       "seconds": 95.22194970701821
     },
     "finding": "buffer1%费用降低28.94%，增长4.3692%/P90 40.7900%；未过30%效率点阈值或原金融筛选。"
+  },
+  {
+    "run": "development_fusion_efficiency_v2",
+    "date": "2026-10-18",
+    "status": "completed_exploratory_efficiency_improved",
+    "purpose": "依据第一轮1%边际节费但未达效率线，固定第二轮执行与估值单位对照。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "config": "configs/fusion_efficiency_round2.json",
+    "search_budget": "1%原样复现；2%/4%边际，1%加一年反向等待，1%加剩余期限归一化共4新规则；五期限双费率共6000路径。",
+    "criterion": "沿用第一轮30%节费/增长损失0.1pp/P90恶化1pp/4折/双费用；同时报告原金融筛选。",
+    "selection": "逐轮探索，全部报告，不能以事后赢家取代冻结提交。",
+    "stopping_rule": "此轮完成后针对稳定性和核验做确认；若需新机制须先说明和登记，不微调阈值来刷过线。",
+    "verification": {
+      "annual_records": 97200,
+      "base_reproduced_rows": 0,
+      "cap_checks": 34665,
+      "gate_checks": 34665,
+      "maximum_scalar_error": 9.094947017729282e-13,
+      "passed": true,
+      "paths": 6000,
+      "protected_unchanged": true,
+      "seconds": 76.12220058400999
+    },
+    "finding": "2%及4%门槛通过H30效率点筛选，金融区间未通过。2%费用−41.55%，增长变化−0.0053pp，P90−0.0837pp；短期增长损失不忽略。"
   }
 ]

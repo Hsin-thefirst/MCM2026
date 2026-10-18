@@ -25,7 +25,7 @@ class EfficientFusion(FusionPolicy):
         targets = self.candidates(c, advice)
         dd = max(0., 1-sum(c.holdings)/c.cumulative_inflation/c.real_peak)
         future = self.future[:, c.period-1:self.horizon]
-        scale = self.horizon
+        scale = len(future[0]) if self.rule.get('remaining_scale',False) else self.horizon
         q, fees, risk = hold_values(targets, current, dd, c.historical_max_drawdown,
                                    future, scale, c.transaction_cost_rate, self.fusion)
         if not np.isfinite(q).all():
