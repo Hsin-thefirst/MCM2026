@@ -64,3 +64,21 @@ class EfficientTests(unittest.TestCase):
         np.testing.assert_array_equal(d['values'],q)
         expected=fees+(1-fees)*(-np.expm1(np.clip(-2*(q-q[0]),-100,100)))
         np.testing.assert_array_equal(d['benefits'],expected)
+
+    def test_horizon_rule_is_exact_a_when_short(self):
+        from safebench.plan_a import PlanAPolicy
+        rule=dict(buffer=.02,short_a_max_horizon=6)
+        p=EfficientFusion('efficient_horizon',self.model,self.params,self.config,5,self.base,rule)
+        a=PlanAPolicy('plan_a_balanced',self.model,self.params,self.config,5)
+        ra=simulate(self.s,a,a.initial_target,SimulationConfig(5,100.,.005))
+        rp=simulate(self.s,p,p.initial_target,SimulationConfig(5,100.,.005))
+        self.assertEqual(p.buffer,a.buffer)
+        for x,y in zip(ra.records,rp.records):
+            self.assertEqual(x.action,y.action);self.assertEqual(x.end_holdings,y.end_holdings)
+        long=EfficientFusion('efficient_horizon',self.model,self.params,self.config,30,self.base,rule)
+        self.assertFalse(long.use_a);self.assertEqual(long.buffer,.02)
+
+    def test_annual_margin_has_consistent_log_units(self):
+        for h in (5,30):
+            p=EfficientFusion('efficient_annual_margin',self.model,self.params,self.config,h,self.base,dict(buffer=.0001,annual_buffer=.0005))
+            self.assertAlmostEqual(-np.log1p(-p.buffer)/h,.0005)

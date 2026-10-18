@@ -161,3 +161,9 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 `scripts/run_fusion_iteration.py --config configs/fusion_efficiency.json --out benchmark/outputs/<新目录>`复用同样的五折A模型，运行配置中固定的执行规则。`EfficientFusion`保留独立A建议器，新增安全边际只控制最终动作，不改变A候选建议；可配置`reverse_wait=1`在交易下一年拒绝权益方向相反的候选，人工复核仍优先。`efficient_base`复现旧回撤融合1200条指标。
 
 每条实际交易均按该规则的真实buffer核验，保存完整`decisions.jsonl.gz`、指标、比较及标量核算。`scripts/analyze_fusion_iteration.py <run>`生成不覆盖的效率筛选：30%费用下降、增长损失≤0.1个百分点、P90恶化≤1个百分点、至少4/5折费用下降，双倍费用同样满足；另报告区间和旧金融筛选，不把费用改善冒充增长显著提高。旧实验manifest和源码hash不重写，核心冻结流程不变。
+
+第二轮配置`fusion_efficiency_round2.json`增加2%/4%边际、1%加反向等待及`remaining_scale=true`的剩余期限价值归一化对照。第三轮`fusion_efficiency_round3.json`固定主研究候选`efficient_horizon`：H≤6直接使用原A的建议与原buffer，较长期采用2%门槛融合；短期不施加融合10%限幅。另保留长期1%反向等待及`annual_buffer=0.0005`转换为`1-exp(-annual_buffer*H)`的平滑对照。主候选在第三轮输出及新划分运行前固定，不按各期限最优结果拼接。
+
+`scripts/refit_fusion_stability.py --out benchmark/outputs/<新目录>`使用预登记seed20261019重新做开发五外折/三内折和原A参数选择，重新拟合路径模型，再评价固定主候选与五个参照。保存完整内层审计、参数、模型、年度账本和原始指标；所有来源均限1–120。该重复划分是训练/划分敏感性检查，不能作为新的独立验证；原最终包、锁和提交ZIP保留。
+
+`scripts/verify_saved_iteration.py <run>`只重放保存的JSONL账本与开发市场，不重新运行策略；独立核验全部年度参照及研究路径的扣费、收益、通胀、回撤、增长、费用和交易率，并保存不可覆盖的`independent_replay.json`。

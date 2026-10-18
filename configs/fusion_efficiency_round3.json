@@ -1,0 +1,16 @@
+{
+  "source_run": "benchmark/outputs/development_submission_v1",
+  "fusion_run": "benchmark/outputs/development_fusion_v1",
+  "horizons": [5, 6, 15, 25, 30],
+  "costs": [0.0025, 0.005],
+  "seed": 20261018,
+  "bootstrap": 4000,
+  "rules": {
+    "efficient_b02": {"buffer": 0.02},
+    "efficient_horizon": {"buffer": 0.02, "short_a_max_horizon": 6},
+    "efficient_horizon_reverse": {"buffer": 0.01, "reverse_wait": 1, "short_a_max_horizon": 6},
+    "efficient_annual_margin": {"buffer": 0.0001, "annual_buffer": 0.0005}
+  },
+  "stability_candidate": "efficient_horizon",
+  "stability_seed": 20261019
+}

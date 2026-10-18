@@ -13,6 +13,10 @@ class EfficientFusion(FusionPolicy):
         self.adviser = PlanAPolicy('plan_a_balanced', model, params, config, horizon)
         self.rule = rule
         self.buffer = rule['buffer']
+        if 'annual_buffer' in rule:
+            self.buffer = float(-np.expm1(-rule['annual_buffer']*horizon))
+        self.use_a = horizon <= rule.get('short_a_max_horizon',0)
+        if self.use_a: self.buffer = self.adviser.buffer
         if not .0001 <= self.buffer < 1: raise ValueError('Invalid execution buffer')
         self.last_trade_period = -100
         self.last_equity_direction = 0
@@ -20,6 +24,7 @@ class EfficientFusion(FusionPolicy):
     def _decide(self, c):
         self.last_diagnostics = None
         advice = self.adviser._decide(c)
+        if self.use_a: return advice
         if advice.action == Action.HUMAN_REVIEW: return advice
         current = np.asarray(c.holdings)/sum(c.holdings)
         targets = self.candidates(c, advice)

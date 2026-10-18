@@ -710,7 +710,7 @@
   {
     "run": "development_fusion_efficiency_v1",
     "date": "2026-10-18",
-    "status": "completed_exploratory",
+    "status": "completed_verified_exploratory",
     "purpose": "用户授权继续迭代，首先隔离执行费用；不改配置锚、预测或最终分区。",
     "holdout_used": false,
     "final_already_exposed": true,
@@ -732,12 +732,23 @@
       "protected_unchanged": true,
       "seconds": 95.22194970701821
     },
-    "finding": "buffer1%费用降低28.94%，增长4.3692%/P90 40.7900%；未过30%效率点阈值或原金融筛选。"
+    "finding": "buffer1%费用降低28.94%，增长4.3692%/P90 40.7900%；未过30%效率点阈值或原金融筛选。",
+    "independent_replay": {
+      "annual_records": 97200,
+      "final_used": false,
+      "maximum_error": 1.3642420526593924e-12,
+      "new_policy_evaluation": false,
+      "partition": "development_1_120",
+      "passed": true,
+      "paths": 6000
+    },
+    "tests_passed": 84,
+    "stopping_rule_satisfied": true
   },
   {
     "run": "development_fusion_efficiency_v2",
     "date": "2026-10-18",
-    "status": "completed_exploratory_efficiency_improved",
+    "status": "completed_verified_exploratory",
     "purpose": "依据第一轮1%边际节费但未达效率线，固定第二轮执行与估值单位对照。",
     "holdout_used": false,
     "final_already_exposed": true,
@@ -757,6 +768,91 @@
       "protected_unchanged": true,
       "seconds": 76.12220058400999
     },
-    "finding": "2%及4%门槛通过H30效率点筛选，金融区间未通过。2%费用−41.55%，增长变化−0.0053pp，P90−0.0837pp；短期增长损失不忽略。"
+    "finding": "2%及4%门槛通过H30效率点筛选，金融区间未通过。2%费用−41.55%，增长变化−0.0053pp，P90−0.0837pp；短期增长损失不忽略。",
+    "independent_replay": {
+      "annual_records": 97200,
+      "final_used": false,
+      "maximum_error": 1.0231815394945443e-12,
+      "new_policy_evaluation": false,
+      "partition": "development_1_120",
+      "passed": true,
+      "paths": 6000
+    },
+    "tests_passed": 84,
+    "stopping_rule_satisfied": true
+  },
+  {
+    "run": "development_fusion_efficiency_v3",
+    "date": "2026-10-18",
+    "status": "completed_verified_exploratory",
+    "purpose": "修复统一高门槛的短期增长损失，固定期限程序和年化边际对照。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "config": "configs/fusion_efficiency_round3.json",
+    "search_budget": "2%复现、H<=6用A/长2%、H<=6用A/长1%反向等待、年化0.05%门槛共4规则，4800路径。",
+    "selection": "主稳定性候选事前固定efficient_horizon；不按本轮最好期限拼接。",
+    "criterion": "保留前轮效率和原金融标准；短期A逐路径一致。",
+    "stopping_rule": "本轮后停止新候选，只做预登记新划分重拟合稳定性和核验。",
+    "verification": {
+      "annual_records": 77760,
+      "base_reproduced_rows": 0,
+      "cap_checks": 27618,
+      "gate_checks": 29618,
+      "maximum_scalar_error": 5.684341886080801e-13,
+      "passed": true,
+      "paths": 4800,
+      "protected_unchanged": true,
+      "seconds": 62.35229588198126
+    },
+    "independent_replay": {
+      "annual_records": 77760,
+      "final_used": false,
+      "maximum_error": 1.0231815394945443e-12,
+      "new_policy_evaluation": false,
+      "partition": "development_1_120",
+      "passed": true,
+      "paths": 4800
+    },
+    "tests_passed": 84,
+    "stopping_rule_satisfied": true,
+    "finding": "固定低换手候选H30较旧融合节费41.55%/新划分42.15%，费用翻倍保持；金融区间未通过，新划分一折A内层风险约束失败如实保留。不替换冻结提交。"
+  },
+  {
+    "run": "development_fusion_stability_v1",
+    "date": "2026-10-18",
+    "status": "completed_verified_exploratory",
+    "purpose": "固定efficient_horizon后，在seed20261019的全新五外折/三内折重新拟合A，检查划分敏感性。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "independent_confirmation": false,
+    "config": "configs/fusion_efficiency_round3.json",
+    "search_budget": "不新增融合参数；原A内层6参数/3产品/5期限；5外折全重拟合，候选与旧融合/A/同锚年度/等权/Balanced年度6策略，两费用五期限7200路径。",
+    "selection": "eff_horizon固定，原A参数只用内层；新划分仍是相同120开发样本，不当独立测试。",
+    "criterion": "关注同配置成本、增长和风险一致性，失败完整保留，不据新seed挑新赢家。",
+    "stopping_rule": "完成后停止本轮金融搜索，报告明确效率进步及剩余金融不确定性，不替换冻结最终。",
+    "verification": {
+      "all_a_selected_feasible": false,
+      "annual_records": 116640,
+      "cap_checks": 6089,
+      "gate_checks": 26789,
+      "maximum_scalar_error": 7.958078640513122e-13,
+      "passed": true,
+      "paths": 7200,
+      "protected_unchanged": true,
+      "scalar_paths": 3600,
+      "seconds": 116.44882096600486
+    },
+    "independent_replay": {
+      "annual_records": 116640,
+      "final_used": false,
+      "maximum_error": 1.5916157281026244e-12,
+      "new_policy_evaluation": false,
+      "partition": "development_1_120",
+      "passed": true,
+      "paths": 7200
+    },
+    "tests_passed": 84,
+    "stopping_rule_satisfied": true,
+    "finding": "固定低换手候选H30较旧融合节费41.55%/新划分42.15%，费用翻倍保持；金融区间未通过，新划分一折A内层风险约束失败如实保留。不替换冻结提交。"
   }
 ]
