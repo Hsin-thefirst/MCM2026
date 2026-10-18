@@ -1,0 +1,3182 @@
+[
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.454479588666216,
+        "median_growth_loss": -0.0011875840796359283,
+        "p10_growth_loss": -0.0012626654735117815,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.4444168287902878,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.530392979904457,
+        "median_growth_loss": -0.000564628214291707,
+        "p10_growth_loss": -0.00038067098567606816,
+        "review_rate": 0.0,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5258743430402578,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5403201357105885,
+        "median_growth_loss": -0.00020260703505048383,
+        "p10_growth_loss": -0.0005270611550820536,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.5413050591238973,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.0375680328486809,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4593525874980965,
+        "median_growth_loss": -0.0007816951070046541,
+        "p10_growth_loss": -0.0008879322638109532,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.4444168287902878,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5422671420927022,
+        "median_growth_loss": -0.00021617783477256847,
+        "p10_growth_loss": -0.0002732317675703255,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5258743430402578,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5474319426776041,
+        "median_growth_loss": -0.0001239656423790425,
+        "p10_growth_loss": 0.00010425181625706159,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.5413050591238973,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.03684759388707318,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5118289264084844,
+        "median_growth_loss": -0.0009585780269195654,
+        "p10_growth_loss": -0.0014133148735113732,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.503672405962326,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6007363490353512,
+        "median_growth_loss": -0.0007650768846385603,
+        "p10_growth_loss": -0.0011039477442585932,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5959909221122922,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6115674332714666,
+        "median_growth_loss": 0.00031733215213980426,
+        "p10_growth_loss": -0.00046233328576272825,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6134790670070837,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.04076190313113693,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5204294404817421,
+        "median_growth_loss": -0.000455015723536234,
+        "p10_growth_loss": -0.0005853341408007529,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.503672405962326,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6135791151036228,
+        "median_growth_loss": -0.00015080112550280855,
+        "p10_growth_loss": -0.00033007004813723206,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5959909221122922,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6176711310838587,
+        "median_growth_loss": 0.0003531226620817618,
+        "p10_growth_loss": -3.544027204094302e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6134790670070837,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.040016313304950146,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5753166478677262,
+        "median_growth_loss": -0.0013731502610233592,
+        "p10_growth_loss": -0.0010058522573352935,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.5629279831343647,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6681605262053038,
+        "median_growth_loss": -0.0010364308999392113,
+        "p10_growth_loss": -0.0013642523095861447,
+        "review_rate": 0.0,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.6661075011843264,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6869176429404662,
+        "median_growth_loss": -0.0006158592220925074,
+        "p10_growth_loss": -0.0005553066362659065,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6856530748902702,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.0436274968701032,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5801325099618186,
+        "median_growth_loss": -0.0006627862296368914,
+        "p10_growth_loss": 0.0003038191486894881,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.5629279831343647,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.679047949202802,
+        "median_growth_loss": 2.323979875040738e-05,
+        "p10_growth_loss": -0.0002586124654954114,
+        "review_rate": 0.0,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.6661075011843264,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6947047360677595,
+        "median_growth_loss": -0.00015654224559047414,
+        "p10_growth_loss": -3.3984620859905945e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6856530748902702,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.04293220189176902,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.42773084469030026,
+        "median_growth_loss": -0.000523052582509842,
+        "p10_growth_loss": -0.0020118909961659437,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.4444168287902878,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5299886482870937,
+        "median_growth_loss": -0.002160683137602759,
+        "p10_growth_loss": -0.0006376898433793077,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5258743430402578,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5393096034245993,
+        "median_growth_loss": -2.7433537479248926e-05,
+        "p10_growth_loss": 3.33070383375933e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.5413050591238973,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.03697556918633335,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.431817941414908,
+        "median_growth_loss": -0.0010145871127799078,
+        "p10_growth_loss": -0.0020418705923357927,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.4444168287902878,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.528053175312857,
+        "median_growth_loss": -0.0023955399939593613,
+        "p10_growth_loss": -0.0005639943019182247,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5258743430402578,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5399452133790482,
+        "median_growth_loss": -0.00012774406494053814,
+        "p10_growth_loss": 0.0001444796769055623,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.5413050591238973,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.03698768608358659,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4846382079211114,
+        "median_growth_loss": -0.0005285926804236007,
+        "p10_growth_loss": -0.003283779562784195,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.503672405962326,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5860632393815862,
+        "median_growth_loss": -0.0006560584529986535,
+        "p10_growth_loss": -0.0009065301912641877,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5959909221122922,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6089724846063689,
+        "median_growth_loss": -4.4778193510230935e-05,
+        "p10_growth_loss": 0.00047531948274781577,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6134790670070837,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.04010226243040808,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.48559076750210034,
+        "median_growth_loss": -0.00024262247863904296,
+        "p10_growth_loss": -0.003283779562784195,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.503672405962326,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5849993534633201,
+        "median_growth_loss": -0.001778663806076497,
+        "p10_growth_loss": -0.0005313513156887106,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.5959909221122922,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6084130010829026,
+        "median_growth_loss": 0.00033462301946707296,
+        "p10_growth_loss": 0.00038291266233825283,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6134790670070837,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.04000532448887276,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5448318466203496,
+        "median_growth_loss": 0.00018128233481717881,
+        "p10_growth_loss": -0.0027031166932907635,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.5629279831343647,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6476558609991169,
+        "median_growth_loss": -0.0015225618698103682,
+        "p10_growth_loss": -0.0005393909192957791,
+        "review_rate": 0.0,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.6661075011843264,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.675115316991313,
+        "median_growth_loss": -0.0010949878478869746,
+        "p10_growth_loss": -0.00023095935735484296,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6856530748902702,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.042905272942158006,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5430652759820876,
+        "median_growth_loss": -0.00011344722991724066,
+        "p10_growth_loss": -0.0027031166932907635,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.5975557717203837,
+        "training_budget": 0.5629279831343647,
+        "validation_budget": 0.5925557717203837
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6483610236174842,
+        "median_growth_loss": -0.0011382390430800804,
+        "p10_growth_loss": -0.0011711535646151683,
+        "review_rate": 0.0,
+        "risk_limit": 0.7061657907203436,
+        "training_budget": 0.6661075011843264,
+        "validation_budget": 0.7011657907203436
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6822695448112126,
+        "median_growth_loss": -0.00017758705287806986,
+        "p10_growth_loss": -0.0002281898819321837,
+        "review_rate": 0.0,
+        "risk_limit": 0.726740078831863,
+        "training_budget": 0.6856530748902702,
+        "validation_budget": 0.721740078831863
+      }
+    ],
+    "mean_utility": 0.04281032349858041,
+    "outer_fold": 0,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.44523318926938493,
+        "median_growth_loss": -0.0006294110281895859,
+        "p10_growth_loss": 0.000257082984175816,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.4470480760808939,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5092295178653572,
+        "median_growth_loss": -0.0012072191498433416,
+        "p10_growth_loss": -0.0005431290245110354,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.4948330622593267,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5314914799844571,
+        "median_growth_loss": -0.0006544701337787284,
+        "p10_growth_loss": -0.00029990800318091537,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5146866803639164,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.03731207175120677,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.45413077449608447,
+        "median_growth_loss": -0.0007114610722293024,
+        "p10_growth_loss": -0.0004610361342470837,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.4470480760808939,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5161634481947237,
+        "median_growth_loss": -0.0012296508340904344,
+        "p10_growth_loss": 0.000262527994561057,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.4948330622593267,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5357042703895875,
+        "median_growth_loss": -0.0005355728770626289,
+        "p10_growth_loss": 5.81344812878859e-05,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5146866803639164,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.036659388606559935,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5072645812056319,
+        "median_growth_loss": -0.0009402069695976234,
+        "p10_growth_loss": 0.00031349629398025325,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5066544862250132,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5750729855626555,
+        "median_growth_loss": -0.0015671358232105526,
+        "p10_growth_loss": -0.0005200896714506742,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.5608108038939036,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6127510540894021,
+        "median_growth_loss": -0.001831992093830337,
+        "p10_growth_loss": 4.945951183732422e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5833115710791054,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.040725335739333374,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5167731122373154,
+        "median_growth_loss": -0.00038315761733687115,
+        "p10_growth_loss": -0.0003559049909206413,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5066544862250132,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5821741639883327,
+        "median_growth_loss": -0.0008390682537586791,
+        "p10_growth_loss": 0.00043915626315282896,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.5608108038939036,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6166678898604202,
+        "median_growth_loss": -0.0013020452292453744,
+        "p10_growth_loss": -1.1510159295125e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5833115710791054,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.04006855740952751,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5676681081232956,
+        "median_growth_loss": -0.0005268094883510432,
+        "p10_growth_loss": 0.00034199979685456405,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5662608963691323,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6372865743155122,
+        "median_growth_loss": -0.002130641928983601,
+        "p10_growth_loss": -0.00046414077141865295,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.6267885455284803,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6848433893404311,
+        "median_growth_loss": -0.0016018838677247516,
+        "p10_growth_loss": 0.00017755784030548671,
+        "review_rate": 0.0,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.651936461794294,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.04365271305056091,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5778053590334038,
+        "median_growth_loss": -5.4428142269857815e-06,
+        "p10_growth_loss": -0.00042043417825377016,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5662608963691323,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6451200403332066,
+        "median_growth_loss": -0.0017741318581213639,
+        "p10_growth_loss": 0.00028872597416529366,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.6267885455284803,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6901211249374696,
+        "median_growth_loss": -0.0003983622314945867,
+        "p10_growth_loss": 0.00018467448041359358,
+        "review_rate": 0.0,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.651936461794294,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.04303240186778969,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4207194761294708,
+        "median_growth_loss": -0.00021185164988868355,
+        "p10_growth_loss": -0.0009848289505229868,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.4470480760808939,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5027639137304744,
+        "median_growth_loss": -0.0012446919670193735,
+        "p10_growth_loss": -0.00019316632907584452,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.4948330622593267,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5293552727730378,
+        "median_growth_loss": -0.00016860266777740662,
+        "p10_growth_loss": 0.0008578162127961253,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5146866803639164,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.03658084323932404,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4203239059870162,
+        "median_growth_loss": 7.525173288269738e-05,
+        "p10_growth_loss": -0.001131719269398701,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.4470480760808939,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5030206811086712,
+        "median_growth_loss": -0.001318121492919433,
+        "p10_growth_loss": -0.00023347814128615862,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.4948330622593267,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5309435820740459,
+        "median_growth_loss": 0.0003763539262999771,
+        "p10_growth_loss": 0.0006135808722222968,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5146866803639164,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.036585547809053404,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.48091622359779035,
+        "median_growth_loss": -0.0004250322232975945,
+        "p10_growth_loss": -0.0004901521824558497,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5066544862250132,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5672850890474904,
+        "median_growth_loss": -0.002695703804275529,
+        "p10_growth_loss": -0.0005130084390766454,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.5608108038939036,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6021788610103509,
+        "median_growth_loss": -0.0017646150060214305,
+        "p10_growth_loss": 0.00022425688981719816,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5833115710791054,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.039894102876995824,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.47525559975716697,
+        "median_growth_loss": -0.0008409847568846551,
+        "p10_growth_loss": -0.0013937355235084103,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5066544862250132,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5675217940473317,
+        "median_growth_loss": -0.0016497494041142202,
+        "p10_growth_loss": -0.0005672820053879146,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.5608108038939036,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6019476744042415,
+        "median_growth_loss": -0.0017008465504623205,
+        "p10_growth_loss": 0.0004226692681075228,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.5833115710791054,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.03996391803264917,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.53327468887627,
+        "median_growth_loss": 0.000313343973662894,
+        "p10_growth_loss": 0.0006142402553245274,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5662608963691323,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6240008211924702,
+        "median_growth_loss": -0.0032802603601796987,
+        "p10_growth_loss": -0.00019884004965065039,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.6267885455284803,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6682456213738142,
+        "median_growth_loss": -0.0009093111346076821,
+        "p10_growth_loss": -0.000468689122521182,
+        "review_rate": 0.0,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.651936461794294,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.04287619489275948,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5276274756521872,
+        "median_growth_loss": 0.0002898352706580676,
+        "p10_growth_loss": -0.0001087090892185616,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.601064101441192,
+        "training_budget": 0.5662608963691323,
+        "validation_budget": 0.596064101441192
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6230682901084478,
+        "median_growth_loss": -0.00238429400995821,
+        "p10_growth_loss": -0.0003736321459342218,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6647774163457687,
+        "training_budget": 0.6267885455284803,
+        "validation_budget": 0.6597774163457687
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6697459332246942,
+        "median_growth_loss": -0.0011383364320814993,
+        "p10_growth_loss": 2.080996627795706e-06,
+        "review_rate": 0.0,
+        "risk_limit": 0.6912489071518884,
+        "training_budget": 0.651936461794294,
+        "validation_budget": 0.6862489071518884
+      }
+    ],
+    "mean_utility": 0.0428539875463352,
+    "outer_fold": 1,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.42499884688473116,
+        "median_growth_loss": -0.001110904834119797,
+        "p10_growth_loss": 0.0008996558514712261,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.40771414250349053,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.4972360963869138,
+        "median_growth_loss": -0.00018469116993813373,
+        "p10_growth_loss": -0.0009390015106455207,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.49000641434253317,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5069013849150483,
+        "median_growth_loss": -0.001743649803937597,
+        "p10_growth_loss": 0.00022965682669517928,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.4952418844493853,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.0395898752707264,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.432568147698226,
+        "median_growth_loss": -0.000983296920734067,
+        "p10_growth_loss": -4.6385610886212625e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.40771414250349053,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5047647425614115,
+        "median_growth_loss": -0.00032974321889134295,
+        "p10_growth_loss": 9.917424073280223e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.49000641434253317,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5132488865757514,
+        "median_growth_loss": -0.00047879966438635346,
+        "p10_growth_loss": 0.00019821744023018617,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.4952418844493853,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.038831651132993666,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.47596859797883734,
+        "median_growth_loss": -0.0008821805741530131,
+        "p10_growth_loss": 0.0009404808166001422,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.4620760281706226,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5619669976526167,
+        "median_growth_loss": -6.315654187150077e-05,
+        "p10_growth_loss": -0.0005931996454798805,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.5553406029215379,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5673065125770053,
+        "median_growth_loss": -0.0015414053466785704,
+        "p10_growth_loss": 0.00027266721701235674,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.5612741357093031,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.042633731899038664,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.487312318864649,
+        "median_growth_loss": -0.0007349689412826654,
+        "p10_growth_loss": 0.00013009469536900964,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.4620760281706226,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.572500208990741,
+        "median_growth_loss": -0.0002497219856225641,
+        "p10_growth_loss": -6.69319511051869e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.5553406029215379,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5732406130082733,
+        "median_growth_loss": -0.0002834824164306138,
+        "p10_growth_loss": 0.00029126684923630464,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.5612741357093031,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.04187277690068604,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5357622246793247,
+        "median_growth_loss": -0.0004655684062997434,
+        "p10_growth_loss": 0.0009647936342462304,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.5164379138377547,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6286535830554512,
+        "median_growth_loss": -0.0004643927984679941,
+        "p10_growth_loss": -0.0006149368457365467,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.6206747915005422,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6313405043609938,
+        "median_growth_loss": -0.0015948370949369073,
+        "p10_growth_loss": -3.265436879418271e-05,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.627306386969221,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.04536872274024571,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5452122871098117,
+        "median_growth_loss": -0.0003430826314337887,
+        "p10_growth_loss": -0.00022097247082891736,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.5164379138377547,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6389634315979155,
+        "median_growth_loss": -0.0004452944975927853,
+        "p10_growth_loss": 0.0002338743849839009,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.6206747915005422,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6411107117796159,
+        "median_growth_loss": -0.0002916035914323212,
+        "p10_growth_loss": 7.71199434123071e-05,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.627306386969221,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.0445935201398707,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4022584962589158,
+        "median_growth_loss": 0.0003593774926214932,
+        "p10_growth_loss": -0.0032049795498110267,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.40771414250349053,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.4839747859476401,
+        "median_growth_loss": -0.0015352900148016824,
+        "p10_growth_loss": 1.1011807336980262e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.49000641434253317,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.4979431031885077,
+        "median_growth_loss": -0.00017548556940283344,
+        "p10_growth_loss": -0.0003442700415308142,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.4952418844493853,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.03904212961491717,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.40014623468903304,
+        "median_growth_loss": 0.00034646486741540805,
+        "p10_growth_loss": -0.0038016042336388445,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.40771414250349053,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.4896577329577349,
+        "median_growth_loss": -0.0014763220117380849,
+        "p10_growth_loss": -0.00016998766335674098,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.49000641434253317,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.4936474081187528,
+        "median_growth_loss": -0.00015763624242193242,
+        "p10_growth_loss": -0.0003621270668225929,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.4952418844493853,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.03897800533622689,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.452289856963811,
+        "median_growth_loss": -0.0002591822704559599,
+        "p10_growth_loss": -0.003175660913151912,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.4620760281706226,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5426903162001349,
+        "median_growth_loss": -0.001291528030961664,
+        "p10_growth_loss": 0.0015079819687348062,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.5553406029215379,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.563675226595869,
+        "median_growth_loss": -0.0014214857823018345,
+        "p10_growth_loss": -0.0005829773085525014,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.5612741357093031,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.041946581342538605,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.45168688553467035,
+        "median_growth_loss": 0.00036327928455026637,
+        "p10_growth_loss": -0.004324930709774022,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.4620760281706226,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5487500149493689,
+        "median_growth_loss": 0.00022310927808533165,
+        "p10_growth_loss": 0.0003778949814877697,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.5553406029215379,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5561008887736271,
+        "median_growth_loss": -0.0009939061405435101,
+        "p10_growth_loss": -0.0007003458641932081,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.5612741357093031,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.041968194821636606,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5076541958179581,
+        "median_growth_loss": 0.0005591520435177522,
+        "p10_growth_loss": -0.001183933320819952,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.5164379138377547,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6115865499540566,
+        "median_growth_loss": -0.0013924141961144665,
+        "p10_growth_loss": 0.0017345103188325384,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.6206747915005422,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.630695275234967,
+        "median_growth_loss": -0.0013824267099658005,
+        "p10_growth_loss": -0.0003886487962986296,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.627306386969221,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.04461715286967707,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.9603029996873587,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.8249387317562649,
+        "feasible": false,
+        "horizon": 15,
+        "log_risk": 0.5031674611420544,
+        "median_growth_loss": 0.0018249387317562649,
+        "p10_growth_loss": -0.0028528692556620827,
+        "review_rate": 0.0,
+        "risk_limit": 0.5486188566713208,
+        "training_budget": 0.5164379138377547,
+        "validation_budget": 0.5436188566713208
+      },
+      {
+        "constraint_violation": 0.13536426793109377,
+        "feasible": false,
+        "horizon": 25,
+        "log_risk": 0.6068013780978303,
+        "median_growth_loss": -0.0009913973743888027,
+        "p10_growth_loss": 0.0022707285358621876,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6583418857900445,
+        "training_budget": 0.6206747915005422,
+        "validation_budget": 0.6533418857900445
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6200440104307433,
+        "median_growth_loss": -0.001271553602533837,
+        "p10_growth_loss": 0.0003151687425032579,
+        "review_rate": 0.020833333333333332,
+        "risk_limit": 0.6653225125991802,
+        "training_budget": 0.627306386969221,
+        "validation_budget": 0.6603225125991802
+      }
+    ],
+    "mean_utility": 0.04445791053354051,
+    "outer_fold": 2,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": false,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.45465979281389207,
+        "median_growth_loss": -0.0003345069063805939,
+        "p10_growth_loss": -0.0012698756579602732,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.4555302581708192,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5628431078190361,
+        "median_growth_loss": -0.00088786418956599,
+        "p10_growth_loss": -0.0008437214593292053,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.5296276461355099,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5648190636241607,
+        "median_growth_loss": -0.0011549998554465368,
+        "p10_growth_loss": 3.375154912177436e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.5426819526421874,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.03818649767527431,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.46606974976282495,
+        "median_growth_loss": -0.000630694793728126,
+        "p10_growth_loss": -0.0001322437077047045,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.4555302581708192,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5693659574258987,
+        "median_growth_loss": -0.0002325770693266671,
+        "p10_growth_loss": 6.706509688525486e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.5296276461355099,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5728555897240208,
+        "median_growth_loss": -0.0012899229618608121,
+        "p10_growth_loss": 0.00020126326408398398,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.5426819526421874,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.037479952967092084,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5147163188506277,
+        "median_growth_loss": -0.001740349895182569,
+        "p10_growth_loss": -0.0013013666595592666,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5162676259269285,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6334222313994547,
+        "median_growth_loss": -0.000780462796278969,
+        "p10_growth_loss": -0.0006909749561747613,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6002446656202446,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6369985722238275,
+        "median_growth_loss": -0.0006471996910581979,
+        "p10_growth_loss": -0.0007173440138771303,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6150395463278125,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.04134659538377569,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5258936710370303,
+        "median_growth_loss": -0.0007338350918578707,
+        "p10_growth_loss": -7.587691742949598e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5162676259269285,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6442882405609558,
+        "median_growth_loss": -0.00093817675371477,
+        "p10_growth_loss": 0.00019291565401868827,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6002446656202446,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6450753102837614,
+        "median_growth_loss": -0.000501638340549504,
+        "p10_growth_loss": 6.019800512968576e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6150395463278125,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.04064609644799386,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5811080494532466,
+        "median_growth_loss": -0.0013179835730116052,
+        "p10_growth_loss": -0.0007247579576097896,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5770049936830376,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.697109103312354,
+        "median_growth_loss": -0.000705014644088453,
+        "p10_growth_loss": -7.174252879449394e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6708616851049792,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.714432942394755,
+        "median_growth_loss": -0.0003503196075099746,
+        "p10_growth_loss": -0.0006412927131078661,
+        "review_rate": 0.0,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6873971400134372,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.04414046080494075,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5892046013464177,
+        "median_growth_loss": -0.0004993998578076697,
+        "p10_growth_loss": 0.000561470653870022,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5770049936830376,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.7060119915431561,
+        "median_growth_loss": -0.00017148875073957903,
+        "p10_growth_loss": -0.0003073068305204929,
+        "review_rate": 0.0,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6708616851049792,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.7191672364905448,
+        "median_growth_loss": 0.00020959240356466236,
+        "p10_growth_loss": 0.00016652819114559847,
+        "review_rate": 0.0,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6873971400134372,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.043454620329688984,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.44925667030898203,
+        "median_growth_loss": -2.5720722133470986e-05,
+        "p10_growth_loss": -0.0024447958774099776,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.4555302581708192,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5394401150903088,
+        "median_growth_loss": -0.0003624815154247285,
+        "p10_growth_loss": 0.0005433567421581076,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.5296276461355099,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5620279358269509,
+        "median_growth_loss": -0.0001117112603099546,
+        "p10_growth_loss": 9.124263902593466e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.5426819526421874,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.037805106470171865,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.44607789799221764,
+        "median_growth_loss": -0.0011362013558143813,
+        "p10_growth_loss": -0.0027565811894300074,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.4555302581708192,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.532252715292582,
+        "median_growth_loss": -0.0007516464433713343,
+        "p10_growth_loss": 0.0003403087308265773,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.5296276461355099,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5613561811126437,
+        "median_growth_loss": -5.66385985778517e-07,
+        "p10_growth_loss": 0.0004346191894520901,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.5426819526421874,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.037812134987084814,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5017468135078345,
+        "median_growth_loss": -0.00037512587435273304,
+        "p10_growth_loss": -0.004767424456445013,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5162676259269285,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6013283734099395,
+        "median_growth_loss": -0.002396470908285764,
+        "p10_growth_loss": 0.0010202629227603621,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6002446656202446,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6388979671856276,
+        "median_growth_loss": -0.00042027888746465347,
+        "p10_growth_loss": -0.0010841459986139501,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6150395463278125,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.04082570422619082,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4962824267618113,
+        "median_growth_loss": -0.00019442056373897287,
+        "p10_growth_loss": -0.005092457556542862,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5162676259269285,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6004625356615281,
+        "median_growth_loss": -0.0024007302920988627,
+        "p10_growth_loss": 0.0002743895134184049,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6002446656202446,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.629606657707672,
+        "median_growth_loss": -0.0011271785037100246,
+        "p10_growth_loss": -0.0007352381193499458,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6150395463278125,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.040806053883430324,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5527695612648046,
+        "median_growth_loss": -0.00010715642931613534,
+        "p10_growth_loss": -0.005922122923848139,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5770049936830376,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6673890328247718,
+        "median_growth_loss": -0.0007550151041118003,
+        "p10_growth_loss": 0.0008693849998167025,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6708616851049792,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6949538787769121,
+        "median_growth_loss": -0.0015218017932647765,
+        "p10_growth_loss": -0.0016677813889810489,
+        "review_rate": 0.0,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6873971400134372,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.04371748530576584,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5581076098023926,
+        "median_growth_loss": 0.0001849124623402032,
+        "p10_growth_loss": -0.005743687929268937,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.6123736775610924,
+        "training_budget": 0.5770049936830376,
+        "validation_budget": 0.6073736775610924
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6644051761549424,
+        "median_growth_loss": -0.0011120409626850236,
+        "p10_growth_loss": 0.0012322036825420657,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.7111701948473464,
+        "training_budget": 0.6708616851049792,
+        "validation_budget": 0.7061701948473464
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6910204470746213,
+        "median_growth_loss": -0.0015929820317981402,
+        "p10_growth_loss": -0.001427576778434414,
+        "review_rate": 0.0,
+        "risk_limit": 0.7285759368562498,
+        "training_budget": 0.6873971400134372,
+        "validation_budget": 0.7235759368562498
+      }
+    ],
+    "mean_utility": 0.04364577258935774,
+    "outer_fold": 3,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.41489075072628645,
+        "median_growth_loss": -0.0008678015692606955,
+        "p10_growth_loss": 0.00029694578948624706,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.407595552046857,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.4915375826092433,
+        "median_growth_loss": -0.003917974905536692,
+        "p10_growth_loss": -0.0006257453845903704,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.49771821660054455,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5291508027294706,
+        "median_growth_loss": -0.001132993996413978,
+        "p10_growth_loss": -0.00018114454450590678,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5167951671386191,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.03725559175921978,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4226670996774297,
+        "median_growth_loss": -0.0006239231757984021,
+        "p10_growth_loss": 0.0004381534971305001,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.407595552046857,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.49962524627888333,
+        "median_growth_loss": -0.0027385451389699833,
+        "p10_growth_loss": -5.4085780846202525e-06,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.49771821660054455,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5288387134108518,
+        "median_growth_loss": 0.00014900968344910837,
+        "p10_growth_loss": 0.00028991412317636023,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5167951671386191,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.03652152067842256,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.47166372337044593,
+        "median_growth_loss": -0.0005137883546518784,
+        "p10_growth_loss": -5.50453463517564e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.46194162565310454,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5607304845135367,
+        "median_growth_loss": -0.002946589326108806,
+        "p10_growth_loss": -0.0004423311864754087,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.5640806454806171,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.596921022614974,
+        "median_growth_loss": -0.0012144685646501285,
+        "p10_growth_loss": 0.00022918623895584744,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5857011894237684,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.040385884235539814,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.48028113859481897,
+        "median_growth_loss": -0.0006201599104986855,
+        "p10_growth_loss": 0.0004628637638677824,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.46194162565310454,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5684504798291858,
+        "median_growth_loss": -0.0016772696037214985,
+        "p10_growth_loss": 0.00010350222112354146,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.5640806454806171,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5994745968175265,
+        "median_growth_loss": -0.0004258640475619524,
+        "p10_growth_loss": 7.117821284052805e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5857011894237684,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.039686650966046434,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5290538167804837,
+        "median_growth_loss": -0.0002231534806333979,
+        "p10_growth_loss": 0.00013239974034445767,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.516287699259352,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6300390299669095,
+        "median_growth_loss": -0.0016597979847479127,
+        "p10_growth_loss": -0.00036613600989909845,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.6304430743606896,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6648361600957702,
+        "median_growth_loss": -0.0014367288658215793,
+        "p10_growth_loss": 0.0002426734710696543,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.6546072117089172,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.043284685821320626,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "a",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5352980410535008,
+        "median_growth_loss": -0.0004936653632102717,
+        "p10_growth_loss": 0.00019852712220430613,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.516287699259352,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.6353472646867347,
+        "median_growth_loss": -0.0004977375631568526,
+        "p10_growth_loss": 0.0001917963559399105,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.6304430743606896,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6668568036204088,
+        "median_growth_loss": -0.00041939161647552847,
+        "p10_growth_loss": 4.078860250278371e-05,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.6546072117089172,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.04262287353617956,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_a",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4172665252567769,
+        "median_growth_loss": -0.00016773337414077716,
+        "p10_growth_loss": -0.0010948574505270647,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.407595552046857,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.4758705723716762,
+        "median_growth_loss": -0.003840330756981536,
+        "p10_growth_loss": -0.0005508905535098751,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.49771821660054455,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5287461558001841,
+        "median_growth_loss": -1.682078957321309e-05,
+        "p10_growth_loss": 0.00020326006183246648,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5167951671386191,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.03662687630253821,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 0
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.41589707411165344,
+        "median_growth_loss": -0.00029254735710793067,
+        "p10_growth_loss": -0.0005355351807483366,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.407595552046857,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.4822673638202575,
+        "median_growth_loss": -0.00390058219250089,
+        "p10_growth_loss": 0.00015523038161913139,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.49771821660054455,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.52245591459895,
+        "median_growth_loss": 0.0002577880521202891,
+        "p10_growth_loss": 0.00020344787178627755,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5167951671386191,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.036571286363421454,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.75,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 1
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4693286748765104,
+        "median_growth_loss": -0.0003976797927122133,
+        "p10_growth_loss": -0.0005087314193774062,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.46194162565310454,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5334703706936232,
+        "median_growth_loss": -0.0033003039983378057,
+        "p10_growth_loss": -0.0005161345834981956,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.5640806454806171,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.5911386409064552,
+        "median_growth_loss": -0.0002164675477913658,
+        "p10_growth_loss": 0.00028446539951887395,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5857011894237684,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.03962707070351506,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 2
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.4674798902718738,
+        "median_growth_loss": -0.0004672588570018288,
+        "p10_growth_loss": -0.0007691802572555306,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.46194162565310454,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5348515519812936,
+        "median_growth_loss": -0.0030927577271546713,
+        "p10_growth_loss": -0.0005888948475629707,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.5640806454806171,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.583294148219569,
+        "median_growth_loss": 0.00033498515311025656,
+        "p10_growth_loss": 0.0003734381046182067,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.5857011894237684,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.03959314756243564,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.85,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 3
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5213692023848323,
+        "median_growth_loss": 0.0004874179654528188,
+        "p10_growth_loss": -0.0012862024948753215,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.516287699259352,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5989200299316321,
+        "median_growth_loss": -0.0014772326574470362,
+        "p10_growth_loss": -0.0002582704859731555,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.6304430743606896,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6540685312445165,
+        "median_growth_loss": -0.0010325026700059858,
+        "p10_growth_loss": 0.00012438093254263372,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.6546072117089172,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.042464975435013166,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 4.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 4
+  },
+  {
+    "allocation_feasible": true,
+    "constraint_violation": 0.0,
+    "family": "fusion",
+    "horizon_constraints": [
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 15,
+        "log_risk": 0.5196388346579847,
+        "median_growth_loss": -0.0004939523133090651,
+        "p10_growth_loss": -0.002237969366230219,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.548460736062476,
+        "training_budget": 0.516287699259352,
+        "validation_budget": 0.543460736062476
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 25,
+        "log_risk": 0.5959586642010684,
+        "median_growth_loss": -0.0010613258906425616,
+        "p10_growth_loss": 3.858448640825518e-05,
+        "review_rate": 0.010416666666666666,
+        "risk_limit": 0.668624288800726,
+        "training_budget": 0.6304430743606896,
+        "validation_budget": 0.663624288800726
+      },
+      {
+        "constraint_violation": 0.0,
+        "feasible": true,
+        "horizon": 30,
+        "log_risk": 0.6538412916274211,
+        "median_growth_loss": -0.00021746610730910554,
+        "p10_growth_loss": -0.00027588419808832754,
+        "review_rate": 0.0,
+        "risk_limit": 0.6940602228514919,
+        "training_budget": 0.6546072117089172,
+        "validation_budget": 0.6890602228514919
+      }
+    ],
+    "mean_utility": 0.04243069664936329,
+    "outer_fold": 4,
+    "params": {
+      "risk_ratio": 0.95,
+      "tracking_gamma": 12.0
+    },
+    "program": "calibration_group_fusion",
+    "refit_feasible": true,
+    "selection_feasible": true,
+    "trial": 5
+  }
+]

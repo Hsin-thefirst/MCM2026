@@ -1,0 +1,12 @@
+{
+  "all_primary_groups_feasible": true,
+  "continue_extensions": true,
+  "independent_confirmation": false,
+  "interval_family": "\u6bcf\u6307\u6807/\u53c2\u7167/\u671f\u9650/\u8d39\u7528/\u5212\u5206\u5185\u8986\u76d6\u4e24\u4e2a\u65b0\u7a0b\u5e8f\uff1b\u6761\u4ef6\u4e8eOOF\u62df\u5408\uff0c\u4e0d\u8986\u76d6\u5386\u53f2\u4eba\u5de5\u641c\u7d22\u3002",
+  "primary_cost_protection": true,
+  "primary_financial_pass_both_splits": false,
+  "reason": "\u540e\u7eed\u6269\u5c55\u4ec5\u5728\u5168\u90e8\u6821\u51c6\u4e0e\u8d39\u7528\u4fdd\u62a4\u540c\u65f6\u901a\u8fc7\u65f6\u6267\u884c\uff1b\u5f53\u524d\u51bb\u7ed3\u63d0\u4ea4\u4fdd\u7559\u3002",
+  "replace_frozen_submission": false,
+  "selection_independently_verified": true,
+  "short_constraints_passed": true
+}

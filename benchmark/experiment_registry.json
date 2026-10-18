@@ -873,5 +873,53 @@
     "output": "benchmark/outputs/fusion_calibration_plan_diagnostic_v1/diagnostic.json",
     "output_sha256": "3f8127bf2dd5b1cdd45aefaccdf56def637ded3349f983a2fc0dd8f7a36d6209",
     "next_step": "计划优先比较当前候选、长期单独按A校准、长期按实际融合执行校准；计划不是新实验已运行或已预登记。"
+  },
+  {
+    "run": "development_fusion_calibration_v1",
+    "date": "2026-10-18",
+    "status": "completed_verified_exploratory",
+    "executor": "Codex",
+    "purpose": "K1长期按A选参、K2长期按实际融合执行选参；K2为固定主挑战者，K1仅归因。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "independent_confirmation": false,
+    "config": "configs/fusion_calibration.json",
+    "sources": {
+      "scripts/fusion_calibration.py": "605ba0a57f72bbcd8c3a471efd459e10a3bef28448a6c00e3cf4473f7948b847",
+      "scripts/run_fusion_calibration.py": "8f02d38257482ccef0e1c6f922600aa2d386b5e6df0a9898c5534c60480eb4e6",
+      "scripts/analyze_fusion_calibration.py": "17679d9ba83895ff64eaa4d90f9b654c8a00e0862d9a355f4ec8325c98232074",
+      "scripts/efficient_fusion.py": "ea542ffc2374612f17688f33fe228599d1c82f00dcdcd1e4e51ff4e42917c7a9",
+      "scripts/fusion_policy.py": "e28ce3b25b499fb164a837600ae642726b4ab392969cff5f3226b6b48cd74af0",
+      "configs/fusion_calibration.json": "e34aecb1d7c64d631ca739e0cae99c8be515d5e8b59e9478256a3e6c146ee809",
+      "configs/fusion_research.json": "147929698fd358c2ddeb7bfdd07b6448478c20b7909ab5d353a337ae2344eae9"
+    },
+    "search_budget": "固定两个新程序；两套已有划分seed20261014/20261019；各5外折/3内折；长期共选原六参数，不搜索门槛、动作或规划深度。每套K2内层8640条路径，双费用五期限15个外层程序/参照共18000路径。",
+    "selection": "短期与K0同参数同路径；长期每组三期限实际执行共同满足原固定ES/增长/P10/复核线后选平均log增长最大，无通过者保留最小违约并显式失败。模型/未来库均仅用内折训练数据。",
+    "controls": "当前efficient_horizon、原A、旧融合、等权/Balanced年度、原A年度/持有，K1/K2各自同锚A/年度/持有。",
+    "promotion": "原增长与风险路线及区间/4折/双费用/复核条件保持，对当前低换手版主比较并保留Balanced/同锚采用要求。条件区间每指标/参照/期限/费用/划分覆盖两个新程序；不补偿历史人工搜索。",
+    "stopping_rule": "只有两套划分K2全部长期及固定短期内层约束通过、短期完全重现、各长期双费用费用比<=1.1，才启动后续至多两个独立估值/不确定性扩展；否则停止，保留冻结提交。",
+    "verification": {
+      "original_a_inner_constraints_exact": 180,
+      "original_k0_paths_matched": 2400,
+      "short_paths_exact": 1920,
+      "maximum_scalar_error": 1.5916157281026244e-12
+    },
+    "tests_passed": 88,
+    "inner_paths": 34560,
+    "outer_paths": 36000,
+    "annual_records": 583200,
+    "decision": {
+      "all_primary_groups_feasible": true,
+      "continue_extensions": true,
+      "independent_confirmation": false,
+      "interval_family": "每指标/参照/期限/费用/划分内覆盖两个新程序；条件于OOF拟合，不覆盖历史人工搜索。",
+      "primary_cost_protection": true,
+      "primary_financial_pass_both_splits": false,
+      "reason": "后续扩展仅在全部校准与费用保护同时通过时执行；当前冻结提交保留。",
+      "replace_frozen_submission": false,
+      "selection_independently_verified": true,
+      "short_constraints_passed": true
+    },
+    "finding": "K2两套划分全部期限组校准及费用保护通过，原金融晋级未过。原划分H30增长4.4846%/P90回撤41.5152%，新划分4.4923%/41.6755%。允许按计划进入两个独立估值扩展，不替换冻结提交。"
   }
 ]

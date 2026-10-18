@@ -1,0 +1,71 @@
+{
+  "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+  "created_utc": "2026-10-18T05:23:36.178188+00:00",
+  "development_sha256": "9c4ad83f5dda86251a754e126528a71dd930ae88ed7cdb8a0663a327b6bfb7c7",
+  "final_already_exposed": true,
+  "holdout_used": false,
+  "independent_confirmation": false,
+  "phase": "development",
+  "protected_hashes": {
+    "benchmark/FINAL_EVALUATION_LOCK.json": "c4e61b0f7e42da6b12b1c9b3256ceb54dc85502741dd79c5db9b0e0e88c65894",
+    "benchmark/submission_frozen_v1.json": "83bcee60aa05fd3f1a61eb553acd310afe8f2232476b1aa540c77af6dbe4e028",
+    "dist/SafeInvest_source.zip": "631dec29afdc9029747516e3005b7aaafdcf0c5a10710243c0d12995d418999a"
+  },
+  "selection": "K2\u4e3a\u9884\u6307\u5b9a\u4e3b\u6311\u6218\u8005\uff1bK1\u4ec5\u5f52\u56e0\u3002\u4e24\u5957\u5df2\u77e5\u5212\u5206\u5747\u62a5\u544a\uff0c\u4e0d\u6309\u5916\u5c42\u9009\u7a0b\u5e8f\u3002",
+  "settings": {
+    "analysis_seed": 20261020,
+    "baseline_runs": [
+      "benchmark/outputs/development_fusion_efficiency_v3",
+      "benchmark/outputs/development_fusion_stability_v1"
+    ],
+    "bootstrap": 4000,
+    "costs": [
+      0.0025,
+      0.005
+    ],
+    "diagnostic": "calibration_group_a",
+    "horizons": [
+      5,
+      6,
+      15,
+      25,
+      30
+    ],
+    "long_horizons": [
+      15,
+      25,
+      30
+    ],
+    "maximum_cost_ratio": 1.1,
+    "primary": "calibration_group_fusion",
+    "rule": {
+      "buffer": 0.02,
+      "short_a_max_horizon": 6
+    },
+    "source_runs": [
+      "benchmark/outputs/development_submission_v1",
+      "benchmark/outputs/development_fusion_stability_v1"
+    ]
+  },
+  "sources": {
+    "benchmark/outputs/development_fusion_efficiency_v3/scenario_metrics.csv": "581f753ecd14b81893a0f74e71404185f7f5eb45871baf74d1b710c05534da16",
+    "benchmark/outputs/development_fusion_stability_v1/config.json": "56c3cb3dcc34a734ded4d538dc5436c12c5d4e559a6a6934fbfb15a75400df17",
+    "benchmark/outputs/development_fusion_stability_v1/fitted_models.json": "5ba3db9bcc178ef5d194992e8b0c0ae90d7d8e27e0c4939c060513741ebf03f4",
+    "benchmark/outputs/development_fusion_stability_v1/manifest.json": "7501f5ceb5727f068eceabe508ff3c0a4aea77584282408c0f4943732fbfb7c9",
+    "benchmark/outputs/development_fusion_stability_v1/scenario_metrics.csv": "d6de185b60c84fd08fa8bfbdb4a5e24e7fdae1f294bda36e0c306954576367a0",
+    "benchmark/outputs/development_fusion_stability_v1/splits.json": "da73f697274ed2e6fcf35ff4cd305d676cd31b58630fc85aef2a5ee4edea206e",
+    "benchmark/outputs/development_fusion_stability_v1/tuning_trials.csv": "1fcddf310875092e16d8f7cb9b5b51df17741c3341a1465b1c20dbe4f6ac9508",
+    "benchmark/outputs/development_submission_v1/config.json": "e78818a7ee8ed752e1fb21c3992ace471c0a8d4c8abdcaac75675cefc86c7464",
+    "benchmark/outputs/development_submission_v1/fitted_models.json": "637721acf1e17aca499d2e71e8cd1f433958ebfe6d478010d5b02e718b6d3c6c",
+    "benchmark/outputs/development_submission_v1/manifest.json": "2985cef8660e64f2da40d192019733ff1cd15e96d79c0ee297baf5a0c0cec272",
+    "benchmark/outputs/development_submission_v1/splits.json": "4472adf1c014ed97e7695d646b6e47861a2bfae6d70b9b1ff5076a201f11d49c",
+    "benchmark/outputs/development_submission_v1/tuning_trials.csv": "0db6bdcda50dc146af16438abce35ac753335d29dc8d9d016e61c6772f27f24e",
+    "configs/fusion_calibration.json": "e34aecb1d7c64d631ca739e0cae99c8be515d5e8b59e9478256a3e6c146ee809",
+    "configs/fusion_research.json": "147929698fd358c2ddeb7bfdd07b6448478c20b7909ab5d353a337ae2344eae9",
+    "scripts/analyze_fusion_calibration.py": "17679d9ba83895ff64eaa4d90f9b654c8a00e0862d9a355f4ec8325c98232074",
+    "scripts/efficient_fusion.py": "ea542ffc2374612f17688f33fe228599d1c82f00dcdcd1e4e51ff4e42917c7a9",
+    "scripts/fusion_calibration.py": "605ba0a57f72bbcd8c3a471efd459e10a3bef28448a6c00e3cf4473f7948b847",
+    "scripts/fusion_policy.py": "e28ce3b25b499fb164a837600ae642726b4ab392969cff5f3226b6b48cd74af0",
+    "scripts/run_fusion_calibration.py": "8f02d38257482ccef0e1c6f922600aa2d386b5e6df0a9898c5534c60480eb4e6"
+  }
+}

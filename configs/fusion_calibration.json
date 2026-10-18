@@ -1,0 +1,19 @@
+{
+  "source_runs": [
+    "benchmark/outputs/development_submission_v1",
+    "benchmark/outputs/development_fusion_stability_v1"
+  ],
+  "baseline_runs": [
+    "benchmark/outputs/development_fusion_efficiency_v3",
+    "benchmark/outputs/development_fusion_stability_v1"
+  ],
+  "horizons": [5, 6, 15, 25, 30],
+  "long_horizons": [15, 25, 30],
+  "costs": [0.0025, 0.005],
+  "rule": {"buffer": 0.02, "short_a_max_horizon": 6},
+  "primary": "calibration_group_fusion",
+  "diagnostic": "calibration_group_a",
+  "bootstrap": 4000,
+  "analysis_seed": 20261020,
+  "maximum_cost_ratio": 1.1
+}
