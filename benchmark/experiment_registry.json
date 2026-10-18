@@ -1090,5 +1090,301 @@
     "customer_mapping": "A/D人工，B/C保守，E均衡",
     "scope": "冻结A完整复现依赖和原最终账本；后续研究源码/配置/紧凑证据，研究大缓存不在包内。",
     "new_final_evaluation": false
+  },
+  {
+    "run": "development_customer_risk_review_v1",
+    "date": "2026-10-18",
+    "status": "completed_verified_not_promoted",
+    "purpose": "按客户容忍度做最后有限风险复核，形成解题讲解资料。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "independent_confirmation": false,
+    "selection": "固定五个原A/最小方差混合比例；完整内层两费用路径选风险合格者中位增长最高者。无可行者记录最小违约反事实，不能自动推荐。",
+    "diagnostic": "同一已选配置把复核线提前到客户容忍度80%；另保留原A、同配置年度、全bills及等权。不得据外层结果改选提前复核版本。",
+    "financial_rule": "原增长/风险晋级标准保持；新客户风险优先条件不等于金融晋级。",
+    "stopping_rule": "完成两划分五客户五比例及提前复核诊断后停止；不追加比例或按最终结果选参。",
+    "validation": "生成数据3项专项通过；随后make test、内层选择独立重算、外层标量核算和来源/保护hash核对。",
+    "sources": {
+      "scripts/customer_risk.py": "1b756096b6bc06f191842dcf5c367455a5a4117d3c7570b20d4aca1c6d4b7453",
+      "scripts/run_customer_risk_review.py": "a19bc9ff7a2d4218072f8407d24fdd74cdb85ccf1fc6f489bc86d0b9c51a4d7d",
+      "scripts/analyze_customer_risk.py": "18257c3502b9553f989e699e1e6832a605bf5823d39b6972d2000224998efd8c",
+      "configs/customer_risk_review.json": "ad7f82b1936d1647d62d1e35dca3a856b0ced34954769ac45445ffdbf6644614",
+      "tests/test_customer_risk.py": "5a7d6c48748dd1c5a5d9de4371aec08fc4a97b75e2cdb863e1a08605bcc82027"
+    },
+    "settings": {
+      "seeds": [
+        20261014,
+        20261019
+      ],
+      "source_run": "benchmark/outputs/development_fusion_calibration_v1",
+      "parameter_runs": {
+        "20261014": "benchmark/outputs/development_submission_v1",
+        "20261019": "benchmark/outputs/development_fusion_stability_v1"
+      },
+      "costs": [
+        0.0025,
+        0.005
+      ],
+      "mix_fractions": [
+        0.0,
+        0.25,
+        0.5,
+        0.75,
+        1.0
+      ],
+      "customer_headroom": 0.8,
+      "minimum_p90_reduction": 0.03,
+      "early_review_fraction": 0.8,
+      "maximum_breach_probability": 0.2,
+      "family_confidence": 0.95,
+      "comparison_family": 500,
+      "liquidity_floor": 0.4,
+      "bootstrap": 4000,
+      "analysis_seed": 20261021,
+      "primary": "customer_budget",
+      "diagnostic": "customer_early_review"
+    },
+    "tests_passed": 98,
+    "verification": {
+      "inner_paths": 48000,
+      "original_reproduction_paths": 1440,
+      "outer_paths": 14400,
+      "passed": true,
+      "protected_unchanged": true
+    },
+    "independent_replay": {
+      "annual_records": 233280,
+      "final_market_data_read": false,
+      "gate_checks": 18320,
+      "maximum_error": 1.0231815394945443e-12,
+      "passed": true,
+      "paths": 14400,
+      "selection_checks": 50,
+      "sources_and_protected_hashes_passed": true,
+      "verifier_sha256": "11666a96aa12b977580e83295b59b28ce2594996d6822e04afd8d864b4cb6b08"
+    },
+    "decision": {
+      "feasible_folds": [
+        {
+          "feasible_folds": 0,
+          "profile_id": "A",
+          "seed": 20261014
+        },
+        {
+          "feasible_folds": 3,
+          "profile_id": "B",
+          "seed": 20261014
+        },
+        {
+          "feasible_folds": 5,
+          "profile_id": "C",
+          "seed": 20261014
+        },
+        {
+          "feasible_folds": 0,
+          "profile_id": "D",
+          "seed": 20261014
+        },
+        {
+          "feasible_folds": 5,
+          "profile_id": "E",
+          "seed": 20261014
+        },
+        {
+          "feasible_folds": 0,
+          "profile_id": "A",
+          "seed": 20261019
+        },
+        {
+          "feasible_folds": 5,
+          "profile_id": "B",
+          "seed": 20261019
+        },
+        {
+          "feasible_folds": 5,
+          "profile_id": "C",
+          "seed": 20261019
+        },
+        {
+          "feasible_folds": 0,
+          "profile_id": "D",
+          "seed": 20261019
+        },
+        {
+          "feasible_folds": 5,
+          "profile_id": "E",
+          "seed": 20261019
+        }
+      ],
+      "final_evaluation_rerun": false,
+      "gates": [
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_budget",
+          "profile_id": "A",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_early_review",
+          "profile_id": "A",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_budget",
+          "profile_id": "B",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_early_review",
+          "profile_id": "B",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_budget",
+          "profile_id": "C",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_early_review",
+          "profile_id": "C",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_budget",
+          "profile_id": "D",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_early_review",
+          "profile_id": "D",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_budget",
+          "profile_id": "E",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_early_review",
+          "profile_id": "E",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261014
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_budget",
+          "profile_id": "A",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_early_review",
+          "profile_id": "A",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_budget",
+          "profile_id": "B",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_early_review",
+          "profile_id": "B",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_budget",
+          "profile_id": "C",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_early_review",
+          "profile_id": "C",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_budget",
+          "profile_id": "D",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": false,
+          "policy": "customer_early_review",
+          "profile_id": "D",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_budget",
+          "profile_id": "E",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        },
+        {
+          "all_folds_feasible": true,
+          "policy": "customer_early_review",
+          "profile_id": "E",
+          "risk_route_vs_original": false,
+          "risk_route_vs_same_anchor": false,
+          "seed": 20261019
+        }
+      ],
+      "independent_confirmation": false,
+      "interpretation": "风险优先研发，未通过项及不可行路径完整保存；新策略没有独立最终成绩。",
+      "replace_frozen_submission": false,
+      "selected_policy": "plan_a_balanced",
+      "stopping_rule": "五个固定比例、一次主规则和提前复核诊断完成后停止；不追加参数。"
+    },
+    "finding": "C/E两划分内层合格且外层P90下降，但增长代价过大；B原划分仅3/5合格，A/D0/10；提前复核主要增加人工，无完整金融晋级。冻结A与两版ZIP保留。"
   }
 ]

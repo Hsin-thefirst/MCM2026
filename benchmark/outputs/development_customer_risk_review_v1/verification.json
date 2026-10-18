@@ -1,0 +1,7 @@
+{
+  "inner_paths": 48000,
+  "original_reproduction_paths": 1440,
+  "outer_paths": 14400,
+  "passed": true,
+  "protected_unchanged": true
+}

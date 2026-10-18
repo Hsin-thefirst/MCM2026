@@ -1,0 +1,21 @@
+{
+  "seeds": [20261014, 20261019],
+  "source_run": "benchmark/outputs/development_fusion_calibration_v1",
+  "parameter_runs": {
+    "20261014": "benchmark/outputs/development_submission_v1",
+    "20261019": "benchmark/outputs/development_fusion_stability_v1"
+  },
+  "costs": [0.0025, 0.005],
+  "mix_fractions": [0.0, 0.25, 0.5, 0.75, 1.0],
+  "customer_headroom": 0.8,
+  "minimum_p90_reduction": 0.03,
+  "early_review_fraction": 0.8,
+  "maximum_breach_probability": 0.2,
+  "family_confidence": 0.95,
+  "comparison_family": 500,
+  "liquidity_floor": 0.4,
+  "bootstrap": 4000,
+  "analysis_seed": 20261021,
+  "primary": "customer_budget",
+  "diagnostic": "customer_early_review"
+}

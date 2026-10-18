@@ -2,6 +2,23 @@
 
 本文件合并公共接口与原 benchmark 扩展说明。数学口径仅在 [METHODOLOGY.md](METHODOLOGY.md) 维护，实验程序仅在 [PROTOCOL.md](PROTOCOL.md) 维护。
 
+## 客户风险最后复核（2026-10-18）
+
+`scripts/customer_risk.py`提供独立研发接口，不修改冻结金融核心：
+
+```python
+CustomerRiskPolicy(name, model, params, config, profile, fraction,
+                   early_review=False, early_review_fraction=.8, mode="partial")
+select_fraction(inner_execution_frame, profile, settings) -> selection_dict
+unavoidable_drawdown(real_returns) -> numpy.ndarray
+```
+
+仅接受开发训练IDs。初始目标为原A与同训练集最小方差目标的凸组合；比例1精确恢复原A，后续继续原A的净收益/成本门槛。提前复核只改变触发阈值，待处理仍持有原资产。内层完整含费路径在五个固定比例内选择满足客户风险余量、风险改善和流动性条件的最高中位收益者；无可行者完整保留最小违约诊断，`feasible=false`不得标为自动推荐。
+
+配置为`configs/customer_risk_review.json`。`run_customer_risk_review.py --out benchmark/outputs/<new_run>`使用已有两套划分的训练模型及各产品原参数，输出内层指标、选择证据、外层路径/账本和全资产共同下跌导致的回撤下界。`analyze_customer_risk.py <run>`仅读保存结果，输出客户比较、配对区间和未替换冻结提交的决定。此研究发生在原最终集暴露之后，没有独立最终成绩；OOF二项上界只是选择诊断。
+
+`verify_customer_risk.py <run>`仅读开发市场和保存研究输出，独立标量核算全部外层记录并从内层CSV重算全部选择；不重跑策略。`build_solution_guide.py --research-run <run> --out docs/SOLUTION_GUIDE.md`只读已保存数值和冻结模型，交叉核对汇总、客户越界与证据hash后生成团队讲解Markdown，不读取市场CSV、不创建正式论文。新研究依赖原工作区的训练缓存，旧ZIP的完整默认金融复现范围保持原义。
+
 ## 模块职责
 
 | 位置 | 职责 |

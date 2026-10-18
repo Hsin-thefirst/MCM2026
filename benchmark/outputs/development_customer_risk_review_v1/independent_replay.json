@@ -1,0 +1,11 @@
+{
+  "annual_records": 233280,
+  "final_market_data_read": false,
+  "gate_checks": 18320,
+  "maximum_error": 1.0231815394945443e-12,
+  "passed": true,
+  "paths": 14400,
+  "selection_checks": 50,
+  "sources_and_protected_hashes_passed": true,
+  "verifier_sha256": "11666a96aa12b977580e83295b59b28ce2594996d6822e04afd8d864b4cb6b08"
+}

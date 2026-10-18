@@ -1,0 +1,69 @@
+{
+  "code_sha256": "797afe4d898be01c15329af29fb7173fe0672ae268300beaece6d26d7daa6e14",
+  "created_utc": "2026-10-18T13:58:28.953172+00:00",
+  "development_sha256": "9c4ad83f5dda86251a754e126528a71dd930ae88ed7cdb8a0663a327b6bfb7c7",
+  "failure": "\u65e0\u53ef\u884c\u53c2\u6570\u65f6\u4ec5\u4fdd\u5b58\u6700\u5c0f\u8fdd\u7ea6\u53cd\u4e8b\u5b9e\u8def\u5f84\u5e76\u6807\u8bb0\uff1b\u4e0d\u5f97\u4f5c\u4e3a\u81ea\u52a8\u63a8\u8350\u7ee9\u6548\u3002",
+  "final_already_exposed": true,
+  "holdout_used": false,
+  "independent_confirmation": false,
+  "phase": "development",
+  "protected_hashes": {
+    "benchmark/FINAL_EVALUATION_LOCK.json": "c4e61b0f7e42da6b12b1c9b3256ceb54dc85502741dd79c5db9b0e0e88c65894",
+    "benchmark/submission_frozen_v1.json": "83bcee60aa05fd3f1a61eb553acd310afe8f2232476b1aa540c77af6dbe4e028",
+    "dist/SafeInvest_final_source.zip": "46f727471793a31d201985dd8b8c31f44416dfbdf5a56acf90747e5a055358f9",
+    "dist/SafeInvest_source.zip": "631dec29afdc9029747516e3005b7aaafdcf0c5a10710243c0d12995d418999a"
+  },
+  "selection": "\u5ba2\u6237\u98ce\u9669\u9884\u7b97\u4f18\u5148\uff1b\u4e94\u4e2a\u56fa\u5b9a\u6df7\u5408\u6bd4\u4f8b\uff0c\u5b8c\u6574\u5185\u5c42\u542b\u8d39\u9a8c\u8bc1\uff0c\u5916\u5c42\u4e0d\u53ef\u9009\u53c2\u6570\u3002",
+  "settings": {
+    "analysis_seed": 20261021,
+    "bootstrap": 4000,
+    "comparison_family": 500,
+    "costs": [
+      0.0025,
+      0.005
+    ],
+    "customer_headroom": 0.8,
+    "diagnostic": "customer_early_review",
+    "early_review_fraction": 0.8,
+    "family_confidence": 0.95,
+    "liquidity_floor": 0.4,
+    "maximum_breach_probability": 0.2,
+    "minimum_p90_reduction": 0.03,
+    "mix_fractions": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "parameter_runs": {
+      "20261014": "benchmark/outputs/development_submission_v1",
+      "20261019": "benchmark/outputs/development_fusion_stability_v1"
+    },
+    "primary": "customer_budget",
+    "seeds": [
+      20261014,
+      20261019
+    ],
+    "source_run": "benchmark/outputs/development_fusion_calibration_v1"
+  },
+  "sources": {
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/config.json": "e43a823c1296868b2604a1ac55cf05973201ef987105ea6d48a43cf33d2fa52e",
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/fitted_models.json": "790c0e4e768444dc180468bf7047a34e9cf7d28440d1b3915f02b024666870a0",
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/splits.json": "fc6e18d2561cfd6f0356571acc203922ed9d9e7bdf222fb971b4c3939151026b",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/config.json": "56c3cb3dcc34a734ded4d538dc5436c12c5d4e559a6a6934fbfb15a75400df17",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/fitted_models.json": "f71d80348bb37cee0315e00608df4b24269f27aee7f088d1e27e92d0f2f330ce",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/splits.json": "e292193b48eb172c42975975832b47f0eac09e4efb29fd117d6eb9c55a780afe",
+    "benchmark/outputs/development_fusion_stability_v1/fitted_models.json": "5ba3db9bcc178ef5d194992e8b0c0ae90d7d8e27e0c4939c060513741ebf03f4",
+    "benchmark/outputs/development_fusion_stability_v1/manifest.json": "7501f5ceb5727f068eceabe508ff3c0a4aea77584282408c0f4943732fbfb7c9",
+    "benchmark/outputs/development_fusion_stability_v1/scenario_metrics.csv": "d6de185b60c84fd08fa8bfbdb4a5e24e7fdae1f294bda36e0c306954576367a0",
+    "benchmark/outputs/development_submission_v1/fitted_models.json": "637721acf1e17aca499d2e71e8cd1f433958ebfe6d478010d5b02e718b6d3c6c",
+    "benchmark/outputs/development_submission_v1/manifest.json": "2985cef8660e64f2da40d192019733ff1cd15e96d79c0ee297baf5a0c0cec272",
+    "benchmark/outputs/development_submission_v1/scenario_metrics.csv": "44a7cc34b9f42eebc212b9a8928c27f6d7181de24f2af7780bb9ca33a321c298",
+    "configs/customer_risk_review.json": "ad7f82b1936d1647d62d1e35dca3a856b0ced34954769ac45445ffdbf6644614",
+    "configs/profiles.json": "ad2a13706ede81e2c5f73d57bcb4022621e780f819811cf9d6c5605209ae0caa",
+    "scripts/analyze_customer_risk.py": "18257c3502b9553f989e699e1e6832a605bf5823d39b6972d2000224998efd8c",
+    "scripts/customer_risk.py": "1b756096b6bc06f191842dcf5c367455a5a4117d3c7570b20d4aca1c6d4b7453",
+    "scripts/run_customer_risk_review.py": "a19bc9ff7a2d4218072f8407d24fdd74cdb85ccf1fc6f489bc86d0b9c51a4d7d"
+  }
+}

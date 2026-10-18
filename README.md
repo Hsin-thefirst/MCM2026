@@ -4,6 +4,8 @@
 
 [题目](2026_MCM_SafeInvest.pdf) · [数据说明](docs/DATA.md) · [基准数值](benchmark/outputs/development_consolidated/scenario_metrics.csv) · [实验结论](docs/FINDINGS.md) · [工作记录](LOG.md)
 
+团队阅读入口：[解题讲解与数据使用指南](docs/SOLUTION_GUIDE.md)。按用户追加授权，在`feat/customer-risk-final-review`完成最后客户风险复核与中文Markdown讲解，98项测试、14,400外层路径独立核算通过。防御规则降低开发回撤但收益代价较大，B仍有内层失败、A/D仍未适配，未替换冻结A；文档明确区分原最终成绩、新研究与反事实，并整理正式report需要的指标、解释、边界和复现入口。正式英文论文尚未制作。
+
 **2026-10-18最终提交程序已确定：校准A，客户A/D人工、B/C保守、E均衡。** 最后一轮预算惩罚的两个版本虽通过内层约束与费用保护，仍未通过完整金融晋级，依据预声明规则保留冻结A。[发布决定](benchmark/outputs/development_final_budget_v1/release_decision.json)保存来源、95项测试及五客户核验；当前金融源码、原冻结模型和一次性最终评价保持一致。
 
 最终代码交付入口为[SafeInvest_final_source.zip](dist/SafeInvest_final_source.zip)：45,828,045字节、207文件，独立解压95项测试及字节一致重打包通过。[归档校验](dist/SafeInvest_final_source.verification.json)及[独立复现](dist/SafeInvest_final_source.reproduction.json)保存大小/hash和核验记录。包内包含默认提交程序的完整复现依赖、完整原最终账本，以及后续研究的源码与紧凑证据；研究大缓存保留工作区。报告与论文仍暂停，详见[提交说明](docs/SUBMISSION.md#最终收敛源码包)。
@@ -91,6 +93,7 @@ MCM2026/
 | 文档 | 唯一维护的内容 |
 | --- | --- |
 | [建模与指标](docs/METHODOLOGY.md) | 资产核算、指标、策略、适配假设及文献 |
+| [团队讲解](docs/SOLUTION_GUIDE.md) | 从保存证据生成的方法讲解、数据表、知识与写作注意事项 |
 | [代码接口](docs/INTERFACES.md) | 模块职责、扩展方法、结果格式 |
 | [实验协议](docs/PROTOCOL.md) | 调参、统计解释、晋级、冻结及最终评价 |
 | [实验结论](docs/FINDINGS.md) | 比较结果、严重案例、客户结果及局限 |
