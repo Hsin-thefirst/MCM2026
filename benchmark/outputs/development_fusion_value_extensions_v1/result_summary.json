@@ -1,0 +1,44 @@
+{
+  "saved_result_only": true,
+  "new_policy_evaluation": false,
+  "uncertainty_vs_k0": [
+    {
+      "seed": 20261014,
+      "cost_rate": 0.0025,
+      "cost_change": -0.12949120306884643,
+      "growth_change": 0.0008473370276161005,
+      "p90_change": -0.006825802558378502,
+      "trade_change": -0.07758620689655171
+    },
+    {
+      "seed": 20261014,
+      "cost_rate": 0.005,
+      "cost_change": -0.08589175723033848,
+      "growth_change": 0.0005026979266368956,
+      "p90_change": -0.016882012632095822,
+      "trade_change": -0.10660919540229885
+    },
+    {
+      "seed": 20261019,
+      "cost_rate": 0.0025,
+      "cost_change": -0.10884635126587427,
+      "growth_change": -0.001390765849159696,
+      "p90_change": -0.030647965194960214,
+      "trade_change": -0.06494252873563211
+    },
+    {
+      "seed": 20261019,
+      "cost_rate": 0.005,
+      "cost_change": -0.09085873369297959,
+      "growth_change": -0.0010142497643522985,
+      "p90_change": -0.027074939516386343,
+      "trade_change": -0.07241379310344831
+    }
+  ],
+  "source_summaries": {
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261014/summary.csv": "3f5ace61e463d87eda17dafd9b2dd7de1dc13682bac036842b5550d5ef6124e2",
+    "benchmark/outputs/development_fusion_calibration_v1/20261014/summary.csv": "f225e434ac436b0c953be66a29678c62bfa094d6e9722e5bc9e585539e006ee4",
+    "benchmark/outputs/development_fusion_value_extensions_v1/20261019/summary.csv": "e2cc475edadb7fbcd23c8d8952c8b202d3d03b61344ba4e25ba5539e8efef792",
+    "benchmark/outputs/development_fusion_calibration_v1/20261019/summary.csv": "46db67b4b56b31d99930a7978f95d3716670ccf3cc4ba7335d6fbf2ce351a07b"
+  }
+}

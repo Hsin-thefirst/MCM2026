@@ -921,5 +921,71 @@
       "short_constraints_passed": true
     },
     "finding": "K2两套划分全部期限组校准及费用保护通过，原金融晋级未过。原划分H30增长4.4846%/P90回撤41.5152%，新划分4.4923%/41.6755%。允许按计划进入两个独立估值扩展，不替换冻结提交。"
+  },
+  {
+    "run": "development_fusion_value_extensions_v1",
+    "date": "2026-10-18",
+    "status": "completed_verified_exploratory",
+    "executor": "Codex",
+    "purpose": "K2可行性与费用保护全部通过后，检验固定含费A延续及条件不确定性惩罚；两个独立规则，不组合。",
+    "holdout_used": false,
+    "final_already_exposed": true,
+    "independent_confirmation": false,
+    "config": "configs/fusion_value_extensions.json",
+    "sources": {
+      "scripts/fusion_value_extensions.py": "3172609923fda7c03044228ac3fd694088a4406b7b0313f6c235bdee1bc1645a",
+      "scripts/run_fusion_value_extensions.py": "c5e4072ce8a0d070a8ea09b3bd82e25e26ffaca7244fc3cc7ac22048b85e425c",
+      "scripts/fusion_calibration.py": "605ba0a57f72bbcd8c3a471efd459e10a3bef28448a6c00e3cf4473f7948b847",
+      "scripts/analyze_fusion_calibration.py": "bd6ef0564bcebe3083770c201608587952fd6261de460af30f93c75d27e07cea",
+      "scripts/verify_calibration_ledger.py": "24bde7173ed68b1930b9bf612955068595ba8cafd1675cdccb8fe14096291894",
+      "configs/fusion_value_extensions.json": "35937ce6dc62c0d3fd45ec6c3543b2fb3ac5aebba4ec761fd2a2d306b29b7889"
+    },
+    "search_budget": "两条固定规则各自长期三期限共选六参数；同两套划分5外/3内，缓存模型严格来自对应内折训练。训练bootstrap200次/seed20261021/系数1固定，不增加网格。共34560条新内层路径、19200条新外层路径；另复制19200条已审计参照路径。",
+    "selection": "两条规则均按实际路径原约束校准；短期原A固定。含费A延续优先，不确定性规则次之，仅在事先声明的金融/校准/费用保护均通过时视为研究升级。",
+    "promotion": "相对K2和K0均过原增长或风险路线，同时满足Balanced年度及同锚采用条件；两套划分都满足，费用相对K0<=110%，全部内层期限组可行，短期完全一致。条件区间覆盖同层两个新程序，不补偿历史人工搜索。",
+    "stopping_rule": "完成两规则即停止，不叠加组合，不增加收益信号、阈值或规划深度，不重跑最终集，不替换原冻结提交。",
+    "verification": {
+      "all_outer_scalar_replay_passed": true,
+      "maximum_scalar_error": 1.8189894035458565e-12,
+      "short_exact_paths": 1920,
+      "selected_parameter_choices_independently_verified": 20,
+      "nonzero_inflation_historical_peak_scalar_case_passed": true
+    },
+    "tests_passed": 92,
+    "inner_paths": 34560,
+    "new_outer_paths": 19200,
+    "reused_reference_paths": 19200,
+    "saved_outer_paths": 38400,
+    "annual_records": 622080,
+    "decision": {
+      "all_primary_groups_feasible": false,
+      "continue_extensions": false,
+      "independent_confirmation": false,
+      "interval_family": "每指标/参照/期限/费用/划分内覆盖两个新程序；条件于OOF拟合，不覆盖历史人工搜索。",
+      "primary_cost_protection": true,
+      "primary_financial_pass_both_splits": false,
+      "program_gates": {
+        "fusion_a_continuation": {
+          "calibrated": false,
+          "cost_protected": true,
+          "financial_pass": false
+        },
+        "fusion_uncertainty": {
+          "calibrated": true,
+          "cost_protected": true,
+          "financial_pass": false
+        }
+      },
+      "reason": "两个预声明独立扩展完成后停止本轮搜索，按固定顺序检查金融/校准/费用条件，不追加组合。",
+      "replace_frozen_submission": false,
+      "selected_research_policy": "efficient_horizon",
+      "selection_independently_verified": true,
+      "short_constraints_passed": true
+    },
+    "finding": "不确定性规则10/10折内层可行，H30相对K0官方费用下降12.95%/10.88%，P90下降0.6826/3.0648个百分点；增长差+0.0847/−0.1391个百分点，未同时通过原金融晋级。含费A延续仅6/10折可行且尾部恶化。两规则完成后按预声明停止，保留K0研发基线与原冻结提交。",
+    "results": {
+      "comparison": "benchmark/outputs/development_fusion_value_extensions_v1/comparison_h30.csv",
+      "summary_sha256": "e83a9abeceb742fed2f65d12b529175ce2415e2cc8d4b8027480ba09daaff7e0"
+    }
   }
 ]

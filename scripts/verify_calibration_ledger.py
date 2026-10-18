@@ -28,9 +28,9 @@ def main():
     with (run/'scenario_metrics.csv').open() as handle:
         rows = list(csv.DictReader(handle))
     metrics = {(r['policy'],int(r['scenario_id']),int(r['horizon']),float(r['cost_rate'])):r for r in rows}
-    assert len(metrics)==len(rows)==18000
+    assert len(metrics)==len(rows)
     names = {r['policy'] for r in rows}
-    assert len(names)==15
+    assert len(names)==manifest.get('policy_count',15)
     expected = {(name,sid,h,c) for name in names for sid in range(1,121)
                 for h in manifest['settings']['horizons'] for c in manifest['settings']['costs']}
     assert set(metrics)==expected
@@ -39,6 +39,8 @@ def main():
     seen = set()
     count = gates = caps = short_equal = 0
     error = 0.
+    short_programs = manifest['settings'].get('short_programs',['calibration_group_a','calibration_group_fusion'])
+    gated_fusion = ['efficient_horizon','calibration_group_a','calibration_group_fusion','fusion_drawdown']+short_programs
     fingerprint_fields = ['period','action','target_weights','pre_trade_holdings','post_trade_holdings',
         'end_holdings','moved_amount','transaction_cost','cumulative_inflation','real_wealth','review_pending',
         'reason_codes','explanation','estimated_benefit','estimated_cost']
@@ -89,7 +91,7 @@ def main():
                     assert r['estimated_benefit']>r['estimated_cost']+r['required_buffer']
                     check(r['estimated_cost'],fee/wealth)
                     gates+=1
-                if key[0] in ['efficient_horizon','calibration_group_a','calibration_group_fusion','fusion_drawdown'] and key[2]>6:
+                if key[0] in gated_fusion and key[2]>6:
                     assert moved/wealth<=.1+1e-10
                     caps+=1
             check([r['moved_amount'],r['transaction_cost']],[moved,fee])
@@ -106,13 +108,13 @@ def main():
             peak=max(peak,mark)
             check(r['end_holdings'],holdings)
             check([r['real_wealth'],r['cumulative_inflation']],[mark,inflation])
-            if key[0] in ['efficient_horizon','calibration_group_a','calibration_group_fusion'] and key[2]<=6:
+            if key[0] in ['efficient_horizon']+short_programs and key[2]<=6:
                 fingerprint.update(json.dumps({k:r[k] for k in fingerprint_fields},sort_keys=True).encode())
             if t==key[2]:
                 metric=metrics[key]
                 check([float(metric[k]) for k in ['real_cagr','real_max_drawdown','total_real_cost','trade_rate']],
                       [(mark/100)**(1/t)-1,mdd,real_fees,trades/(t-1)])
-                if key[0] in ['efficient_horizon','calibration_group_a','calibration_group_fusion'] and key[2]<=6:
+                if key[0] in ['efficient_horizon']+short_programs and key[2]<=6:
                     short_key=key[1:]
                     if key[0]=='efficient_horizon': signatures[short_key]=fingerprint.hexdigest()
                     else:
@@ -121,7 +123,7 @@ def main():
             count+=1
     assert previous==active[2] and seen==expected
     declared=json.loads((run/'verification.json').read_text())
-    assert count==declared['annual_records'] and len(seen)==declared['paths'] and short_equal==960
+    assert count==declared['annual_records'] and len(seen)==declared['paths'] and short_equal==480*len(short_programs)
     dump(output,dict(passed=True,paths=len(seen),annual_records=count,maximum_error=error,
         short_exact_paths=short_equal,gate_checks=gates,cap_checks=caps,final_used=False,
         new_policy_evaluation=False,source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))

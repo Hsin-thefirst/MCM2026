@@ -174,4 +174,8 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 
 运行根目录保存不可覆盖manifest、内层原始指标及总核验；两个seed子目录各保存完整内外层模型/划分、参数、调参JSON、指标、汇总、JSONL压缩年度账本。同锚A/年度/持有参照分别对应K1/K2实际选中配置。`scripts/verify_calibration_ledger.py <seed子目录>`使用独立标量核算全部账本、收益门槛、限幅、复核后保持，并比较K1/K2短期逐年记录的精确hash；核验工具自己的源码hash另存于审计JSON。原`verify_saved_iteration.py`仍可重放相同账本格式。`scripts/analyze_fusion_calibration.py <运行根目录>`从保存的内层指标独立重算约束和排名，输出选择核验、费用保护、金融筛选及`decision.json`；不拟合、不评价新路径。后续扩展只有两套划分全部K2内层组通过、短期重现且所有长期双费用均不超过基线110%时才启动。两个新程序的条件区间按每指标/参照/期限/费用/划分校正，仍是开发探索，不能替代新独立数据。
 
+`scripts/run_fusion_value_extensions.py --out benchmark/outputs/<新目录>`由`configs/fusion_value_extensions.json`定义两个独立规则，启动时强制检查上述K2扩展门槛。复用已审计的内折模型而非外折模型，分别按实际路径重新选择六参数。`fusion_a_continuation`保留首步候选，预测后续按原含费A决策、复核后保持的路径；`fusion_uncertainty`在固定200次完整训练情景bootstrap中重算价值差，减一个标准差后排名和门控，不重拟合锚，不作为统计置信保证。加权计数实现与显式重采样的ES/线性分位数精确等价；训练bootstrap种子20261021固定。
+
+扩展运行每套划分包含16策略/参照、19,200条外层指标，其中9,600条为复制已审计的参照，9,600条为新评价；账本完整保存。短期两个新程序与当前A逐年完全相同。分析工具可通过配置`families`、`baseline`、`cost_baseline`、`references`和`research_priority`处理该固定扩展：主比较K2，费用保护及额外金融比较仍对原低换手K0，按原优先顺序检查两个程序且完成后停止。新程序的`k2_anchor_*`对应含费A延续，`k1_anchor_*`对应不确定性规则。历史运行的manifest与原hash不修改，可从相应Git提交恢复当时工具。
+
 `scripts/verify_saved_iteration.py <run>`只重放保存的JSONL账本与开发市场，不重新运行策略；独立核验全部年度参照及研究路径的扣费、收益、通胀、回撤、增长、费用和交易率，并保存不可覆盖的`independent_replay.json`。

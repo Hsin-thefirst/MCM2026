@@ -28,7 +28,7 @@ def independent_selection_check(run, seed, settings, inner):
             assert set(audit['train_ids']) | set(audit['validation_ids']) == set(split['train_ids'])
             assert not set(audit['train_ids']) & set(audit['validation_ids'])
             assert audit['model']['train_ids'] == audit['model']['scenario_control']['train_ids'] == audit['train_ids']
-        for program, family in [(settings['diagnostic'],'a'),(settings['primary'],'fusion')]:
+        for program, family in settings.get('families',[(settings['diagnostic'],'a'),(settings['primary'],'fusion')]):
             candidates = []
             for row in trials:
                 if row['outer_fold'] != fold or row['program'] != program:
@@ -82,8 +82,8 @@ def main():
     screens = []
     costs = []
     shorts = []
-    references = ['efficient_horizon','plan_a_balanced','balanced_annual','plan_a_annual',
-                  'k1_anchor_a','k2_anchor_a','k1_anchor_annual','k2_anchor_annual']
+    references = settings.get('references',['efficient_horizon','plan_a_balanced','balanced_annual','plan_a_annual',
+                  'k1_anchor_a','k2_anchor_a','k1_anchor_annual','k2_anchor_annual'])
     for seed in sorted(inner.seed.unique()):
         seed = int(seed)
         directory = run/str(seed)
@@ -105,7 +105,7 @@ def main():
                 for cost in settings['costs']:
                     block = m[(m.horizon==h)&(m.cost_rate==cost)]
                     a = block[block.policy==program]
-                    b = block[block.policy=='efficient_horizon']
+                    b = block[block.policy==settings.get('cost_baseline','efficient_horizon')]
                     ratio = float(a.total_real_cost.mean()/b.total_real_cost.mean())
                     costs.append(dict(seed=seed,policy=program,horizon=h,cost_rate=cost,cost_ratio=ratio,
                                       passed=ratio<=settings['maximum_cost_ratio']))
@@ -146,7 +146,7 @@ def main():
     financial = []
     for seed in sorted(inner.seed.unique()):
         table = screen[(screen.seed==seed)&(screen.policy==settings['primary'])&(screen.horizon==30)].set_index('reference')
-        parent = table.loc['efficient_horizon']
+        parent = table.loc[settings.get('baseline','efficient_horizon')]
         annual = table.loc['balanced_annual']
         anchor = table.loc['k2_anchor_annual']
         financial.append(bool((parent.growth_pass or parent.risk_pass) and
@@ -158,9 +158,31 @@ def main():
                     replace_frozen_submission=False,independent_confirmation=False,
                     interval_family='每指标/参照/期限/费用/划分内覆盖两个新程序；条件于OOF拟合，不覆盖历史人工搜索。',
                     reason='后续扩展仅在全部校准与费用保护同时通过时执行；当前冻结提交保留。')
+    if 'research_priority' in settings:
+        gates = {}
+        for program in settings['research_priority']:
+            selected = [c for c in choices if c['program']==program]
+            paid = [c for c in costs if c['policy']==program]
+            passed = []
+            for seed in sorted(inner.seed.unique()):
+                table = screen[(screen.seed==seed)&(screen.policy==program)&(screen.horizon==30)].set_index('reference')
+                prefix = 'k2' if program==settings['primary'] else 'k1'
+                parent = table.loc[settings['baseline']]
+                original = table.loc['efficient_horizon']
+                annual = table.loc['balanced_annual']
+                anchor = table.loc[prefix+'_anchor_annual']
+                passed.append(bool((parent.growth_pass or parent.risk_pass) and
+                    (original.growth_pass or original.risk_pass) and
+                    (annual.growth_pass or (annual.risk_pass and anchor.risk_pass))))
+            gates[program] = dict(calibrated=all(c['selection_feasible'] for c in selected) and all(shorts),
+                                  cost_protected=all(c['passed'] for c in paid),financial_pass=all(passed))
+        decision['program_gates'] = gates
+        decision['selected_research_policy'] = next((p for p in settings['research_priority'] if all(gates[p].values())), 'efficient_horizon')
+        decision['continue_extensions'] = False
+        decision['reason'] = '两个预声明独立扩展完成后停止本轮搜索，按固定顺序检查金融/校准/费用条件，不追加组合。'
     dump(run/'decision.json',decision)
     print(json.dumps(decision,ensure_ascii=False,indent=2))
-    print(screen[(screen.policy==settings['primary'])&(screen.reference=='efficient_horizon')&(screen.horizon==30)].to_string(index=False))
+    print(screen[(screen.policy==settings['primary'])&(screen.reference==settings.get('baseline','efficient_horizon'))&(screen.horizon==30)].to_string(index=False))
 
 
 if __name__ == '__main__': main()
