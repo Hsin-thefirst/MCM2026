@@ -1,0 +1,12 @@
+{
+  "path": "/home/hsin/Projects/MCM2026/dist/SafeInvest_final_source.zip",
+  "size_bytes": 45828045,
+  "sha256": "46f727471793a31d201985dd8b8c31f44416dfbdf5a56acf90747e5a055358f9",
+  "files": 207,
+  "all_checks_passed": true,
+  "selected_policy": "plan_a_balanced",
+  "cold_tests_passed": 95,
+  "byte_identical_repack": true,
+  "reproduction_verified": true,
+  "reproduction_manifest": "dist/SafeInvest_final_source.reproduction.json"
+}

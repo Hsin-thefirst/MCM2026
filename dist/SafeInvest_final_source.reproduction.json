@@ -1,0 +1,20 @@
+{
+  "all_checks_passed": true,
+  "archive_sha256": "46f727471793a31d201985dd8b8c31f44416dfbdf5a56acf90747e5a055358f9",
+  "size_bytes": 45828045,
+  "files": 207,
+  "source_code_commit": "02f31a97fc6913c0fb45060a823862d5ae43d3fd",
+  "selected_policy": "plan_a_balanced",
+  "crc_passed": true,
+  "all_file_hashes_passed": true,
+  "extracted_modules_verified": true,
+  "frozen_code_environment_verified": true,
+  "cold_tests_passed": 95,
+  "test_log_sha256": "ef38dfadc9c658f6306e9a88294ff90060567a604dac02a06bbdcf1442dcff61",
+  "repacked_sha256": "46f727471793a31d201985dd8b8c31f44416dfbdf5a56acf90747e5a055358f9",
+  "byte_identical_repack": true,
+  "final_market_data_parsed": false,
+  "final_policies_reevaluated": false,
+  "old_archive_unchanged": true,
+  "source_scope": "冻结A完整复现依赖和原最终账本；后续研究源码/配置/紧凑证据，研究大缓存不在包内。"
+}

@@ -6,7 +6,7 @@
 
 **2026-10-18最终提交程序已确定：校准A，客户A/D人工、B/C保守、E均衡。** 最后一轮预算惩罚的两个版本虽通过内层约束与费用保护，仍未通过完整金融晋级，依据预声明规则保留冻结A。[发布决定](benchmark/outputs/development_final_budget_v1/release_decision.json)保存来源、95项测试及五客户核验；当前金融源码、原冻结模型和一次性最终评价保持一致。
 
-最终代码交付入口为[SafeInvest_final_source.zip](dist/SafeInvest_final_source.zip)，其大小/hash与独立解压复现记录见[归档校验](dist/SafeInvest_final_source.verification.json)及[独立复现](dist/SafeInvest_final_source.reproduction.json)。包内包含默认提交程序的完整复现依赖、完整原最终账本，以及后续研究的源码与紧凑证据；研究大缓存保留工作区。报告与论文仍暂停，详见[提交说明](docs/SUBMISSION.md#最终收敛源码包)。
+最终代码交付入口为[SafeInvest_final_source.zip](dist/SafeInvest_final_source.zip)：45,828,045字节、207文件，独立解压95项测试及字节一致重打包通过。[归档校验](dist/SafeInvest_final_source.verification.json)及[独立复现](dist/SafeInvest_final_source.reproduction.json)保存大小/hash和核验记录。包内包含默认提交程序的完整复现依赖、完整原最终账本，以及后续研究的源码与紧凑证据；研究大缓存保留工作区。报告与论文仍暂停，详见[提交说明](docs/SUBMISSION.md#最终收敛源码包)。
 
 已实现17种基准策略、计划A的8种产品/对照、B的10种信号挑战及C的4种规划对照；提供年度回测引擎、嵌套情景交叉验证、客户期限评价、配对区间、成本敏感性及受控最终评价。计划A增加连续凸路径风险配置、成本门控部分再平衡与实际策略的客户适配；目前仍无候选通过预设晋级条件。
 

@@ -1070,5 +1070,25 @@
     },
     "maximum_scalar_error": 2.0463630789890885e-12,
     "finding": "两个预算规则10/10折内层可行，费用保护通过；仍未同时通过原金融晋级。最终金融程序保留原冻结A，五客户原映射核验通过；本轮停止搜索并进入源码归档。"
+  },
+  {
+    "run": "final_source_release_20261018",
+    "date": "2026-10-18",
+    "status": "completed_independently_reproduced",
+    "purpose": "最终代码交付归档和独立解压复现，不新增策略评价。",
+    "holdout_used": false,
+    "market_data_analysis": false,
+    "selected_policy": "plan_a_balanced",
+    "source_code_commit": "02f31a97fc6913c0fb45060a823862d5ae43d3fd",
+    "archive": "dist/SafeInvest_final_source.zip",
+    "size_bytes": 45828045,
+    "files": 207,
+    "sha256": "46f727471793a31d201985dd8b8c31f44416dfbdf5a56acf90747e5a055358f9",
+    "tests_passed": 95,
+    "byte_identical_repack": true,
+    "old_archive_unchanged": true,
+    "customer_mapping": "A/D人工，B/C保守，E均衡",
+    "scope": "冻结A完整复现依赖和原最终账本；后续研究源码/配置/紧凑证据，研究大缓存不在包内。",
+    "new_final_evaluation": false
   }
 ]
