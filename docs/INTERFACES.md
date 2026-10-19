@@ -221,4 +221,8 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 
 `.venv/Scripts/python.exe scripts/build_formal_report.py`读取`configs/report.json`，无额外命令行参数。配置包含标题、日期、成员、团队、AI工具、所选策略、输出目录及保存证据路径。工具核对冻结包/最终锁/发布决定/最终manifest的身份、策略、60个最终场景及五客户映射，仅读取保存JSON/CSV与题目PDF字节，不拟合模型或访问原始市场数据。
 
-输出为`docs/report/generated/*.tex`数值宏及表格、`figures/`中的两组PDF/PNG图，以及`evidence.json`来源与生成资产hash。输出可重建，不覆盖历史实验。LaTeX正文由本目录`main.tex`及`sections/`维护；PDF编译、页数及视觉检查步骤见[报告说明](report/README.md)。本次验收结果写入`validation.json`。缺少成员时显示草稿提示；它不是提交就绪证明。报告流程独立于原`make report RUN=...`的benchmark网页报告，也不会更新旧源码ZIP或实验登记。
+输出为`docs/report/generated/*.tex`数值宏及表格、两份绘图来源CSV、`figures/`中的三组PDF/SVG/PNG图，以及`evidence.json`来源与生成资产hash。严重案例从配置的保存`ledger`逐块提取场景155、Balanced A、30年、基础费率的30条年度记录，验证峰谷、终值、复核时点及六次初始配置后交易；不重放收益或策略。输出可重建，不覆盖历史实验。
+
+程序化`build(require_matplotlib_panel_alignment=None)`可接收Nature绘图技能的同名检查函数，在每张图导出前执行严格的最终几何检查；省略时保留普通资产构建行为，不要求其他机器安装技能。检查记录位于`figure_qa/`，单面板标记不适用，双面板按1.5pt容差核验。字体、碰撞及来源静态检查另行执行，重新生成图片后须重新检查，不能沿用旧验收记录。
+
+LaTeX正文由本目录`main.tex`及`sections/`维护；PDF编译、页数及视觉检查步骤见[报告说明](report/README.md)。本次验收结果写入`validation.json`。缺少成员时显示草稿提示；它不是提交就绪证明。报告流程独立于原`make report RUN=...`的benchmark网页报告，也不会更新旧源码ZIP或实验登记。
