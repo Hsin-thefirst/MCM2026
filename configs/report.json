@@ -16,6 +16,7 @@
     "customers": "benchmark/outputs/final_submission_v1/suitability.csv",
     "screen": "benchmark/outputs/development_submission_v1/selected_suitability_risk.csv",
     "severe": "benchmark/outputs/final_submission_v1/severe_case.json",
+    "ledger": "benchmark/outputs/final_submission_v1/decisions.csv.gz",
     "verification": "benchmark/outputs/final_submission_v1/saved_final_verification.json",
     "problem": "2026_MCM_SafeInvest.pdf"
   }
