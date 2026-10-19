@@ -11,6 +11,15 @@ def comparisons_and_screen(out,config):
     main=metrics[(metrics.horizon==30)&np.isclose(metrics.cost_rate,config['cost_rate'])]
     all_pairs=[]; screens=[]
     candidates=['balanced_gate','cost_aware','adaptive','adaptive_review']
+    if config.get('study_kind')=='scenario_efficiency':
+        from .scenario_utility import CE_POLICY_NAMES
+        candidates+=list(CE_POLICY_NAMES)
+    if config.get('study_kind')=='counterfactual_fqi':
+        from .learning_core import LEARNING_NAMES
+        candidates+=list(LEARNING_NAMES)
+    if config.get('study_kind')=='neural_path_control':
+        from .neural_core import NEURAL_NAMES
+        candidates+=list(NEURAL_NAMES)
     for ref in ['balanced_annual','balanced_hold']:
         pairs=paired_comparisons(main,config['seed'],config['bootstrap'],baseline=ref)
         pairs['reference']=ref
@@ -50,11 +59,13 @@ def audit_outputs(out):
     expected=set(manifest['scenario_ids'])
     assert set(m.scenario_id)==expected
     assert not m.duplicated(['policy','scenario_id','horizon','cost_rate']).any()
-    assert not r.duplicated(['policy','scenario_id','period','cost_rate']).any()
+    conditioned='evaluation_horizon' in r.columns
+    path_keys=['policy','scenario_id','cost_rate']+(['evaluation_horizon'] if conditioned else [])
+    assert not r.duplicated(path_keys+['period']).any()
     audit_paths=0; maximum_error=0.
     assets=['equity','bond','bill']
-    r=r.sort_values(['policy','scenario_id','cost_rate','period']).reset_index(drop=True)
-    groups=['policy','scenario_id','cost_rate']
+    r=r.sort_values(path_keys+['period']).reset_index(drop=True)
+    groups=path_keys
     pre=r[['pre_trade_holdings_'+a for a in assets]].to_numpy()
     post=r[['post_trade_holdings_'+a for a in assets]].to_numpy()
     end=r[['end_holdings_'+a for a in assets]].to_numpy()
@@ -72,10 +83,13 @@ def audit_outputs(out):
     np.testing.assert_allclose(fees,r.transaction_cost,atol=1e-9)
     np.testing.assert_allclose(q,r.moved_amount,atol=1e-8)
     np.testing.assert_allclose(post.sum(axis=1)+fees,pre.sum(axis=1),atol=1e-8)
-    lookup={(p,int(s),float(cost)):g for (p,s,cost),g in m.groupby(groups)}
-    for (policy,sid,cost),g in r.groupby(groups):
+    metric_groups=['policy','scenario_id','cost_rate']+(['horizon'] if conditioned else [])
+    lookup={key:g for key,g in m.groupby(metric_groups)}
+    for key,g in r.groupby(groups):
+        policy,sid,cost=key[:3]
         initial=c['initial_wealth']; peak=initial; mdd=0.; fees=0.; realfees=0.; infl=1.; wealths=[initial]; trades=0
-        metric_by_h={row.horizon:row for row in lookup[(policy,int(sid),float(cost))].itertuples()}
+        metric_by_h={row.horizon:row for row in lookup[key].itertuples()}
+        assert g.period.tolist()==list(range(1,(int(key[3]) if conditioned else int(g.period.max()))+1))
         for row in g.itertuples():
             fee=row.transaction_cost
             if row.period>1 and row.moved_amount>1e-10*initial: trades+=1

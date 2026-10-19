@@ -51,9 +51,19 @@ for s in scenarios:
 weights=r[[f'post_trade_holdings_{a}' for a in ['equity','bond','bill']]].to_numpy()
 weights=weights/weights.sum(axis=1,keepdims=True)
 for i,a in enumerate(['equity','bond','bill']): r[a+'_exposure']=weights[:,i]
-r.groupby(['policy','cost_rate'])[['equity_exposure','bond_exposure','bill_exposure']].mean().to_csv(out/'allocation_exposure.csv')
+r.groupby(['policy','cost_rate']+(['evaluation_horizon'] if 'evaluation_horizon' in r else []))[
+    ['equity_exposure','bond_exposure','bill_exposure']].mean().to_csv(out/'allocation_exposure.csv')
 result=dict(all_checks_passed=True,market_rows_replayed=len(r),max_holding_discrepancy=max_error,
             independently_computed_reference_metrics=checks,holdout_used=False,
             scope='All saved return transitions and cumulative inflation; scalar independent equal-weight recurrence for every cost/horizon/scenario.')
 (out/'independent_replay.json').write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps(result,indent=2))
+if json.loads((out/'config.json').read_text()).get('study_kind')=='scenario_efficiency':
+    import subprocess
+    subprocess.run([sys.executable,str(ROOT/'scripts/verify_efficiency.py'),str(out)],check=True)
+if json.loads((out/'config.json').read_text()).get('study_kind')=='counterfactual_fqi':
+    import subprocess
+    subprocess.run([sys.executable,str(ROOT/'scripts/verify_learning.py'),str(out)],check=True)
+if json.loads((out/'config.json').read_text()).get('study_kind')=='neural_path_control':
+    import subprocess
+    subprocess.run([sys.executable,str(ROOT/'scripts/verify_neural.py'),str(out)],check=True)

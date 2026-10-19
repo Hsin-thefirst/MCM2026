@@ -37,11 +37,15 @@ def versions():
 def manifest(config,data_hash,ids,phase):
     return dict(created_utc=datetime.now(timezone.utc).isoformat(),phase=phase,scenario_ids=ids,
                 partition_sha256=data_hash,config_sha256=digest(config),code_sha256=code_digest(),
-                python=platform.python_version(),dependencies=versions(),seed=config['seed'],
+                python=platform.python_version(),dependencies=versions()|(
+                    {'torch':importlib.metadata.version('torch')} if config.get('study_kind')=='neural_path_control' else {}),seed=config['seed'],
                 git_commit=subprocess.run(['git','rev-parse','HEAD'],cwd=ROOT,capture_output=True,text=True).stdout.strip(),
                 holdout_used=phase=='final')
 
 def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fold=0,keep_records=True):
+    if config.get('study_kind') in ('counterfactual_fqi','neural_path_control'):
+        from .learning_study import evaluate_learning
+        return evaluate_learning(scenarios,model,params,config,names,cost,horizons,fold,keep_records)
     names=names or POLICY_NAMES
     cost=config['cost_rate'] if cost is None else cost
     horizons=horizons or config['horizons']
@@ -72,6 +76,15 @@ def evaluate(scenarios,model,params,config,names=None,cost=None,horizons=None,fo
     return pd.DataFrame(output),pd.DataFrame(records)
 
 def tune(scenarios,config,seed,trace_path=None):
+    if config.get('study_kind')=='neural_path_control':
+        from .neural_study import tune_neural
+        return tune_neural(scenarios,config,seed,trace_path)
+    if config.get('study_kind')=='counterfactual_fqi':
+        from .learning_study import tune_learning
+        return tune_learning(scenarios,config,seed,trace_path)
+    if config.get('study_kind')=='scenario_efficiency':
+        from .efficiency import tune_efficiency
+        return tune_efficiency(scenarios,config,seed,trace_path)
     rule=validate_selection_config(config)
     by_id={s.scenario_id:s for s in scenarios}
     groups=folds(by_id,config['inner_folds'],seed)
@@ -131,6 +144,15 @@ def suitability(metrics,config):
 
 def run_development(config,data_path,out):
     validate_selection_config(config)
+    if config.get('study_kind')=='neural_path_control':
+        from .neural_study import validate_neural_config
+        validate_neural_config(config)
+    if config.get('study_kind')=='counterfactual_fqi':
+        from .learning_study import validate_learning_config
+        validate_learning_config(config)
+    if config.get('study_kind')=='scenario_efficiency':
+        from .efficiency import validate_efficiency_config
+        validate_efficiency_config(config)
     out=Path(out); out.mkdir(parents=True,exist_ok=False)
     started=time.perf_counter()
     scenarios,data_hash=load_partition(data_path)
@@ -147,14 +169,22 @@ def run_development(config,data_path,out):
         params,trials,inner_audit=tune(train,config,config['seed']+outer+1,
             trace_path=out/'tuning_metrics'/f'outer_{outer}.csv.gz')
         model=fit_model(train,config)
+        if config.get('study_kind')=='counterfactual_fqi':
+            from .learning_core import save_training_data
+            dataset_dir=out/'training_data'; dataset_dir.mkdir(exist_ok=True)
+            save_training_data(train,config,model['fqi'],dataset_dir/f'outer_{outer}.npz')
+        if config.get('study_kind')=='neural_path_control':
+            from .neural_core import save_neural_data
+            dataset_dir=out/'training_data';dataset_dir.mkdir(exist_ok=True)
+            save_neural_data(train,config,model,dataset_dir/f'outer_{outer}.npz')
         print('Outer fold',outer+1,'selected',params,flush=True)
         fitted.append(dict(fold=outer,model=model,params=params))
         audit.append(dict(outer_fold=outer,train_ids=model['train_ids'],validation_ids=valid_ids,inner=inner_audit))
         trial_rows.extend(dict(outer_fold=outer,**r) for r in trials)
-        metrics,records=evaluate(valid,model,params,config,fold=outer)
+        metrics,records=evaluate(valid,model,params,config,names=config.get('evaluation_policy_names'),fold=outer)
         all_metrics.append(metrics); all_records.append(records)
         for cost in config['sensitivity_costs']:
-            metrics,records=evaluate(valid,model,params,config,cost=cost,horizons=[30],fold=outer)
+            metrics,records=evaluate(valid,model,params,config,names=config.get('evaluation_policy_names'),cost=cost,horizons=[30],fold=outer)
             all_metrics.append(metrics); all_records.append(records)
     metrics=pd.concat(all_metrics,ignore_index=True)
     records=pd.concat(all_records,ignore_index=True)
@@ -168,6 +198,15 @@ def run_development(config,data_path,out):
     assignments.to_csv(out/'suitability.csv',index=False); risks.to_csv(out/'suitability_risk.csv',index=False)
     from .validation import comparisons_and_screen, audit_outputs
     comparisons_and_screen(out,config)
+    if config.get('study_kind')=='scenario_efficiency':
+        from .efficiency import write_efficiency_analysis
+        write_efficiency_analysis(out,config)
+    if config.get('study_kind')=='counterfactual_fqi':
+        from .learning_study import write_learning_analysis
+        write_learning_analysis(out,config)
+    if config.get('study_kind')=='neural_path_control':
+        from .neural_study import write_neural_analysis
+        write_neural_analysis(out,config)
     audit_outputs(out)
     dump(out/'runtime.json',dict(seconds=time.perf_counter()-started))
     from .report import generate_report
@@ -175,7 +214,11 @@ def run_development(config,data_path,out):
     return out
 
 def freeze(config,data_path,policy,output,development_run):
-    if policy not in POLICY_NAMES:
+    if config.get('study_kind')=='neural_path_control':
+        raise ValueError('Neural path control is development-only; frozen final workflow has not been validated')
+    if config.get('study_kind')=='counterfactual_fqi':
+        raise ValueError('FQI is development-only; frozen final workflow has not been validated')
+    if policy not in config.get('evaluation_policy_names',POLICY_NAMES):
         raise ValueError('Unknown candidate')
     prior=json.loads((Path(development_run)/'manifest.json').read_text())
     if prior['phase']!='development' or prior['code_sha256']!=code_digest() or prior['config_sha256']!=digest(config):
@@ -185,6 +228,16 @@ def freeze(config,data_path,policy,output,development_run):
         selected=selection[(selection.policy==policy)&selection.selected]
         if len(selected)!=config['outer_folds'] or not selected.risk_feasible.all():
             raise ValueError('Cannot freeze an infeasible path-risk diagnostic')
+    if config.get('study_kind')=='scenario_efficiency':
+        from .scenario_utility import CE_POLICY_NAMES
+        if policy in CE_POLICY_NAMES:
+            selection=pd.read_csv(Path(development_run)/'tuning_trials.csv')
+            selected=selection[(selection.policy==policy)&selection.selected]
+            screen=pd.read_csv(Path(development_run)/'efficiency_screen.csv')
+            row=screen[screen.policy==policy]
+            if (len(selected)!=config['outer_folds'] or not selected.risk_feasible.all()
+                    or len(row)!=1 or not bool(row.iloc[0].all_checks_passed)):
+                raise ValueError('Cannot freeze an infeasible or unestablished efficiency diagnostic')
     scenarios,data_hash=load_partition(data_path)
     if data_hash!=prior['partition_sha256']:
         raise ValueError('Development data changed')

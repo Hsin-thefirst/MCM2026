@@ -46,10 +46,20 @@ def fit_model(scenarios,config):
         raise RuntimeError('CVaR cap infeasible on declared grid; no silent fallback')
     index=int(np.argmax(np.where(feasible,weights@mu,-np.inf)))
     inv=1/np.sqrt(np.diag(cov)); inv/=inv.sum()
-    return dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
+    model=dict(train_ids=[s.scenario_id for s in scenarios],mu=mu.tolist(),cov=cov.tolist(),
                 minvar=optimize(mu,cov,minimum_variance=True),inverse_vol=tuple(inv),
                 meanvar=optimize(mu,cov,gamma=config['fixed_gamma']),cvar=tuple(weights[index]),
                 cvar_feasible=bool(feasible.any()),cvar_estimate=float(tails[index]))
+    if config.get('study_kind')=='scenario_efficiency':
+        from .scenario_utility import fit_utility_blocks
+        model['ce_blocks']=fit_utility_blocks(scenarios,config['ce_valuation_horizons'])
+    if config.get('study_kind')=='counterfactual_fqi':
+        from .learning_core import fit_learning_models
+        model['fqi']=fit_learning_models(scenarios,config)
+    if config.get('study_kind')=='neural_path_control':
+        from .neural_training import fit_neural_models
+        model['neural']=fit_neural_models(scenarios,model,config)
+    return model
 
 @dataclass
 class StaticPolicy:
@@ -117,7 +127,18 @@ POLICY_NAMES=['equal_annual','equal_hold','bills_hold','conservative_annual','ba
               'balanced_hold','balanced_periodic','balanced_threshold','minimum_variance','inverse_volatility',
               'mean_variance','cvar_constrained','balanced_gate','cost_aware','adaptive','adaptive_review']
 
-def make_policy(name,model,params,config):
+def make_policy(name,model,params,config,horizon=None):
+    from .neural_core import NEURAL_NAMES, NeuralPolicy
+    if name in NEURAL_NAMES:
+        return NeuralPolicy(name,model,params,config,horizon)
+    from .learning_core import LEARNING_NAMES, FQIPolicy
+    if name in LEARNING_NAMES:
+        return FQIPolicy(name,model,params,config,horizon)
+    from .scenario_utility import CE_HORIZONS, ScenarioUtilityPolicy, ReviewAnnualPolicy
+    if name in CE_HORIZONS:
+        return ScenarioUtilityPolicy(name,model['ce_blocks'][str(CE_HORIZONS[name])],params,config,PORTFOLIOS['balanced'])
+    if name=='balanced_annual_review':
+        return ReviewAnnualPolicy(PORTFOLIOS['balanced'],config['review_drawdown'])
     fixed={'equal_annual':(EQUAL,'annual'),'equal_hold':(EQUAL,'hold'),'bills_hold':((0.,0.,1.),'hold'),
            **{p+'_annual':(w,'annual') for p,w in PORTFOLIOS.items()},
            'balanced_hold':(PORTFOLIOS['balanced'],'hold'),'balanced_periodic':(PORTFOLIOS['balanced'],'periodic'),

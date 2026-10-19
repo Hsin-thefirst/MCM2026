@@ -16,13 +16,43 @@ LABELS={'equal_annual':'Equal weight / annual','equal_hold':'Equal weight / hold
  'balanced_hold':'Balanced / hold','balanced_periodic':'Balanced / 3-year','balanced_threshold':'Balanced / 5pp band',
  'minimum_variance':'Minimum variance','inverse_volatility':'Inverse volatility','mean_variance':'Mean variance',
  'cvar_constrained':'CVaR constrained','balanced_gate':'Balanced / cost gate','cost_aware':'Cost aware',
- 'adaptive':'Adaptive','adaptive_review':'Adaptive + review'}
+ 'adaptive':'Adaptive','adaptive_review':'Adaptive + review',
+ 'utility_band_1y':'Scenario utility / 1-year','utility_band_3y':'Scenario utility / 3-year',
+ 'balanced_annual_review':'Balanced annual + review',
+ 'fqi_student':'FQI / distilled student','fqi_teacher':'FQI / teacher',
+ 'fqi_portfolio':'FQI / portfolio state only',
+ 'neural_linear':'Neural / linear logits','neural_mlp':'Neural / full MLP',
+ 'neural_portfolio':'Neural / portfolio MLP'}
+
+def _annotate_risk_points(axis, points):
+    """Place numeric labels in display space; close strategies need separate labels."""
+    axis.figure.canvas.draw()
+    renderer=axis.figure.canvas.get_renderer()
+    occupied=[]
+    offsets=[(5,3),(8,-14),(-18,9),(-20,-15),(12,20),(12,-28),(-26,26),(-28,-30),(22,36)]
+    for number,point in enumerate(points,1):
+        for offset in offsets:
+            annotation=axis.annotate(str(number),point,xytext=offset,textcoords='offset points')
+            box=annotation.get_window_extent(renderer).padded(2)
+            if (not any(box.overlaps(previous) for previous in occupied)
+                    and axis.bbox.contains(box.x0,box.y0) and axis.bbox.contains(box.x1,box.y1)):
+                break
+            annotation.remove()
+        else:
+            annotation=axis.annotate(str(number),point,xytext=offsets[-1],textcoords='offset points')
+            box=annotation.get_window_extent(renderer).padded(2)
+        occupied.append(box)
+        if offset!=offsets[0]:
+            axis.annotate('',point,xytext=offset,textcoords='offset points',
+                          arrowprops={'arrowstyle':'-','color':'#607b88','lw':.6})
 
 def generate_report(out):
     out=Path(out); figures=out/'figures'; figures.mkdir(exist_ok=True)
     config=json.loads((out/'config.json').read_text()); manifest=json.loads((out/'manifest.json').read_text())
     summary=pd.read_csv(out/'summary.csv'); metrics=pd.read_csv(out/'scenario_metrics.csv')
     paired=pd.read_csv(out/'paired_comparisons.csv'); records=pd.read_csv(out/'decisions.csv.gz')
+    if 'evaluation_horizon' in records.columns:
+        records=records[records.evaluation_horizon==30]
     main=summary[(summary.horizon==30)&np.isclose(summary.cost_rate,config['cost_rate'])].sort_values('median_growth')
     sample=metrics[(metrics.horizon==30)&np.isclose(metrics.cost_rate,config['cost_rate'])]
     plt.rcParams.update({'font.size':10,'axes.spines.top':False,'axes.spines.right':False})
@@ -35,14 +65,15 @@ def generate_report(out):
         fig.savefig(figures/(name+'.pdf'),bbox_inches='tight')
         plt.close(fig)
     fig,ax=plt.subplots(figsize=(10,6))
+    risk_points=[]
     for i,r in enumerate(main.itertuples()):
         ax.scatter(100*r.p90_loss,100*r.median_growth,s=70,marker='D' if r.pareto else 'o')
-        ax.annotate(str(i+1),(100*r.p90_loss,100*r.median_growth),xytext=(5,3),textcoords='offset points')
+        risk_points.append((100*r.p90_loss,100*r.median_growth))
     ax.set(xlabel='90th percentile real maximum drawdown (%)',ylabel='Median real CAGR (%)',
            title='30-year risk–growth comparison · diamonds: 4-metric Pareto set')
     ax.text(1.03,.98,'\n'.join(f'{i+1}. {LABELS[r.policy]}' for i,r in enumerate(main.itertuples())),
             transform=ax.transAxes,va='top',fontsize=9)
-    ax.grid(alpha=.2); fig.tight_layout(); save(fig,'risk_growth')
+    ax.grid(alpha=.2); fig.tight_layout(); _annotate_risk_points(ax,risk_points); save(fig,'risk_growth')
     chosen=main.policy.tolist()
     fig,axes=plt.subplots(1,2,figsize=(12,7),sharey=True)
     for axis,metric,title in zip(axes,['median_growth','p90_loss'],['Median growth difference','P90 drawdown difference']):
@@ -57,7 +88,10 @@ def generate_report(out):
     axes[0].set_yticks(range(len(chosen)),[LABELS[p] for p in chosen])
     fig.suptitle('Paired scenario bootstrap · pointwise 95% intervals\nExploratory OOF comparisons; fitted-model uncertainty excluded',fontsize=11)
     fig.tight_layout(); save(fig,'paired_intervals')
-    selected=[p for p in ['equal_annual','balanced_annual','balanced_hold','cost_aware','adaptive','adaptive_review'] if p in set(main.policy)]
+    selected=[p for p in ['equal_annual','balanced_annual','balanced_hold','cost_aware','adaptive','adaptive_review',
+                          'balanced_annual_review','utility_band_1y','utility_band_3y',
+                          'fqi_student','fqi_teacher','fqi_portfolio',
+                          'neural_linear','neural_mlp','neural_portfolio'] if p in set(main.policy)]
     fig,axes=plt.subplots(1,2,figsize=(11,4.5))
     for name in selected:
         g=summary[(summary.policy==name)&(summary.horizon==30)].sort_values('cost_rate')
@@ -94,6 +128,12 @@ def generate_report(out):
         '保守年度再平衡','均衡年度再平衡','成长年度再平衡','均衡买入持有','均衡每三年再平衡',
         '均衡偏离5个百分点再平衡','最小方差','逆波动率','均值方差','CVaR约束配置',
         '固定均衡成本门控','成本感知配置','自适应配置','自适应加人工复核']))
+    zh_names.update({'utility_band_1y':'一年情景效用门控','utility_band_3y':'三年情景效用门控',
+                     'balanced_annual_review':'均衡年度再平衡加复核',
+                     'fqi_student':'离线强化学习学生树','fqi_teacher':'离线强化学习教师树',
+                     'fqi_portfolio':'仅持仓回撤特征学生树',
+                     'neural_linear':'路径约束线性策略','neural_mlp':'路径约束完整MLP',
+                     'neural_portfolio':'路径约束持仓MLP'})
     display['policy']=display['policy'].map(zh_names)
     display['pareto']=display['pareto'].map({True:'是',False:'否'})
     display=display.rename(columns={'policy':'策略','median_growth':'中位实际CAGR','p10_growth':'P10增长',
@@ -146,6 +186,19 @@ def generate_report(out):
         parts+=['<h2>客户入门适配示例</h2><p>对固定组合使用同时的一侧风险界。高流动性只考虑保守组合，'
                 '成长组合至少需要15年。容忍度是客户回答，不是保证；20%越界概率筛选是研究假设。</p>',
                 suitability.to_html(index=False,escape=True)]
+    if config.get('study_kind')=='scenario_efficiency' and (out/'efficiency_screen.csv').exists():
+        from .efficiency import generate_efficiency_report
+        generate_efficiency_report(out,config)
+        parts+=['<h2>情景效用与交易效率</h2><p><a href="efficiency_report.html">查看预声明效率筛选、'
+                '配对区间、选参诊断及相同人工复核参照</a>。效率路线与增长路线分别评价。</p>']
+    if config.get('study_kind')=='counterfactual_fqi' and (out/'learning_screen.csv').exists():
+        from .learning_study import generate_learning_report
+        generate_learning_report(out,config)
+        parts+=['<h2>反事实离线强化学习</h2><p><a href="learning_report.html">查看风险路线筛选、教师压缩与动作解释</a>。</p>']
+    if config.get('study_kind')=='neural_path_control' and (out/'neural_screen.csv').exists():
+        from .neural_study import generate_neural_report
+        generate_neural_report(out,config)
+        parts+=['<h2>神经网络路径风险约束</h2><p><a href="neural_report.html">查看训练约束、双种子组合与折外风险评价</a>。</p>']
     method_link=html.escape(os.path.relpath(ROOT/'docs/METHODOLOGY.md',out),quote=True)
     protocol_link=html.escape(os.path.relpath(ROOT/'docs/PROTOCOL.md',out),quote=True)
     parts+=['<h2>核验与解释</h2><p>逐情景重分析见 scenario_metrics.csv，年度决策见 decisions.csv.gz，'
