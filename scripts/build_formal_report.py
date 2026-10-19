@@ -26,10 +26,47 @@ def escape(text):
 
 
 def write_rows(path, rows):
-    path.write_text("\n".join(" & ".join(row) + r" \\" for row in rows) + "\n", encoding="utf-8")
+    path.write_text("\n".join(" & ".join(row) + r" \\" for row in rows) + "\n", encoding="utf-8", newline="\n")
 
 
-def build():
+def read_saved_severe_path(path, severe):
+    """Extract recorded annual wealth; do not replay returns or policy decisions."""
+    columns = ["policy", "scenario_id", "simulation_horizon", "cost_rate", "period",
+               "real_wealth", "action", "moved_amount", "review_pending"]
+    matches = []
+    for block in pd.read_csv(path, usecols=columns, chunksize=100_000, float_precision="round_trip"):
+        selected = ((block.policy == "plan_a_balanced") &
+                    (block.scenario_id == severe["scenario_id"]) &
+                    (block.simulation_horizon == 30) & np.isclose(block.cost_rate, .0025))
+        matches.append(block.loc[selected])
+    frame = pd.concat(matches, ignore_index=True).sort_values("period")
+    assert frame.period.tolist() == list(range(1, 31))
+    assert np.isfinite(frame.real_wealth).all() and (frame.real_wealth > 0).all()
+    assert np.isclose(frame.real_wealth.max(), severe["peak"])
+    assert np.isclose(frame.real_wealth.min(), severe["trough"])
+    assert np.isclose(frame.real_wealth.iloc[-1], severe["terminal_real_wealth"])
+    assert frame.loc[frame.action == "human_review", "period"].tolist() == severe["review_periods"]
+    post_initial_trades = frame.loc[frame.period > 1, "moved_amount"].gt(0)
+    assert int(post_initial_trades.sum()) == severe["trades"] == 6
+    pending = frame.period >= severe["review_periods"][0]
+    assert frame.loc[pending, "review_pending"].all()
+    assert frame.loc[pending, "moved_amount"].eq(0).all()
+    return frame
+
+
+def save_figure(fig, base, require_matplotlib_panel_alignment=None):
+    """Export editable vectors and a print-size preview; allow external geometry QA."""
+    if require_matplotlib_panel_alignment is not None:
+        qa = base.parent.parent / "figure_qa"
+        qa.mkdir(exist_ok=True)
+        require_matplotlib_panel_alignment(fig, json_out=qa / (base.name + ".alignment.json"), strict=True)
+    fig.savefig(base.with_suffix(".pdf"))
+    fig.savefig(base.with_suffix(".svg"))
+    fig.savefig(base.with_suffix(".png"), dpi=300)
+    plt.close(fig)
+
+
+def build(require_matplotlib_panel_alignment=None):
     config = read_json(ROOT / "configs/report.json")
     out = ROOT / config["output"]
     generated = out / "generated"
@@ -51,6 +88,7 @@ def build():
     customers = pd.read_csv(sources["customers"], float_precision="round_trip")
     screen = pd.read_csv(sources["screen"], float_precision="round_trip")
     severe = read_json(sources["severe"])
+    severe_path = read_saved_severe_path(sources["ledger"], severe)
     verification = read_json(sources["verification"])
     assert verification["all_checks_passed"] and not verification["market_data_reopened"]
     assert not summary.duplicated(["policy", "horizon", "cost_rate"]).any() and summary.n.eq(60).all()
@@ -94,7 +132,7 @@ def build():
         ci = paired[(paired.policy == "plan_a_balanced") & (paired.horizon == 30) & np.isclose(paired.cost_rate, .0025) & (paired.metric == metric)].iloc[0]
         for name, field in [("Lower", "lower95"), ("Upper", "upper95"), ("FamilyLower", "family_lower"), ("FamilyUpper", "family_upper")]:
             macros[prefix + name] = f"{100 * ci[field]:.3f}"
-    (generated / "numbers.tex").write_text("\n".join("\\newcommand{\\" + key + "}{" + value + "}" for key, value in macros.items()) + "\n", encoding="utf-8")
+    (generated / "numbers.tex").write_text("\n".join("\\newcommand{\\" + key + "}{" + value + "}" for key, value in macros.items()) + "\n", encoding="utf-8", newline="\n")
 
     weights = []
     for h in [5, 6, 15, 25, 30]:
@@ -108,6 +146,29 @@ def build():
     write_rows(generated / "weights.tex", weights)
     write_rows(generated / "assignments.tex", [[r.profile_id, str(r.horizon), pct(r.loss_tolerance), r.liquidity.capitalize(),
                "Human review" if r.portfolio == "human_review" else r.portfolio.capitalize()] for r in customers.itertuples()])
+    suitability = []
+    for profile in customers.itertuples():
+        pairs = screen[screen.profile == profile.profile_id]
+        assert len(pairs) == 3 and not pairs.duplicated("portfolio").any()
+        screened = {row.portfolio: row for row in pairs.itertuples()}
+        eligible = [name for name, value in screened.items() if bool(value.eligible)]
+        if profile.policy == "human_review":
+            assert not eligible, f"{profile.profile_id} has an eligible product but was referred"
+        else:
+            assert eligible, f"{profile.profile_id} was served without an eligible product"
+            best = max(eligible, key=lambda name: screened[name].median_growth)
+            assert profile.policy == "plan_a_" + best, f"{profile.profile_id} assignment is not the top eligible product"
+        entry = [profile.profile_id, str(profile.horizon), pct(profile.loss_tolerance), profile.liquidity.capitalize()]
+        for name in ["conservative", "balanced", "growth"]:
+            value = screened[name]
+            cell = f"{int(value.breaches)}/120"
+            if bool(value.eligible):
+                entry += [rf"\textbf{{{cell}}}", rf"\textbf{{{pct(value.upper_bound)}}}"]
+            else:
+                entry += [cell, pct(value.upper_bound)]
+        entry.append("Human review" if profile.policy == "human_review" else profile.portfolio.capitalize())
+        suitability.append(entry)
+    write_rows(generated / "suitability.tex", suitability)
     selected = [("A", "conservative"), ("B", "conservative"), ("C", "conservative"), ("D", "conservative"), ("E", "balanced")]
     write_rows(generated / "screen.tex", [[p, product.capitalize(), f"{int(g.breaches)}/120", pct(g.upper_bound), pct(g.stress_upper_bound)]
                for p, product in selected for _, g in screen[(screen.profile == p) & (screen.portfolio == product)].iterrows()])
@@ -130,32 +191,61 @@ def build():
                for c in customers.itertuples() if c.policy != "human_review"])
     costs = summary[(summary.policy == "plan_a_balanced") & (summary.horizon == 30)].sort_values("cost_rate")
     write_rows(generated / "costs.tex", [[f"{100*r.cost_rate:.3f}", pct(r.median_growth), pct(r.p10_growth), pct(r.p90_loss), f"{r.mean_real_cost:.4f}", pct(r.mean_trade_rate)] for r in costs.itertuples()])
-    plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 11, "axes.labelsize": 11, "xtick.labelsize": 11,
-                         "ytick.labelsize": 11, "legend.fontsize": 11, "pdf.fonttype": 42, "axes.spines.top": False, "axes.spines.right": False})
-    fig, ax = plt.subplots(figsize=(6.65, 2.7))
+    plt.rcParams.update({"font.family": "sans-serif", "font.sans-serif": ["DejaVu Sans"],
+                         "font.size": 11, "axes.labelsize": 11, "xtick.labelsize": 11,
+                         "ytick.labelsize": 11, "legend.fontsize": 11, "pdf.fonttype": 42, "svg.fonttype": "none",
+                         "axes.spines.top": False, "axes.spines.right": False})
+    fig, ax = plt.subplots(figsize=(6.75, 2.6))
     names = ["equal_annual", "plan_a_conservative", "plan_a_balanced", "plan_a_annual", "plan_a_hold", "plan_a_growth"]
     short = ["Equal weight", "Conservative A", "Balanced A", "Same-anchor annual", "Same-anchor hold", "Growth A"]
-    offsets = [(9,-14), (8,-14), (-94,15), (8,-18), (8,-12), (-75,9)]
-    for name, label, offset in zip(names, short, offsets):
+    positions = [(34, 3.75), (28.5, 3.08), (41, 4.90), (49.7, 3.45), (56, 4.75), (56, 5.55)]
+    for name, label, position in zip(names, short, positions):
         r = row(name)
-        ax.scatter(100*r.p90_loss, 100*r.median_growth, s=42, color="#007c83" if name == "plan_a_balanced" else "#55697f", zorder=3)
-        ax.annotate(label, (100*r.p90_loss, 100*r.median_growth), xytext=offset, textcoords="offset points", fontsize=11,
-                    arrowprops=dict(arrowstyle="-", lw=.5, color="#82909c"))
-    ax.set(xlabel="90th-percentile maximum real drawdown (%)", ylabel="Median real CAGR (%)", xlim=(28,68), ylim=(2.35,5.65))
-    ax.grid(alpha=.18);fig.tight_layout()
-    fig.savefig(figures / "risk_growth.pdf");fig.savefig(figures / "risk_growth.png", dpi=180);plt.close(fig)
+        primary = name == "plan_a_balanced"
+        ax.scatter(100*r.p90_loss, 100*r.median_growth, s=58 if primary else 30,
+                   marker="D" if primary else "o", color="#007c83" if primary else "#65758a", zorder=3)
+        ax.annotate(label, (100*r.p90_loss, 100*r.median_growth), xytext=position, fontsize=11,
+                    color="#007c83" if primary else "#26333e",
+                    arrowprops=dict(arrowstyle="-", lw=.6, color="#82909c"))
+    ax.set(xlabel="90th-percentile maximum real drawdown (%)", ylabel="Median real CAGR (%)",
+           xlim=(26, 70), ylim=(2.35, 5.95), xticks=[30, 40, 50, 60, 70], yticks=[3, 4, 5])
+    fig.subplots_adjust(left=.12, right=.985, bottom=.25, top=.96)
+    save_figure(fig, figures / "risk_growth", require_matplotlib_panel_alignment)
+    pd.DataFrame([dict(policy=name, label=label, n=60, horizon=30, cost_rate=.0025,
+                       p90_loss=row(name).p90_loss, median_growth=row(name).median_growth)
+                  for name, label in zip(names, short)]).to_csv(generated / "risk_growth.csv", index=False)
+
+    fig, ax = plt.subplots(figsize=(6.75, 2.05))
+    years = np.r_[0, severe_path.period.to_numpy()]
+    wealth = np.r_[100., severe_path.real_wealth.to_numpy()]
+    review_time = severe["review_periods"][0] - 1
+    ax.axvspan(review_time, 30, facecolor="#e5edf1", edgecolor="none", zorder=0)
+    ax.axhline(100, color="#929ca3", lw=.7, linestyle="--", zorder=1)
+    ax.plot(years, wealth, color="#007c83", lw=1.6, marker="o", markersize=2.6, zorder=3)
+    ax.axvline(review_time, color="#65758a", lw=.7, linestyle=":", zorder=2)
+    ax.annotate(f"Peak {severe['peak']:.2f}", (6, severe["peak"]), xytext=(8, 173), fontsize=11,
+                arrowprops=dict(arrowstyle="-", color="#65758a", lw=.6))
+    ax.text(23, 142, "Review\npending", fontsize=11, va="top", color="#26333e")
+    ax.annotate(f"Final {severe['terminal_real_wealth']:.2f}", (30, severe["terminal_real_wealth"]), xytext=(25, 80), fontsize=11,
+                arrowprops=dict(arrowstyle="-", color="#65758a", lw=.6), ha="center")
+    ax.set(xlabel="Investment year", ylabel="Real wealth", xlim=(0, 31), ylim=(40, 190),
+           xticks=[0, 5, 10, 15, 20, 25, 30], yticks=[50, 100, 150])
+    fig.subplots_adjust(left=.12, right=.985, bottom=.29, top=.96)
+    save_figure(fig, figures / "severe_path", require_matplotlib_panel_alignment)
+    severe_path.to_csv(generated / "severe_path.csv", index=False)
     fig, axes = plt.subplots(1,2,figsize=(6.65,2.6),layout="constrained")
     for ax, field, label in zip(axes, ["median_growth", "mean_trade_rate"], ["Median real CAGR (%)", "Reviews with a trade (%)"]):
         ax.plot(100*costs.cost_rate, 100*costs[field], "o-", color="#007c83", lw=1.8, markersize=4)
         ax.set(xlabel="Transaction cost (%)", ylabel=label);ax.grid(alpha=.18)
-    fig.savefig(figures / "cost_sensitivity.pdf");fig.savefig(figures / "cost_sensitivity.png", dpi=180);plt.close(fig)
+    save_figure(fig, figures / "cost_sensitivity", require_matplotlib_panel_alignment)
     assert {key: sha(path) for key, path in sources.items()} == hashes
     evidence = dict(selected_policy=config["selected_policy"], final_scenarios=60, market_data_read=False,
                     policies_reevaluated=False, models_refitted=False, source_hashes={config["sources"][k]: v for k,v in hashes.items()},
-                    figures={"risk_growth.pdf": config["sources"]["summary"], "cost_sensitivity.pdf": config["sources"]["summary"]},
+                    figures={"risk_growth.pdf": config["sources"]["summary"], "cost_sensitivity.pdf": config["sources"]["summary"],
+                             "severe_path.pdf": config["sources"]["ledger"]},
                     generated_files={p.relative_to(out).as_posix(): sha(p) for folder in [generated, figures] for p in sorted(folder.iterdir()) if p.is_file()},
-                    unresolved_team_members=not bool(config["members"]), compiler="pdfLaTeX (XeLaTeX-compatible source)", template="5writing/templates/en/mcm-latex")
-    (out / "evidence.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+                    unresolved_team_members=not bool(config["members"]), compiler="See validation.json for the verified build engine", template="5writing/templates/en/mcm-latex")
+    (out / "evidence.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(dict(status="saved_evidence_verified", generated_files=len(evidence["generated_files"]),
                          market_data_read=False, unresolved_team_members=evidence["unresolved_team_members"])))
 

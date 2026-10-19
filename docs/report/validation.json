@@ -3,7 +3,7 @@
   "executor": "Codex",
   "status": "draft_verified",
   "pdf": "docs/report/SafeInvest_report_draft.pdf",
-  "pdf_sha256": "acf531055a45f7ba0e4679af8636e6e92994aa6659d87ae1d3c22e538ca44fca",
+  "pdf_sha256": "7af67b9006cf48a5fb992686cedee0bae758be4e149196e487a597846c10ecd3",
   "pages": 9,
   "page_size": "A4",
   "compiler": "MiKTeX pdfLaTeX",
@@ -11,8 +11,8 @@
   "body_font_pdf_pt": 11.058530510585305,
   "chart_font_pt": 11,
   "mathematical_subscripts_use_standard_smaller_type": true,
-  "tables": 7,
-  "figures": 2,
+  "tables": 8,
+  "figures": 3,
   "customer_explanation_words": 20,
   "undefined_references": false,
   "overfull_or_underfull_boxes": false,
@@ -23,25 +23,26 @@
   "market_data_read": false,
   "policies_reevaluated": false,
   "models_refitted": false,
-  "make_test_run_this_segment": false,
+  "make_test_run_this_segment": true,
   "local_document_links_verified": true,
   "pending": [
     "team_review_of_full_text_and_actual_AI_disclosure"
   ],
   "source_files": {
-    "configs/report.json": "b5239df52e6b9d9951250b300d6a865bedb5d427bae1864e155aa458a8ec97f1",
-    "scripts/build_formal_report.py": "ab553cd770b0f9669cd9dc7f52c2141944bdb849cdf933191ad525784fd404de",
-    "docs/report/main.tex": "95bb9bde092774f4446b395688e8c831fbd3e9a8ca39e0f1b28b84499f36a478",
+    "configs/report.json": "90b75e659693725570e7a3187c13dd080c8463ea4d5a2050b65436eba2503582",
+    "scripts/build_formal_report.py": "9d251c95939a9a9268922abf7f3805dc1d6ee93da6310f70501234d6251b29b4",
+    "docs/report/main.tex": "315f5a9f5f06172a701519f41b75774bf086834d3b8647040c5dbecbcd172187",
     "docs/report/references.tex": "dfba72db3cac042ed32c3cdd2491c83f3898e1248880fd9deb47129b46fddba5",
-    "docs/report/sections/1_introduction.tex": "7ad23479ba4f8ef75b6b7c62907220400ec28172a134281d12163c96126351cc",
-    "docs/report/sections/2_assumptions.tex": "bf41899f7d3acbfdc634f1f5cddfd4a8f81069c37b86aeb728ce2d54dcb873cd",
-    "docs/report/sections/3_model_design.tex": "7faad04e3c9ad719d32d446602d4619400107bdbfd13472c18bfa6a85235ad01",
-    "docs/report/sections/4_solution.tex": "e5f015cf238fd9ae313d6a389f96055ab4001600c91dae0b1b90f71b925a632c",
+    "docs/report/sections/1_introduction.tex": "11a9c5b77fe09e9f0e4e5e747b2962803ff005a6ef95b53cca6acec439ab2735",
+    "docs/report/sections/2_assumptions.tex": "e9b007cadf88acab9f578d9baa429489455ea5ae19140501417d2c7dbc988c9e",
+    "docs/report/sections/3_model_design.tex": "c7c75113e8cd718ac079640b76eeb916b9317364a44dcfd3b5f08641e8e06b0c",
+    "docs/report/sections/4_solution.tex": "8eb9cfc95c07dcebe4f53be492dc4a66146e16e64bd88385cccc9392dbaad100",
     "docs/report/sections/5_sensitivity.tex": "e41826efd2d71378302d956ebddafc26ca4d5bb46037b5d22fec13d73d0d5eb3",
     "docs/report/sections/6_strengths_weaknesses.tex": "a3e55d41740feec6075f1d911bc50fccb1b287519d9c1d8829c577a23b0bdc9e",
-    "docs/report/sections/7_conclusions.tex": "d2b30f46afbe59b552aa548e753a36b2203b53fb0b5cbffa30216c8263bbd4a4"
+    "docs/report/sections/7_conclusions.tex": "d2b30f46afbe59b552aa548e753a36b2203b53fb0b5cbffa30216c8263bbd4a4",
+    "tests/test_formal_report.py": "c49235a488f68e66cbab7f52888e5086b26b96b5463ad8ab55e570f68cd88627"
   },
-  "evidence_sha256": "2c9cb45158cd23c7ce5f9cbf97ac174ddf197edf16cc9c354992b8d288177145",
+  "evidence_sha256": "3c13ac63ed7623508d974f9fc89bc859fc1fb80d47e935edd59cbcfde1e925ee",
   "team_name": "Fen8FenQian",
   "members": [
     "Huang Sinan",
@@ -50,7 +51,6 @@
   ],
   "pdf_author_metadata_verified": true,
   "signature_page_visually_reviewed": true,
-  "pages_1_to_7_text_unchanged_from_previous_review": true,
   "section_6_7_review": {
     "date": "2026-10-19",
     "visual_pages": [
@@ -71,5 +71,37 @@
     "audit_implementation_sha256": "e45b3f7a157e6684ee1225c1da9c32cc64f57b00519b9bd9ae8c4f2090b0abf5",
     "product_budget_order_verified": true,
     "punctuation_check": "passed; TeX citations and resulting spaces excluded from prose"
+  },
+  "pdf_rebuilt_from_current_sources": true,
+  "scope": "combined report sections 1-7",
+  "merge_review": {
+    "local_review_commit": "938cdbf",
+    "members_commit": "b8dc9d8",
+    "restored_generator_features": [
+      "suitability table",
+      "severe path extraction",
+      "PDF/SVG/PNG export",
+      "optional panel-alignment hook"
+    ],
+    "regression_tests": 3,
+    "regressions_fail_on_previous_merged_generator": true,
+    "full_saved_ledger_available": false,
+    "tracked_compact_data_and_figure_provenance_verified": true,
+    "unified_tests": {
+      "entry": "make test, PYTHON overridden only for Windows import paths",
+      "isolated_worktree": true,
+      "tests_run": 106,
+      "passed": 105,
+      "failed": 1,
+      "errors": 0,
+      "duration_seconds": 745.003,
+      "known_baseline_failure": "test_clean_preserves_results_environment_tracked_files_and_symlink_targets",
+      "failure_cause": "Windows path separator in clean_caches output",
+      "unchanged_baseline_failure_independently_reproduced": true,
+      "test_log_sha256": "04390ea8f510767bdb466f62e873fa8f2253d0a4731a5244140ed9d5c54d596f"
+    },
+    "isolated_report_compiled": true,
+    "scoped_diff_check_passed": true,
+    "generated_svg_whitespace": "inherited Matplotlib output retained to preserve asset provenance"
   }
 }

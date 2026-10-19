@@ -320,3 +320,42 @@
 - 完成：按用户提供的信息，将队名Fen8FenQian及成员Huang Sinan、Cai Xunzhi、Lin Zihan写入`configs/report.json`，首页和PDF作者元数据同步；更新报告说明、README、SUBMISSION、ISSUES及验收记录。
 - 验证：重新生成保存证据资产并双遍pdfLaTeX编译，仍为9页A4；首页视觉检查通过，三位成员与队名准确，姓名占位符已移除，第2–9页文本与上一版完全一致，无未定义引用或溢出警告。保存来源hash核对通过，无金融重训或最终评价；本次仅署名及文档更新，未重跑make test。
 - 下一步：已在报告说明中保留完整PowerShell编译命令；团队审阅正文与实际AI披露后准备提交。
+
+### 2026-10-19 Codex — 精修英文report前四页（Abstract与第1–3节）
+- 范围：按用户授权只处理报告第1–4页（Abstract、第1节Decision Problem and Evidence、第2节Accounting/Measures、第3节Strategic Portfolios and Customer Suitability）；第4–7节与`references.tex`未改动，hash保持不变，交由teammate继续审阅。
+- 补齐题面要求的显式表述：第2节显式分离日常波动（年度实际波动σ）与异常大损失（P90 D与90%回撤CVaR），并声明全部指标为购买力口径；显式写出`t−1`因果信息集、单向计费与"20单位→0.05单位"算例、建仓同口径计费；第3节先定义`R_ref`再使用、说明`q`与验证预算`R_ref`的关系、四项内层可行性的口径与单位（对数单位+0.005；中位/P10相对同锚含费年度再平衡的0.001/0.002；复核率10%）、440家族构成（5客户×11产品/程序×4流动性口径×2费用）；第4页新增逐客户×逐产品筛选表（`k/120`与单侧上界，加粗=过全部规则）。
+- 事实修正：删除无法核实的"神经网络实验"表述，改为后续候选族（预测倾斜执行、多步规划、低换手融合、风险惩罚估值）仅在开发集评估且未达预声明替换标准；删除我最初误加的"(Section 3.2)"交叉引用；Abstract首次定义"Plan A"；统一美式拼写（realized/modeled）。
+- 表格工程化：`scripts/build_formal_report.py`新增`generated/suitability.tex`生成，来自保存的`selected_suitability_risk.csv`，并断言"转人工者不得有合格对"与"推荐产品必须等于合格对中OOF中位增长最高者"，使表格、入学规则与冻结分配无法悄悄不一致；生成文件改为显式LF写入，消除Windows下无意义的行尾diff。数值内容未变，`numbers.tex`等与上一版一致。
+- 文件：`docs/report/sections/{1_introduction,2_assumptions,3_model_design}.tex`、`docs/report/main.tex`（仅把XeTeX分支改为按字体文件名选取TeX Gyre Termes/Heros，pdfLaTeX分支不受影响）、`scripts/build_formal_report.py`、`docs/report/generated/suitability.tex`、`docs/report/{evidence.json,validation.json,README.md}`、根`README.md`、`docs/ISSUES.md`。图片二进制因本机Matplotlib版本重新编码，视觉与数值一致。
+- 环境：**本机MiKTeX半途更新后损坏**——25.12可执行文件依赖`MiKTeX251200-fmt/log4cxx/lzma2/bzip2/curl/expat/libressl`，已被26.05替换，而26.05三方库依赖未安装的`MiKTeX260500-core`等模块，所有TeX可执行文件（含`mpm`、`miktex-console`）报`0xC0000135`DLL缺失，无法自修复。因此交付PDF**未用当前源码重建**，仍为上一版（SHA256`2f0f3cbc…`，原件已备份到`D:/MCM_report_backup_20261019/SafeInvest_report_draft_original.pdf`）。
+- 验证：用自包含引擎Tectonic 0.17.0（XeTeX，放于仓库外临时目录、用后删除）做排版预检：9页A4、第4节仍从第5页开始（前四页仍占4页）、0 overfull/underfull、0未定义引用；逐页目检1–4页通过。第2页几乎满页（版心下界上方约2pt），第4页约42pt余量。另：`PYTHONPATH`用`;`分隔跑完103项统一测试，102项通过，唯一失败`test_clean_preserves...`为Windows符号链接权限（WinError 1314），与本轮无关；`make check`在本机因`code_digest()`使用平台相关路径分隔符而必然与冻结hash不符（用正斜杠键可复现冻结值`797afe4d…`），亦与本轮无关，且不应为通过检查而改动冻结金融代码。
+- 下一步：在可用TeX的设备上用pdfLaTeX重建PDF、逐页目检并刷新`validation.json`的`pdf_sha256`与页数/字号测量；若pdfLaTeX下第2页溢出，删第2节末句一行即可；teammate继续第5–9页（任务3显式作答、结论中Balanced是否使用自动更新、主safeguard、AI披露分工具写用途）。
+
+### 2026-10-19 Codex — 修正冻结权重段的期限表述并重出预览
+- 问题：原句"the shorter Balanced and Conservative portfolios hold more bills"过度平滑。核对`generated/weights.tex`：Conservative的bill全程70.10–74.20%（最低点在15年而非30年），Balanced的bill在15年触底29.58%后回升到30年34.75%（bond由21.78%降到14.44%），只有Growth是单调路径（bill 24.79→0）。仅凭Table 1即可证伪"短期持有更多bill"的一般化说法。
+- 修改：`sections/3_model_design.tex`改为"Conservative几乎不随期限变化，而Balanced与Growth随期限把bill换成bond，30年Growth到达边界；但中段并非单调，因为每个锚都在各自期限单独拟合"。正文不再复述表格中的具体百分比，保持生成表格为唯一数值来源（仅保留70–74%这一整列范围陈述）。同时把Table 2图注压到两行以回收一行余量。
+- 决定：保留Table 1为表格而非图。理由：45个两位小数是任务1的答案本体、11pt下无法在图内可读呈现（需图+附表并存）；第4页仅有约2行余量，一张带11pt标注的堆叠柱图需5–6cm会把你负责的4页挤成5页并后移teammate页码；H={5,6,15,25,30}是问卷里的离散期限集合而非连续自变量，折线/面积会暗示不存在的可插值性；表格的"同行三数相加=100"结构正是表相对图的优势。若将来页数宽松，可**增加**（非替换）一张100%堆叠柱图只强调bill权重随期限的形态。
+- 验证：Tectonic 0.17.0预检（工具与产物均在仓库外，用后删除）：9页A4、§4仍从第5页开始、0 overfull/underfull；第4页末尾由版心下界上方14.6pt恢复到26pt（约2行）。预览另存`D:/MCM_report_backup_20261019/SafeInvest_report_preview_XeTeX.pdf`，原始PDF备份同目录不变。
+- 附：同时把本轮新增文字统一为与第4–7节一致的美式拼写（adviser→advisor、maximise→maximize），重新编译后页数与分页不变。
+- 下一步：仍在另一台设备用pdfLaTeX重建正式PDF、逐页目检并刷新`validation.json`。
+
+### 2026-10-19 Codex — 审阅Part 4–5并补充Nature风格图表
+- 执行：按用户要求安装nature-figure、nature-polishing与共享支持包，读取其规范；新建`feat/review-report-parts-4-5`，保留原未提交修改的动作编号意图。正文第4、5节实际同在`4_solution.tex`，其他章节正文未改。
+- 修改：补全人工复核、候选排序、严格成本门槛及四种动作，新增动作表与配对区间表，重绘风险收益图；从保存账本筛选案例155的30条年度记录绘制财富曲线，修正“6次后续交易”为复核前的6次初始配置后交易。补充SVG、300dpi预览及图形QA记录；生成器、配置、接口、报告说明和审阅说明同步，XeTeX字体改为按文件查找。
+- 验证：保存来源及历史hash、冻结身份、五客户映射、峰谷/终值/复核时序及复核期间零交易均通过。Nature静态预检18项通过、3项提示均记录理由；三图11pt字体与碰撞检查通过，双面板1.5pt对齐通过。Tectonic 0.17.0完成含引用重编译的9页A4输出，8表3图，无未定义引用、溢出或页外文字；全稿联系表及修改页逐页视觉检查通过，作者元数据和本地链接正确。
+- 数据与范围：第4–5节可见文字由1118降至1014（含表、图、标题，排除页码），约减少9.3%；客户数值及不利结果保留。金融源码、模型、最终锁、历史实验及依赖文件未改，没有重训、市场重读或最终策略评价。本轮运行文档构建与图形/数值检查，未重跑make test，不将历史测试计为本轮结果。
+- 下一步：团队查看`docs/report/SafeInvest_report_draft.pdf`与`REVIEW_PARTS_4_5.md`，审阅措辞和实际AI披露。修改留在审阅分支工作区，未推送main、未更新旧代码ZIP或向比赛平台提交。
+
+### 2026-10-19 Codex — 解决PR与main的合并冲突
+- 完成：按默认分支`main`抓取并合并到当前分支，解决`LOG.md`、`docs/report/*`与`scripts/build_formal_report.py`等冲突，保留当前分支报告前4页精修内容并合并main新增的报告资产文件。
+- 文件：合并提交`a6bf1b1`涉及报告文档、图形资产、接口文档与日志；本条追加记录于`LOG.md`。
+- 验证：`make test`因缺少`.venv/bin/python`失败；改用系统Python执行单测后因缺少`numpy/pandas`等依赖失败。已执行`runtime-tools-secret_scanning`，未发现密钥泄露；并完成并行代码审查/CodeQL流程（无新问题）。
+- 下一步：在具备项目依赖的环境补跑`make test`确认全量通过，然后继续处理后续审阅意见。
+
+### 2026-10-19 Codex - 合并三位成员的完整报告并准备提交
+- 合并：先将本地第6、7节修订保存为`938cdbf`，再合并远端`b8dc9d8`中前5节的两位组员成果。保留客户逐产品筛选表、动作表、配对区间表、严重案例曲线及本地误差单位/敏感性/最终建议修订；README、PDF和验收JSON冲突按完整合并稿重新生成处理。
+- 修复：发现此前PR合并仅保留筛选表生成器，遗漏第4、5节的严重路径提取、三格式图形导出和可选对齐检查；现将两位组员的生成器逻辑合并，并将PDF/PNG与同一提交的SVG/QA统一。第1节仅作两处事实澄清：3,600行为开发数据；后续方案是未同时满足完整采用标准，而非每一条件均未通过。
+- 验证：新增3项生成数据回归，旧合并脚本3项均失败，恢复后通过；在隔离工作树运行统一make test并独立编译报告，结果写入`docs/report/validation.json`。完整合并稿9页A4、8表3图，全部页面视觉核查、引用、表格数字、图形字号、严重案例时序及本地链接通过；金融实现、冻结包、最终锁、原始市场和历史manifest未改，没有重新评价最终策略。
+- 来源：Git迁出仓库缺少完整最终账本；严重案例CSV及三图与`60f0419`的已提交来源逐字节核对，其他11项来源hash匹配。没有把历史账本hash冒称为本轮重新核验，也未新增金融实验或覆盖旧源码包。
+- 下一步：完成本地合并提交；团队继续核实全文与实际AI使用披露。本次用户授权为合并与提交，未包含远端推送或比赛平台提交。
+- 统一测试实际结果：隔离候选通过MSYS2 make及临时Windows导入路径适配器执行同一unittest发现入口，106项运行745.003秒，105项通过、1项失败。唯一失败是未修改的`test_clean_preserves_results_environment_tracked_files_and_symlink_targets`期望正斜杠、Windows返回反斜杠；已用与`32b1bd5`逐字一致的实现及测试独立复现。新增3项报告回归全部通过，未为使测试变绿改动金融核心或测试标准。
