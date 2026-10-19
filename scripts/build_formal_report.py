@@ -26,7 +26,7 @@ def escape(text):
 
 
 def write_rows(path, rows):
-    path.write_text("\n".join(" & ".join(row) + r" \\" for row in rows) + "\n", encoding="utf-8")
+    path.write_text("\n".join(" & ".join(row) + r" \\" for row in rows) + "\n", encoding="utf-8", newline="\n")
 
 
 def build():
@@ -94,7 +94,7 @@ def build():
         ci = paired[(paired.policy == "plan_a_balanced") & (paired.horizon == 30) & np.isclose(paired.cost_rate, .0025) & (paired.metric == metric)].iloc[0]
         for name, field in [("Lower", "lower95"), ("Upper", "upper95"), ("FamilyLower", "family_lower"), ("FamilyUpper", "family_upper")]:
             macros[prefix + name] = f"{100 * ci[field]:.3f}"
-    (generated / "numbers.tex").write_text("\n".join("\\newcommand{\\" + key + "}{" + value + "}" for key, value in macros.items()) + "\n", encoding="utf-8")
+    (generated / "numbers.tex").write_text("\n".join("\\newcommand{\\" + key + "}{" + value + "}" for key, value in macros.items()) + "\n", encoding="utf-8", newline="\n")
 
     weights = []
     for h in [5, 6, 15, 25, 30]:
@@ -108,6 +108,29 @@ def build():
     write_rows(generated / "weights.tex", weights)
     write_rows(generated / "assignments.tex", [[r.profile_id, str(r.horizon), pct(r.loss_tolerance), r.liquidity.capitalize(),
                "Human review" if r.portfolio == "human_review" else r.portfolio.capitalize()] for r in customers.itertuples()])
+    suitability = []
+    for profile in customers.itertuples():
+        pairs = screen[screen.profile == profile.profile_id]
+        assert len(pairs) == 3 and not pairs.duplicated("portfolio").any()
+        screened = {row.portfolio: row for row in pairs.itertuples()}
+        eligible = [name for name, value in screened.items() if bool(value.eligible)]
+        if profile.policy == "human_review":
+            assert not eligible, f"{profile.profile_id} has an eligible product but was referred"
+        else:
+            assert eligible, f"{profile.profile_id} was served without an eligible product"
+            best = max(eligible, key=lambda name: screened[name].median_growth)
+            assert profile.policy == "plan_a_" + best, f"{profile.profile_id} assignment is not the top eligible product"
+        entry = [profile.profile_id, str(profile.horizon), pct(profile.loss_tolerance), profile.liquidity.capitalize()]
+        for name in ["conservative", "balanced", "growth"]:
+            value = screened[name]
+            cell = f"{int(value.breaches)}/120"
+            if bool(value.eligible):
+                entry += [rf"\textbf{{{cell}}}", rf"\textbf{{{pct(value.upper_bound)}}}"]
+            else:
+                entry += [cell, pct(value.upper_bound)]
+        entry.append("Human review" if profile.policy == "human_review" else profile.portfolio.capitalize())
+        suitability.append(entry)
+    write_rows(generated / "suitability.tex", suitability)
     selected = [("A", "conservative"), ("B", "conservative"), ("C", "conservative"), ("D", "conservative"), ("E", "balanced")]
     write_rows(generated / "screen.tex", [[p, product.capitalize(), f"{int(g.breaches)}/120", pct(g.upper_bound), pct(g.stress_upper_bound)]
                for p, product in selected for _, g in screen[(screen.profile == p) & (screen.portfolio == product)].iterrows()])
@@ -155,7 +178,7 @@ def build():
                     figures={"risk_growth.pdf": config["sources"]["summary"], "cost_sensitivity.pdf": config["sources"]["summary"]},
                     generated_files={p.relative_to(out).as_posix(): sha(p) for folder in [generated, figures] for p in sorted(folder.iterdir()) if p.is_file()},
                     unresolved_team_members=not bool(config["members"]), compiler="pdfLaTeX (XeLaTeX-compatible source)", template="5writing/templates/en/mcm-latex")
-    (out / "evidence.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    (out / "evidence.json").write_text(json.dumps(evidence, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(dict(status="saved_evidence_verified", generated_files=len(evidence["generated_files"]),
                          market_data_read=False, unresolved_team_members=evidence["unresolved_team_members"])))
 

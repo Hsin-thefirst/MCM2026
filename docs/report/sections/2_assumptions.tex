@@ -1,6 +1,6 @@
 \section{Accounting, Assumptions, and Performance Measures}
 \subsection{A causal, self-contained investment account}
-Initial nominal wealth is 100, held entirely in bills. Portfolios are long-only and fully invested: $w_i\geq0$ and $\sum_i w_i=1$. There are no contributions, withdrawals, leverage, taxes, or other fees. Annual decisions use only information available before that year's returns. Initial investment incurs a transaction fee; there is no assumed terminal liquidation. Bills provide liquidity but are not guaranteed to preserve purchasing power.
+Wealth starts at 100 units, entirely in bills. Portfolios are long-only and fully invested: $w_i\geq0$ and $\sum_i w_i=1$. There are no contributions, withdrawals, leverage or taxes, no fees other than the stated transaction cost, and no assumed terminal liquidation. A decision for period $t$ uses only observations through period $t-1$ of that scenario, so every reported path is causal. Bills supply liquidity, but their real return can be negative: preservation of purchasing power is not assumed.
 
 Let $h^-_{i,t}$ be pre-trade nominal holdings, $V^-_t=\sum_i h^-_{i,t}$, and $p_{i,t}=h^-_{i,t}/V^-_t$. A target $w_t$ moves the following amount and incurs the following fee at rate $c$:
 \begin{equation}
@@ -8,7 +8,7 @@ Q_t=\frac{V^-_t}{2}\lVert w_t-p_t\rVert_1,\qquad F_t=cQ_t,\qquad
 h^+_{i,t}=(V^-_t-F_t)w_{i,t}.
 \label{eq:fees}
 \end{equation}
-The one-half factor counts the transferred money once, rather than charging separately for both sale and purchase. Turnover is measured against pre-fee wealth; the fee is deducted before returns, and the remaining wealth is allocated to the target. This states the accounting convention explicitly rather than assuming an implicit exact-dollar trade solver.
+The one-half factor counts each transferred amount once instead of charging the sale and the purchase separately: at $c=0.25\%$, moving 20 units from bills to equities costs 0.05 units. Turnover is measured against pre-fee wealth, the fee is deducted before that period's returns, and the remainder is placed at the target. We state this convention rather than solve for an implicit trade that reproduces the target after the fee. The initial allocation is charged the same way, starting from an all-bill account.
 
 For nominal return $r_{i,t}$ and inflation $\pi_t$, define real return $\rho_{i,t}$, cumulative price index $I_t$, and year-end real wealth $W_t$ by
 \begin{equation}
@@ -16,9 +16,9 @@ For nominal return $r_{i,t}$ and inflation $\pi_t$, define real return $\rho_{i,
 I_t=\prod_{k=1}^t(1+\pi_k),\qquad
 W_t=\frac{\sum_i h^+_{i,t}(1+r_{i,t})}{I_t}.
 \end{equation}
-Pending human review means that existing assets remain invested and automatic trades stop. No unobserved human intervention, liquidation, or recovery is credited to the algorithm.
+Pending human review means existing assets stay invested and automatic trades stop; no unobserved intervention, liquidation or recovery is credited to the algorithm.
 
-\subsection{Growth, drawdown, and the cost of intervention}
+\subsection{Growth, ordinary fluctuation, and unusually large loss}
 For a scenario with horizon $H$, real compound annual growth is
 \begin{equation}
 G=\left(\frac{W_H}{100}\right)^{1/H}-1.
@@ -28,8 +28,8 @@ Maximum drawdown measures loss from a previous real-wealth peak. Let $Z_j$ conta
 D=\max_j\left(1-\frac{Z_j}{\max_{k\leq j}Z_k}\right).
 \label{eq:drawdown}
 \end{equation}
-Including the post-fee marks ensures that trading losses are not hidden between annual observations. A larger $D$ is worse. A stated customer tolerance $L$ is evaluated through the event $D>L$; it is a preference threshold, not a guaranteed loss limit.
+Including the post-fee marks keeps trading losses visible instead of hiding them between annual observations. The measure is oriented so that larger values mean a greater loss. A stated customer tolerance $L$ is evaluated through the event $D>L$; it is a preference threshold, not a guaranteed loss limit.
 
-Across scenarios, we report median $G$, $\Pten(G)$, median $D$, and $\Pninety(D)$. Annual volatility is the sample standard deviation of net real annual returns; its cross-scenario median summarizes typical variability. Terminal-loss probability measures $W_H<100$. Drawdown CVaR at 90\% averages the worst 10\% of scenario drawdowns, with fractional boundary weights when needed; it is distinct from a 90th percentile.
+The brief asks for ordinary fluctuation and unusually large loss to be separated, both in purchasing-power terms; every measure below is real. Ordinary fluctuation is the annual volatility $\sigma$, the sample standard deviation of net real annual returns. Unusually large loss is reported as the 90th percentile of $D$ and as the 90\% drawdown CVaR, which averages the worst 10\% of scenario drawdowns, with fractional boundary weights where needed. CVaR is not a percentile, and the two tail figures are therefore not interchangeable. Across scenarios we report median $G$, $\Pten(G)$, median $D$ and $\Pninety(D)$, and the cross-scenario median of $\sigma$ summarizes variability within a path, not dispersion across paths. Terminal-loss probability is the share of scenarios with $W_H<100$.
 
-The main trading frequency is the fraction of reviews in periods $2,\ldots,H$ that execute a trade. Initial allocation is excluded because it is compulsory; the alternative rate including it is reported when relevant. Mean real fees accumulate inflation-adjusted fees over the horizon, in units of initial wealth 100. Review incidence is the fraction of scenarios that ever request human review.
+The main trading frequency is the fraction of reviews in periods $2,\ldots,H$ that execute a trade, excluding the compulsory initial allocation; the rate including it is reported where relevant. Mean real fees accumulate inflation-adjusted fees over the horizon in units of initial wealth 100. Review incidence is the fraction of scenarios that ever request human review.
