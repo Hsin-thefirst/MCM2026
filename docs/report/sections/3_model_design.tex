@@ -1,0 +1,61 @@
+\section{Strategic Portfolios and Customer Suitability}
+\subsection{A convex allocation problem for each horizon}
+For $N$ training paths and a fixed annually restored target $w$, define the largest cumulative log loss over any contiguous interval:
+\begin{equation}
+Y_s(w)=\max_{0\leq u\leq v\leq H}\left\{-\sum_{t=u+1}^{v}\log(1+\rho_{s,t}^{\mathsf T}w)\right\}.
+\end{equation}
+The empty interval contributes zero. Under this cost-free, fixed-target model, ordinary maximum drawdown satisfies $D_s=1-\exp(-Y_s)$. Tail expectations must still be calculated on the intended variable: transforming $\ES(Y)$ does not generally give $\ES(D)$.
+
+Using the variational representation of expected shortfall \cite{cvar},
+\begin{equation}
+\ES_\alpha(Y)=\min_z\left[z+\frac{1}{N(1-\alpha)}\sum_{s=1}^{N}(Y_s-z)_+\right],\quad \alpha=0.90,
+\end{equation}
+we choose the strategic anchor $w^*$ by solving
+\begin{align}
+\min_w\quad &-\frac{1}{NH}\sum_{s=1}^{N}\sum_{t=1}^{H}\log(1+\rho_{s,t}^{\mathsf T}w)\\
+\text{subject to}\quad &\ES_{0.90}(Y(w))\leq qR_{\rm ref},\quad w\geq0,\quad\mathbf{1}^{\mathsf T}w=1.
+\label{eq:strategy}
+\end{align}
+Conservative additionally requires $w_{\rm bill}\geq0.40$. For each horizon, $R_{\rm ref}$ is the training log-drawdown expected shortfall of a reference allocation. The equity/bond/bill references are $(.20,.30,.50)$ for Conservative, $(.50,.35,.15)$ for Balanced, and $(.75,.20,.05)$ for Growth. Thus products differ through their risk budgets as well as the Conservative liquidity floor.
+
+Negative log growth and the maximum of interval log losses are convex on the valid-return domain. Equation~\eqref{eq:strategy} is therefore a convex strategic subproblem. A Kelley cutting-plane linear-programming method uses supporting planes, a 5\% simplex grid for initialization, and lower/upper objective bounds to assess convergence. The configured optimality-gap tolerance is $10^{-6}$, risk tolerance is $10^{-8}$, and iteration cap is 300. Infeasibility is recorded rather than repaired by silently relaxing the risk budget. These certificates concern the strategic subproblem; they do not prove global optimality of the later trading and escalation system.
+
+\subsection{Development selection before freezing}
+Nested validation uses five outer scenario folds and three inner folds, preserving complete paths. Outer training/validation sizes are 96/24; inner training/validation sizes are 64/32. We compare $q\in\{.75,.85,.95\}$ and execution curvature $\gamma\in\{4,12\}$, using held-out development outcomes rather than training fit alone. This separation addresses selection bias from repeated model comparisons \cite{cawley}.
+
+Inner feasibility checks cover strategic feasibility, pooled log-drawdown risk, growth relative to same-anchor annual rebalancing, and review frequency. The validation risk budget is fixed independently of the candidate $q$; the risk slack is 0.005. Permitted median/P10 annual-growth shortfalls are 0.001/0.002, and review incidence is capped at 10\%. Feasible candidates maximize mean $\log(1+G)$; a minimum-violation fallback is explicitly diagnostic. The selected full-development refit uses $q=0.95$ and $\gamma=4$ for all three products, then freezes the anchors and customer assignments before final evaluation.
+
+\clearpage
+\subsection{Frozen allocations and an explicit refusal option}
+Table~\ref{tab:weights} shows that a product name does not imply one allocation for every customer. Shorter-horizon Balanced portfolios hold more bills, while the 30-year Growth solution reaches the boundary with zero bills. These are model outputs, not general investment prescriptions.
+
+\begin{table}[h!]
+\centering
+\caption{Frozen strategic equity / bond / bill weights (\%). Rounding can make totals differ slightly from 100.}
+\label{tab:weights}
+\begin{tabular}{rlll}\toprule
+$H$ & Conservative & Balanced & Growth\\\midrule
+\tableinput{generated/weights.tex}
+\bottomrule\end{tabular}
+\end{table}
+
+For customer horizon $H$ and tolerance $L$, we count out-of-fold development paths with $D>L$, using the complete execution policy. If $k$ of $n=120$ paths breach, the one-sided Clopper--Pearson upper bound is
+\begin{equation}
+U=\operatorname{Beta}^{-1}(1-\delta;k+1,n-k),\qquad
+\delta=0.05/440,
+\end{equation}
+with $U=1$ when $k=n$. The 440-comparison family is the prespecified service-screening budget. Automatic service requires $U\leq0.20$ under both the base cost and doubled cost. Because fitted out-of-fold policies share training observations, this is a conservative screening diagnostic; it is not a strict coverage guarantee for the final refitted policy.
+
+High-liquidity customers require a strategic bill weight of at least 40\% in every relevant development fold. This condition is checked for any eligible product, rather than restricting high-liquidity customers to the product named Conservative. It is a target requirement, not a continuously maintained cash floor after market drift. Growth is available only for horizons of at least 15 years. We also check that P90 drawdown is ordered Conservative $\leq$ Balanced $\leq$ Growth at the relevant horizon and costs. Among eligible products, the highest out-of-fold median growth is selected; if none qualify, the customer goes to human review.
+
+\begin{table}[h!]
+\centering
+\caption{Customer requirements and assignments frozen before final evaluation.}
+\label{tab:assignments}
+\begin{tabular}{crrll}\toprule
+Customer & $H$ & Tolerance (\%) & Liquidity & Assignment\\\midrule
+\tableinput{generated/assignments.tex}
+\bottomrule\end{tabular}
+\end{table}
+
+B and C qualify for Conservative: their base-cost breach counts are 3/120 and 0/120, with adjusted upper bounds 12.45\% and 7.29\%. C's Balanced alternative has an upper bound of 28.93\%, exceeding the service ceiling despite a raw breach rate of 14.17\%. E qualifies for Balanced at six years: its bound is 13.87\% at both costs, and its minimum fold-level bill target is 40.03\%. A and D fail even the Conservative risk screen, with base upper bounds of 39.70\% and 65.17\%. Human review is therefore a substantive outcome of the model.

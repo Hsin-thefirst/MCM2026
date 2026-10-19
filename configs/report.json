@@ -1,0 +1,22 @@
+{
+  "title": "SafeInvest: Horizon-Aware Allocation with Cost-Gated Portfolio Updates",
+  "date": "19 October 2026",
+  "team_name": "Fen8FenQian",
+  "members": ["Huang Sinan", "Cai Xunzhi", "Lin Zihan"],
+  "ai_tools": ["OpenAI ChatGPT/Codex"],
+  "selected_policy": "plan_a_balanced",
+  "output": "docs/report",
+  "sources": {
+    "bundle": "benchmark/submission_frozen_v1.json",
+    "lock": "benchmark/FINAL_EVALUATION_LOCK.json",
+    "release": "benchmark/outputs/development_final_budget_v1/release_decision.json",
+    "manifest": "benchmark/outputs/final_submission_v1/manifest.json",
+    "summary": "benchmark/outputs/final_submission_v1/summary.csv",
+    "paired": "benchmark/outputs/final_submission_v1/paired_comparisons.csv",
+    "customers": "benchmark/outputs/final_submission_v1/suitability.csv",
+    "screen": "benchmark/outputs/development_submission_v1/selected_suitability_risk.csv",
+    "severe": "benchmark/outputs/final_submission_v1/severe_case.json",
+    "verification": "benchmark/outputs/final_submission_v1/saved_final_verification.json",
+    "problem": "2026_MCM_SafeInvest.pdf"
+  }
+}

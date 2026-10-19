@@ -216,3 +216,9 @@ B信号倾斜及C前瞻防御动作有各自的英文交易说明，不沿用A�
 `scripts/finalize_release.py <最后开发目录> --tests-passed <已通过数量>`在所有新候选未通过采用条件时核对原冻结A、最终锁、保存最终核验及原五客户映射/实际目标，生成不可覆盖的`release_decision.json`和`customer_verification.json`，不打开市场数据或模拟策略。若有新候选通过则拒绝跳过其全开发重拟合和客户检查；不能借此工具静默回退或替换新候选。发布决定中的路径核验数量包含该批明确声明的复用参照。
 
 `scripts/verify_saved_iteration.py <run>`只重放保存的JSONL账本与开发市场，不重新运行策略；独立核验全部年度参照及研究路径的扣费、收益、通胀、回撤、增长、费用和交易率，并保存不可覆盖的`independent_replay.json`。
+
+## 正式英文报告资产生成（2026-10-19）
+
+`.venv/Scripts/python.exe scripts/build_formal_report.py`读取`configs/report.json`，无额外命令行参数。配置包含标题、日期、成员、团队、AI工具、所选策略、输出目录及保存证据路径。工具核对冻结包/最终锁/发布决定/最终manifest的身份、策略、60个最终场景及五客户映射，仅读取保存JSON/CSV与题目PDF字节，不拟合模型或访问原始市场数据。
+
+输出为`docs/report/generated/*.tex`数值宏及表格、`figures/`中的两组PDF/PNG图，以及`evidence.json`来源与生成资产hash。输出可重建，不覆盖历史实验。LaTeX正文由本目录`main.tex`及`sections/`维护；PDF编译、页数及视觉检查步骤见[报告说明](report/README.md)。本次验收结果写入`validation.json`。缺少成员时显示草稿提示；它不是提交就绪证明。报告流程独立于原`make report RUN=...`的benchmark网页报告，也不会更新旧源码ZIP或实验登记。

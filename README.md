@@ -9,13 +9,14 @@
 | 你要做什么 | 入口 |
 | --- | --- |
 | 组员理解方法、数据、五客户和写report要点 | [解题讲解与数据使用指南](docs/SOLUTION_GUIDE.md) |
+| 阅读正式英文报告草稿、修改署名与重建 | [报告PDF](docs/report/SafeInvest_report_draft.pdf) · [编写与核验说明](docs/report/README.md) |
 | 打包、交付、恢复大证据、核对版本 | [提交与复现](docs/SUBMISSION.md) |
 | 核对最新研究是否被采用 | [实验结论](docs/FINDINGS.md) |
 | 查数学定义、接口、实验规则 | [方法](docs/METHODOLOGY.md) · [接口](docs/INTERFACES.md) · [协议](docs/PROTOCOL.md) |
 | 看历史过程或剩余工作 | [工作日志](LOG.md) · [待办](docs/ISSUES.md) |
 | 看原始要求和数据来源 | [题目PDF](2026_MCM_SafeInvest.pdf) · [数据说明](docs/DATA.md) |
 
-正式英文report尚未制作；≤10页A4、字号≥11pt、代码ZIP≤50MB。团队成员、来源和AI使用披露须如实填写，截止2026-10-20 23:59北京时间，以题目PDF为准。
+正式英文report已起草为9页A4，正文、表格及图中文字≥11pt；队名Fen8FenQian及三位成员署名已补齐，仍需团队审阅AI披露与全文。代码ZIP须≤50MB，历史源码包未随报告自动更新。截止2026-10-20 23:59北京时间，以题目PDF为准。
 
 ## 安装和常用命令
 

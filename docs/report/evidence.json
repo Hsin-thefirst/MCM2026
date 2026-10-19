@@ -1,0 +1,42 @@
+{
+  "selected_policy": "plan_a_balanced",
+  "final_scenarios": 60,
+  "market_data_read": false,
+  "policies_reevaluated": false,
+  "models_refitted": false,
+  "source_hashes": {
+    "benchmark/submission_frozen_v1.json": "83bcee60aa05fd3f1a61eb553acd310afe8f2232476b1aa540c77af6dbe4e028",
+    "benchmark/FINAL_EVALUATION_LOCK.json": "c4e61b0f7e42da6b12b1c9b3256ceb54dc85502741dd79c5db9b0e0e88c65894",
+    "benchmark/outputs/development_final_budget_v1/release_decision.json": "03bb10fc27ce1ce717e822ebbf59aa30b9f60865a7ca852b61e3f51bb7b75243",
+    "benchmark/outputs/final_submission_v1/manifest.json": "83f44fb24a893fa395a5977b912a87c7e1bf2b99407fff5ef86c795ae4603236",
+    "benchmark/outputs/final_submission_v1/summary.csv": "1a7cab136c8f8d1ef31d6850763a0e99808a7480de927994e16710aa518e0be3",
+    "benchmark/outputs/final_submission_v1/paired_comparisons.csv": "5e5a47c76e3741ff64d66e536b89c2440d8b9c02c0fba50119520bc098076072",
+    "benchmark/outputs/final_submission_v1/suitability.csv": "c7ef8a7b2159d67f214a0ff80385e76c61ed42da04964a082bb44287eea9eac3",
+    "benchmark/outputs/development_submission_v1/selected_suitability_risk.csv": "07eefd38464782d9d3412d26d3cf4f589b4665bd46478a4ad2737c0a2e7fc91a",
+    "benchmark/outputs/final_submission_v1/severe_case.json": "e4e2c1b87e7c7d40ec51502fb8802ee8277c206a2ca26cf8c5f0fdef25110221",
+    "benchmark/outputs/final_submission_v1/saved_final_verification.json": "33b525c4029e4f4fc2292665361f8cd7812cb56c2ae0e991bbc46fdcdbab44fa",
+    "2026_MCM_SafeInvest.pdf": "2ac9412ed68349d36a3fbd2c6cddc5789a81dab8acbfa08c63a3bdb34d2aa2dd"
+  },
+  "figures": {
+    "risk_growth.pdf": "benchmark/outputs/final_submission_v1/summary.csv",
+    "cost_sensitivity.pdf": "benchmark/outputs/final_submission_v1/summary.csv"
+  },
+  "generated_files": {
+    "generated/assignments.tex": "cf066bad7321d5dd8f74bee573f9bef1461f699451e4aa982ac08d79474ba5a7",
+    "generated/costs.tex": "aef94d61219f94308847595986eeb5959128acc8ef9490efe49625599884e451",
+    "generated/customer_risk.tex": "0b84453da926ea4fe92a6b5136e998bdc69fbb5f448760d6e3a6193f92f20cb3",
+    "generated/customers.tex": "0038c117d849f5dcfdbd6573bffabe0dff6987a30add7ece3453754eb9b6dd31",
+    "generated/execution.tex": "545f54bdff8899e329a189edaa16be62de1570fc68153a253376912233c04c3a",
+    "generated/numbers.tex": "202cf94c32bf2074aa5bfced374924f66a2a28d0859caea0d626fc5811400c21",
+    "generated/performance.tex": "14786d676e180d9333cebcf09d3fac014616f53b1b94f8fbd4ae001dad4f606c",
+    "generated/screen.tex": "e7ac5df37b5137d353985467d7a12971edf30ad27e6ee1c1715f4647f0a1ac3a",
+    "generated/weights.tex": "80973a4eecbcf8ade8aa0ccf0172d697ffe50efdc1f1a050f12d3872638c3390",
+    "figures/cost_sensitivity.pdf": "1a288b1a133dbec95a6d8650cdceb114777f231d25bb8b760ad487162b2b4b10",
+    "figures/cost_sensitivity.png": "156a1dae1a2aae775b1d2313db2227a36c28ed995e088fcc71168980107e08c3",
+    "figures/risk_growth.pdf": "9a5577d52c08bc77d03f107f65cfac6028861c65e091662e54d03d13a48687dd",
+    "figures/risk_growth.png": "38dd6d6d6ba7d4a909033e0c9af562f4d1cd18a7f877f241f53a995fb68a7ff1"
+  },
+  "unresolved_team_members": false,
+  "compiler": "pdfLaTeX (XeLaTeX-compatible source)",
+  "template": "5writing/templates/en/mcm-latex"
+}

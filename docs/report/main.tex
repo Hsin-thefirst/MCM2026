@@ -1,0 +1,59 @@
+% Adapted from the 5writing English MCM LaTeX template for this contest.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=19mm,headheight=14pt]{geometry}
+\ifdefined\XeTeXversion
+  \usepackage{fontspec}
+  \setmainfont{TeX Gyre Termes}
+  \setsansfont{TeX Gyre Heros}
+\else
+  \usepackage[T1]{fontenc}
+  \usepackage{mathptmx}
+\fi
+\usepackage{amsmath,amssymb,booktabs,graphicx,tabularx,xcolor}
+\usepackage[colorlinks=true,linkcolor=teal,citecolor=teal,urlcolor=teal]{hyperref}
+\urlstyle{same}
+\definecolor{teal}{HTML}{007C83}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.13}
+\renewcommand{\baselinestretch}{1.025}
+\makeatletter
+\renewcommand\normalsize{\@setfontsize\normalsize{11.1pt}{13.4pt}}
+\let\tableinput\@@input
+\makeatother
+\normalsize
+\setlength{\emergencystretch}{1em}
+\setlength{\abovedisplayskip}{7pt}
+\setlength{\belowdisplayskip}{7pt}
+\newcommand{\ES}{\operatorname{ES}}
+\newcommand{\Pten}{\operatorname{P10}}
+\newcommand{\Pninety}{\operatorname{P90}}
+\input{generated/numbers}
+\hypersetup{pdftitle={SafeInvest: Horizon-Aware Allocation with Cost-Gated Portfolio Updates},pdfauthor={\PaperAuthors}}
+\begin{document}
+\begin{center}
+{\large 2026 MCM Senior Group \textbar\ Problem A}\par
+\vspace{6pt}
+{\LARGE\bfseries\color{teal}\PaperTitle\par}
+\vspace{8pt}
+{\PaperAuthors}\par
+\PaperTeam\quad\textbar\quad\PaperDate
+\end{center}
+\vspace{4pt}
+\input{sections/1_introduction}
+\clearpage
+\input{sections/2_assumptions}
+\clearpage
+\input{sections/3_model_design}
+\clearpage
+\input{sections/4_solution}
+\clearpage
+\input{sections/5_sensitivity}
+\input{sections/6_strengths_weaknesses}
+\clearpage
+\input{sections/7_conclusions}
+\input{references}
+\section*{Use of AI Tools}
+\AITools{} assisted with code development, analysis, drafting, and document checks. Numerical claims in this report are drawn from saved experiment outputs and frozen model settings; the report-building step did not refit a model or rerun the final evaluation. AI-generated explanations and prose require review by the named team members before submission. The authors remain responsible for the correctness, originality, attribution, and final submitted content.
+\end{document}
