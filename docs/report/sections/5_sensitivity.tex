@@ -1,10 +1,10 @@
 \section{Sensitivity and Reliability}
 \subsection{Transaction-cost stress with the policy frozen}
-The saved final cost sweep changes the fee rate while keeping the strategic model and customer assignments fixed. The cost gate still responds to the fee it faces. Table~\ref{tab:cost} and Figure~\ref{fig:cost} therefore describe a fixed decision rule under different execution costs, not a refitted strategy.
+We vary fees across five rates on the same 60 final scenarios, retaining the frozen strategic parameters and customer assignments. The cost gate responds to each rate (Table~\ref{tab:cost}, Figure~\ref{fig:cost}).
 
 \begin{table}[h!]
 \centering
-\caption{Thirty-year Balanced A under alternative transaction costs. Growth and drawdown are in \%; fees are real wealth units.}
+\caption{Thirty-year Balanced A, 60 final scenarios. Growth and drawdown are in \%; mean fees are cumulative real wealth units (initial wealth 100). Trade rates exclude initial allocation.}
 \label{tab:cost}
 \begin{tabular}{rrrrrr}\toprule
 Cost (\%) & Med. $G$ & P10 $G$ & P90 $D$ & Mean fees & Trades (\%)\\\midrule
@@ -15,8 +15,10 @@ Cost (\%) & Med. $G$ & P10 $G$ & P90 $D$ & Mean fees & Trades (\%)\\\midrule
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\linewidth]{figures/cost_sensitivity.pdf}
-\caption{Higher fees suppress trading; growth need not fall monotonically because the actions also change.}
+\caption{Trading decreases across the tested fee rates. Growth is nonmonotonic because changing fees also changes the trades.}
 \label{fig:cost}
 \end{figure}
 
-Doubling the fee to 0.50\% reduces the trading rate to \DoubleTrades\%, while median real growth remains \DoubleGrowth\%. Mean real fees rise to \DoubleCost{}. Small nonmonotonic growth differences should not be interpreted as a benefit from charging fees: changed trades lead to changed exposures on the same finite set of scenarios.
+Doubling the fee to 0.50\% reduces trading from \BalancedTrades\% to \DoubleTrades\%; median growth changes from \BalancedGrowth\% to \DoubleGrowth\%, and mean real fees rise from \BalancedCost{} to \DoubleCost{}. Nonmonotonic growth reflects changed exposures, not a benefit from fees.
+
+For eligible customers, selective Balanced updates remain our recommendation: at every tested rate, median growth and P90 drawdown exceed equal weight. Customer eligibility was screened only at base and doubled costs during development.

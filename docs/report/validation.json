@@ -3,7 +3,7 @@
   "executor": "Codex",
   "status": "draft_verified",
   "pdf": "docs/report/SafeInvest_report_draft.pdf",
-  "pdf_sha256": "2f0f3cbc1a4b527fc183961c2aa543e35b2370f38eb0979e9e7da9dca753ec3d",
+  "pdf_sha256": "acf531055a45f7ba0e4679af8636e6e92994aa6659d87ae1d3c22e538ca44fca",
   "pages": 9,
   "page_size": "A4",
   "compiler": "MiKTeX pdfLaTeX",
@@ -37,9 +37,9 @@
     "docs/report/sections/2_assumptions.tex": "bf41899f7d3acbfdc634f1f5cddfd4a8f81069c37b86aeb728ce2d54dcb873cd",
     "docs/report/sections/3_model_design.tex": "7faad04e3c9ad719d32d446602d4619400107bdbfd13472c18bfa6a85235ad01",
     "docs/report/sections/4_solution.tex": "e5f015cf238fd9ae313d6a389f96055ab4001600c91dae0b1b90f71b925a632c",
-    "docs/report/sections/5_sensitivity.tex": "cb86750f30e3fb5549aee10952b110dc97b39683633b7baab17ecb7fd892745a",
-    "docs/report/sections/6_strengths_weaknesses.tex": "6b730092b9326f584b70c173c0f898ba7cab3233efdee8765070f2af903d4cff",
-    "docs/report/sections/7_conclusions.tex": "fb3fe347b9f82dbe1ca1645dbb689ecf3a465513129cb51e8a4eb0ba3bf859c3"
+    "docs/report/sections/5_sensitivity.tex": "e41826efd2d71378302d956ebddafc26ca4d5bb46037b5d22fec13d73d0d5eb3",
+    "docs/report/sections/6_strengths_weaknesses.tex": "a3e55d41740feec6075f1d911bc50fccb1b287519d9c1d8829c577a23b0bdc9e",
+    "docs/report/sections/7_conclusions.tex": "d2b30f46afbe59b552aa548e753a36b2203b53fb0b5cbffa30216c8263bbd4a4"
   },
   "evidence_sha256": "2c9cb45158cd23c7ce5f9cbf97ac174ddf197edf16cc9c354992b8d288177145",
   "team_name": "Fen8FenQian",
@@ -49,6 +49,27 @@
     "Lin Zihan"
   ],
   "pdf_author_metadata_verified": true,
-  "pages_2_to_9_text_unchanged_from_previous_review": true,
-  "signature_page_visually_reviewed": true
+  "signature_page_visually_reviewed": true,
+  "pages_1_to_7_text_unchanged_from_previous_review": true,
+  "section_6_7_review": {
+    "date": "2026-10-19",
+    "visual_pages": [
+      8,
+      9
+    ],
+    "cost_comparison_rates": [
+      0,
+      0.00125,
+      0.0025,
+      0.005,
+      0.01
+    ],
+    "same_60_paths_at_all_rates": true,
+    "equal_weight_growth_and_drawdown_directions_verified": true,
+    "audit_error_units": "nominal asset holding value",
+    "scalar_reference_scope": "equal_annual only",
+    "audit_implementation_sha256": "e45b3f7a157e6684ee1225c1da9c32cc64f57b00519b9bd9ae8c4f2090b0abf5",
+    "product_budget_order_verified": true,
+    "punctuation_check": "passed; TeX citations and resulting spaces excluded from prose"
+  }
 }
