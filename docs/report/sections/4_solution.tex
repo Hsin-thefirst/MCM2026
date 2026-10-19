@@ -1,51 +1,56 @@
 \section{Annual Execution and Human Escalation}
-\subsection{A small, explainable set of candidate trades}
-At an annual review, let $p$ be the current portfolio and $w^*$ its frozen horizon-specific strategic anchor. The advisor considers
+\subsection{Candidate trades and the cost gate}
+At each annual review, the advisor checks for escalation before considering a trade. Let $p$ denote current portfolio weights and $w^*$ the frozen strategic anchor for the investment horizon. The five candidates are
 \begin{equation}
 w_\lambda=p+\lambda(w^*-p),\qquad
 \lambda\in\{0,.25,.50,.75,1\}.
 \end{equation}
-Training data supply the real-return mean $\mu$ and a regularized covariance matrix $\Sigma=0.75S+0.25\operatorname{diag}(S)+10^{-10}I$. Define a local tracking score
+Here, $\lambda=0$ keeps holdings and $\lambda=1$ restores the anchor. Training returns supply the mean $\mu$ and regularized covariance $\Sigma=0.75S+0.25\operatorname{diag}(S)+10^{-10}I$. The tracking score and fractional trading cost are
 \begin{equation}
 A(w)=1+\mu^{\mathsf T}w^*-\frac{\gamma}{2}(w-w^*)^{\mathsf T}\Sigma(w-w^*),
 \qquad f_\lambda=\frac{c}{2}\lVert w_\lambda-p\rVert_1.
 \end{equation}
-The expected-return term uses the strategic anchor; this penalizes departure from a chosen allocation, rather than predicting each candidate's return. If any candidate score is nonpositive or nonfinite, the advisor requests human review. Otherwise, select $j$ maximizing $(1-f_\lambda)A(w_\lambda)$. A positive-size trade is accepted only if
+The return term is shared across candidates; the quadratic term penalizes departure from the anchor. If any score is nonpositive or nonfinite, the advisor requests human review. Otherwise, it selects $j$ maximizing $(1-f_\lambda)A(w_\lambda)$ and accepts a trade only if
 \begin{equation}
 \frac{A(w_j)-A(p)}{A(w_j)}>f_j+0.0001.
 \label{eq:gate}
 \end{equation}
-The additional 0.0001 is a one-basis-point safety margin. Candidate ranking precedes this strict gate; a rejected candidate leads to keeping holdings. The heuristic controls trading frequency but does not certify an improvement in realized wealth on every future path.
+The extra 0.0001 is a one-basis-point safety margin. If the selected candidate fails this strict gate, holdings are kept; lower-ranked candidates are not tried. This score measures tracking benefit, not a guaranteed increase in future wealth.
 
 \subsection{Four observable actions}
-The decision process first checks the observed drawdown and pending-review status, then evaluates the trade candidates:
-\begin{enumerate}
-\item \textbf{Keep holdings:} no candidate passes the cost gate, or the chosen step is zero. No fee is charged.
-\item \textbf{Rebalance:} an accepted trade restores the previously recorded target.
-\item \textbf{Change the current target:} an accepted partial adjustment produces a different execution target. The strategic anchor remains fixed.
-\item \textbf{Request human review:} the loss trigger or an invalid decision score makes continued automatic trading inappropriate. The engine keeps existing assets invested while review is pending.
-\end{enumerate}
-Before acting, the advisor requests review if observed real drawdown is at least
+Before trading, the advisor compares observed real drawdown with the training-based threshold
 \begin{equation}
 \tau=\operatorname{clip}\!\left(1.5\,\Pninety(D_{\rm train,annual}),\ 0.10,\ 0.75\right),
 \end{equation}
-where the training drawdowns come from fee-paying annual rebalancing to the same anchor. The 30-year Balanced threshold is \ReviewThreshold\%. A trigger based on an annual observation cannot prevent a large loss during the following year, and a request for review does not itself move wealth to safety.
-
-\subsection{Customer-facing explanation}
-Each accepted adjustment can be explained in the following 20 words, within the required 50-word limit:
-\begin{quote}
-``This adjustment moves your investments toward the strategic allocation. Its estimated risk-adjusted benefit exceeds trading costs. Investment losses remain possible.''
-\end{quote}
-The explanation states the decision criterion and remaining uncertainty. It avoids promising an improved realized return or recovery of previous losses.
-
-\clearpage
-\section{Results from the Single Frozen Final Evaluation}
-\subsection{Thirty-year performance and fair comparisons}
-Table~\ref{tab:performance} uses the same 60 final scenarios and a fee of 0.25\% of money moved. Equal-weight annual rebalancing is the required baseline. Same-anchor annual and hold controls isolate execution from allocation; both use the frozen Balanced anchor. Median annual volatility is \BalancedVolatility\% for Balanced A and \EqualVolatility\% for equal weight.
+where $D_{\rm train,annual}$ comes from fee-paying annual rebalancing to the same anchor. For 30-year Balanced A, $\tau=\ReviewThreshold\%$. Table~\ref{tab:actions} distinguishes the four actions. Escalation takes priority over candidate selection; while review is pending, the engine holds existing assets and suspends automatic trading.
 
 \begin{table}[h!]
 \centering
-\caption{Thirty-year final outcomes (\%). $G$: real annual growth; $D$: maximum real drawdown. Trade rate excludes initial allocation.}
+\caption{Annual action rules. Accepted trades are classified against the previously recorded execution target, not necessarily the strategic anchor.}
+\label{tab:actions}
+\begin{tabularx}{\linewidth}{lX}\toprule
+Action & Decision rule\\\midrule
+1. Keep holdings & The selected step is zero or fails Equation~\eqref{eq:gate}; no trade fee is charged.\\
+2. Rebalance & The accepted trade restores the recorded execution target.\\
+3. Change target & The accepted trade sets a different execution target; $w^*$ remains fixed.\\
+4. Request human review & Observed drawdown reaches $\tau$, or a candidate score is invalid; existing assets remain invested.\\
+\bottomrule\end{tabularx}
+\end{table}
+
+\subsection{Customer-facing explanation}
+Every accepted adjustment uses this 20-word explanation, within the required 50-word limit:
+\begin{quote}
+``This adjustment moves your investments toward the strategic allocation. Its estimated risk-adjusted benefit exceeds trading costs. Investment losses remain possible.''
+\end{quote}
+
+\clearpage
+\section{Final Evaluation Results}
+\subsection{Higher growth comes with greater drawdown}
+Table~\ref{tab:performance} compares policies on the same 60 final scenarios, charging 0.25\% of money moved. Equal-weight annual rebalancing is the required baseline; same-anchor annual and hold controls isolate execution effects.
+
+\begin{table}[h!]
+\centering
+\caption{Thirty-year final outcomes across 60 scenarios (\%). $G$: net real CAGR; $D$: maximum real drawdown. Trade rate excludes initial allocation.}
 \label{tab:performance}
 \begin{tabular}{lrrrrr}\toprule
 Policy & Med. $G$ & P10 $G$ & Med. $D$ & P90 $D$ & Trades\\\midrule
@@ -56,17 +61,29 @@ Policy & Med. $G$ & P10 $G$ & Med. $D$ & P90 $D$ & Trades\\\midrule
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\linewidth]{figures/risk_growth.pdf}
-\caption{The selected policy improves median growth relative to equal weight while accepting greater tail drawdown. Neither axis alone establishes suitability.}
+\caption{Thirty-year median growth versus P90 drawdown across 60 scenarios at the base fee. P90 is not a loss guarantee.}
 \label{fig:riskgrowth}
 \end{figure}
 
-Balanced A gains \GrowthGain{} percentage points (pp) of median annual growth over equal weight, but its P90 drawdown increases by \RiskIncrease{} pp. Saved paired bootstrap intervals, using 4,000 resamples of complete scenarios, give a 95\% interval of [\GrowthCILower, \GrowthCIUpper] pp for the median-growth difference and [\LossCILower, \LossCIUpper] pp for the P90-drawdown difference. Family-adjusted intervals are [\GrowthCIFamilyLower, \GrowthCIFamilyUpper] and [\LossCIFamilyLower, \LossCIFamilyUpper] pp, respectively. The adjustment covers 20 nonbaseline policies separately for each endpoint, horizon, and cost; it does not cover all strata or all adaptive research.
+Balanced A gained \GrowthGain{} percentage points (pp) of median growth over equal weight, with \RiskIncrease{} pp more P90 drawdown (Figure~\ref{fig:riskgrowth}). Its median annual volatility was \BalancedVolatility\%, compared with \EqualVolatility\% for equal weight.
 
-Against same-anchor annual rebalancing, Balanced A has \AnnualGrowthGain{} pp higher median growth and nearly unchanged P90 loss. Mean real fees fall from \AnnualCost{} to \BalancedCost{} (a \CostSaving\% reduction). The trading rate is \BalancedTrades\%, or \IncludingInitialTrades\% when initial allocation is included. Relative to holding the anchor without rebalancing, it reduces P90 loss by \HoldRiskReduction{} pp, at a median-growth cost of \HoldGrowthLoss{} pp. These fixed-comparator results support the cost gate without claiming universal dominance.
+\begin{table}[h!]
+\centering
+\caption{Paired bootstrap comparisons, Balanced A minus equal weight (pp); 4,000 complete-scenario resamples.}
+\label{tab:paired}
+\begin{tabular}{lrrr}\toprule
+Metric & Difference & 95\% interval & Family-adjusted 95\%\\\midrule
+Median $G$ & +\GrowthGain & [\GrowthCILower, \GrowthCIUpper] & [\GrowthCIFamilyLower, \GrowthCIFamilyUpper]\\
+P90 $D$ & +\RiskIncrease & [\LossCILower, \LossCIUpper] & [\LossCIFamilyLower, \LossCIFamilyUpper]\\
+\bottomrule\end{tabular}
+\end{table}
 
-\clearpage
+Family adjustment covers 20 nonbaseline policies within each endpoint, horizon, and cost; it does not cover the whole adaptive research process.
+
+Against same-anchor annual rebalancing, Balanced A gained \AnnualGrowthGain{} pp of median growth with nearly unchanged P90 drawdown. Mean real fees fell \CostSaving\%, from \AnnualCost{} to \BalancedCost{}. Its trade rate was \BalancedTrades\% (\IncludingInitialTrades\% including initial allocation). Relative to holding the anchor, P90 drawdown fell \HoldRiskReduction{} pp and median growth fell \HoldGrowthLoss{} pp. These comparisons favour selective rebalancing when fees and tail losses both matter.
+
 \subsection{Customer outcomes at their actual horizons}
-The 30-year product comparison must not be substituted for individual customer evidence. Table~\ref{tab:customers} evaluates the already frozen assignments at each actual horizon. A and D have no automated investment path; missing outcomes are not zero losses. Breaches are counted against each customer's stated tolerance.
+Table~\ref{tab:customers} uses each customer's actual horizon and frozen assignment. A and D were referred for human review; dashes indicate no automated investment path. Breaches mean maximum drawdown exceeded the customer's stated tolerance.
 
 \begin{table}[h!]
 \centering
@@ -80,7 +97,7 @@ Customer & $H$ & Med. $G$ & P10 $G$ & Med. $D$ & P90 $D$ & Breaches\\\midrule
 
 \begin{table}[h!]
 \centering
-\caption{Additional customer risk and intervention measures. Terminal loss means final real wealth below 100.}
+\caption{Customer risk and trading. Terminal loss means final real wealth below 100; trade rates exclude initial allocation.}
 \label{tab:customerrisk}
 \begin{tabular}{crlr}\toprule
 Customer & Median volatility (\%) & Terminal losses & Trade rate (\%)\\\midrule
@@ -88,24 +105,16 @@ Customer & Median volatility (\%) & Terminal losses & Trade rate (\%)\\\midrule
 \bottomrule\end{tabular}
 \end{table}
 
-For B, P90 drawdown is slightly above the 25\% preference threshold and 7 of 60 scenarios breach it. This is compatible with a service rule based on breach probability rather than a deterministic cap. For E, positive median growth coexists with a negative P10 growth and 9 terminal-loss scenarios. B, C, and E request human review in 2, 3, and 0 final scenarios, respectively. These observations are disclosed outcomes, not grounds for changing the assignments after seeing the holdout.
+For B, P90 drawdown exceeded the 25\% tolerance, with breaches in 7 of 60 scenarios. Eligibility screens breach probability, rather than imposing a guaranteed loss limit. E's negative P10 growth and 9 terminal losses highlight the risk of its six-year horizon despite positive median growth. B, C, and E requested human review in 2, 3, and 0 scenarios, respectively. All assignments remained unchanged after final evaluation.
 
 \subsection{A severe path exposes the limits of escalation}
-Scenario 155 is the saved severe example for 30-year Balanced A. Table~\ref{tab:severe} records its observed milestones. These values document the sequence of peak wealth, escalation, and terminal loss without interpolating an annual wealth path.
+In scenario 155, Balanced A peaked at \SeverePeak{} in year 6 and ended at \SevereTerminal{} (Figure~\ref{fig:severe}). Its \SevereLoss\% maximum drawdown and \SevereGrowth\% real CAGR show the limits of annual escalation.
 
-\begin{table}[h!]
+\begin{figure}[h!]
 \centering
-\caption{Severe scenario 155: saved milestones, initial real wealth 100.}
-\label{tab:severe}
-\begin{tabular}{ll}\toprule
-Measure & Observed value\\\midrule
-Real-wealth peak & \SeverePeak{} at the end of year 6\\
-Human-review request & Before the year-23 return\\
-Trough and terminal real wealth & \SevereTerminal{} at the end of year 30\\
-Maximum drawdown & \SevereLoss\%\\
-Real annual growth & \SevereGrowth\%\\
-Subsequent reviews with trades & 6\\\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=\linewidth]{figures/severe_path.pdf}
+\caption{Saved real wealth for scenario 155, starting from 100. Lines join year-end observations; shading marks pending review, beginning before year 23.}
+\label{fig:severe}
+\end{figure}
 
-The peak-to-trough loss exceeds the \ReviewThreshold\% escalation threshold because review is neither continuous nor an executed hedge. Holdings remain exposed while human review is pending. Across all 60 Balanced paths, drawdown CVaR90 is \BalancedTailLoss\%, compared with P90 drawdown of \BalancedPninety\%. This tail evidence argues for candid risk disclosure and for distinguishing an escalation mechanism from capital protection.
+Six post-initial trades preceded the review request before the year-23 return. Automatic trading then stopped, but the existing holdings remained exposed. Across all 60 Balanced paths, drawdown CVaR90 was \BalancedTailLoss\%, versus P90 drawdown of \BalancedPninety\%.

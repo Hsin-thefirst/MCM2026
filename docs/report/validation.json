@@ -1,47 +1,105 @@
 {
   "date": "2026-10-19",
   "executor": "Codex",
-  "status": "draft_verified",
+  "status": "parts_4_5_review_verified",
   "pdf": "docs/report/SafeInvest_report_draft.pdf",
-  "pdf_sha256": "2f0f3cbc1a4b527fc183961c2aa543e35b2370f38eb0979e9e7da9dca753ec3d",
+  "pdf_sha256": "0689287d2087b4cb4afd3ced161837197a7af901fa42ebc917dd9b1fa024d57f",
   "pages": 9,
   "page_size": "A4",
-  "compiler": "MiKTeX pdfLaTeX",
+  "compiler": "Tectonic 0.17.0 (XeTeX / xdvipdfmx)",
   "body_font_tex_pt": 11.1,
-  "body_font_pdf_pt": 11.058530510585305,
-  "chart_font_pt": 11,
-  "mathematical_subscripts_use_standard_smaller_type": true,
-  "tables": 7,
-  "figures": 2,
+  "body_font_pdf_pt": 11.058536529541016,
+  "chart_font_source_pt": 11,
+  "chart_font_pdf_pt": 11.035419464111328,
+  "mathematical_notation_uses_standard_math_sizes": true,
+  "math_subscript_font_substitutions": "Standard Computer Modern 5.55pt requests substituted with 6pt; no body/chart font substitution.",
+  "tables": 8,
+  "figures": 3,
   "customer_explanation_words": 20,
   "undefined_references": false,
   "overfull_or_underfull_boxes": false,
   "text_outside_pages": false,
   "all_pages_visually_reviewed": true,
+  "changed_pages_reviewed_at_full_size": [
+    5,
+    6,
+    7
+  ],
+  "final_source_compile_passes": 2,
   "source_hashes_unchanged": true,
   "frozen_financial_files_unchanged": true,
   "market_data_read": false,
   "policies_reevaluated": false,
   "models_refitted": false,
   "make_test_run_this_segment": false,
-  "local_document_links_verified": true,
-  "pending": [
-    "team_review_of_full_text_and_actual_AI_disclosure"
+  "previous_validation": {
+    "pdf_sha256": "2f0f3cbc1a4b527fc183961c2aa543e35b2370f38eb0979e9e7da9dca753ec3d",
+    "compiler": "MiKTeX pdfLaTeX",
+    "pages": 9
+  },
+  "untouched_section_sources": [
+    "docs/report/sections/1_introduction.tex",
+    "docs/report/sections/2_assumptions.tex",
+    "docs/report/sections/3_model_design.tex",
+    "docs/report/sections/5_sensitivity.tex",
+    "docs/report/sections/6_strengths_weaknesses.tex",
+    "docs/report/sections/7_conclusions.tex"
   ],
+  "word_counts": {
+    "method": "Whitespace-delimited visible text in compiled PDFs, excluding page numbers; includes tables, chart labels and headings.",
+    "baseline": "Previously compiled draft PDF; uncompiled working edits are not the word-count baseline.",
+    "before": {
+      "part4": 391,
+      "part5": 727,
+      "5.1": 339,
+      "5.2": 226,
+      "5.3": 154
+    },
+    "after": {
+      "part4": 375,
+      "part5": 639,
+      "5.1": 313,
+      "5.2": 204,
+      "5.3": 118
+    }
+  },
+  "severe_case_ledger_rows": 30,
+  "severe_case_post_initial_trades": 6,
+  "severe_case_trades_while_review_pending": 0,
+  "figure_qa_reports": {
+    "docs/report/figure_qa/cost_sensitivity.alignment.json": "def3589d2c87c316e472c19e090f4df83e88653c8687d0a4de19c8f084790306",
+    "docs/report/figure_qa/cost_sensitivity.collisions.json": "00a42ba3caee493a6023fbaf87c80810a9ef9009df4b2fde804621789ecba8c8",
+    "docs/report/figure_qa/cost_sensitivity.fonts.json": "b9b5099d758d0bea297846dafd4491c5d6308af3e3145a1e669d5ad6ffcab2cb",
+    "docs/report/figure_qa/risk_growth.alignment.json": "c5f7b89d25ebed3503082820ea68190414516716de9f3479dd4e2b5b15773ed5",
+    "docs/report/figure_qa/risk_growth.collisions.json": "52845376319b7e3f8cbe103650e109ff7daf9f4b28ed893542a7f0fdb233564e",
+    "docs/report/figure_qa/risk_growth.fonts.json": "d73a37eadfbd81c20fe542e6bd709de8bd0479fabae9a70a81fa6cdf474201c2",
+    "docs/report/figure_qa/severe_path.alignment.json": "3729dd4008ae1fc91f6b96c20dd426715dd2c0db37f68a7bfadce872027e5931",
+    "docs/report/figure_qa/severe_path.collisions.json": "2a02126324d16af938592e49ad2853c5eca181322984800570d0a1cd608e92e1",
+    "docs/report/figure_qa/severe_path.fonts.json": "629779ec489afde7644fb4a32a3f6e12e9fc381f6b7999bbebcdd2746d36be04",
+    "docs/report/figure_qa/source_preflight.json": "8f94e7f4defae5b453e8e0463dac3f3f1b3b85db0942db05344887d486634e61"
+  },
+  "static_qa_warnings_reviewed": [
+    "No TIFF needed for vector-PDF manuscript figures.",
+    "PNG is a 300dpi preview, not the submission vector.",
+    "Figure widths follow the A4 contest text area, not Nature journal widths."
+  ],
+  "evidence_sha256": "3cf6bdd01b4dbd40d298e4d6770729d95006e5675385e61b8ae17bda0be8716b",
   "source_files": {
-    "configs/report.json": "b5239df52e6b9d9951250b300d6a865bedb5d427bae1864e155aa458a8ec97f1",
-    "scripts/build_formal_report.py": "ab553cd770b0f9669cd9dc7f52c2141944bdb849cdf933191ad525784fd404de",
-    "docs/report/main.tex": "95bb9bde092774f4446b395688e8c831fbd3e9a8ca39e0f1b28b84499f36a478",
+    "configs/report.json": "90b75e659693725570e7a3187c13dd080c8463ea4d5a2050b65436eba2503582",
+    "scripts/build_formal_report.py": "f943f96bb1429d142a48b3d82cff24c9a964d860a957486d8f68502eff2d18ca",
+    "docs/report/main.tex": "b692ab4d448e3ae8af36efda67bb73abdefe6508266500fd17c1974175531785",
     "docs/report/references.tex": "dfba72db3cac042ed32c3cdd2491c83f3898e1248880fd9deb47129b46fddba5",
     "docs/report/sections/1_introduction.tex": "7ad23479ba4f8ef75b6b7c62907220400ec28172a134281d12163c96126351cc",
     "docs/report/sections/2_assumptions.tex": "bf41899f7d3acbfdc634f1f5cddfd4a8f81069c37b86aeb728ce2d54dcb873cd",
     "docs/report/sections/3_model_design.tex": "7faad04e3c9ad719d32d446602d4619400107bdbfd13472c18bfa6a85235ad01",
-    "docs/report/sections/4_solution.tex": "e5f015cf238fd9ae313d6a389f96055ab4001600c91dae0b1b90f71b925a632c",
+    "docs/report/sections/4_solution.tex": "8eb9cfc95c07dcebe4f53be492dc4a66146e16e64bd88385cccc9392dbaad100",
     "docs/report/sections/5_sensitivity.tex": "cb86750f30e3fb5549aee10952b110dc97b39683633b7baab17ecb7fd892745a",
     "docs/report/sections/6_strengths_weaknesses.tex": "6b730092b9326f584b70c173c0f898ba7cab3233efdee8765070f2af903d4cff",
-    "docs/report/sections/7_conclusions.tex": "fb3fe347b9f82dbe1ca1645dbb689ecf3a465513129cb51e8a4eb0ba3bf859c3"
+    "docs/report/sections/7_conclusions.tex": "fb3fe347b9f82dbe1ca1645dbb689ecf3a465513129cb51e8a4eb0ba3bf859c3",
+    "docs/report/README.md": "305fbe2e92a89f815a7bfb393baac7ef767b7c471da5e54ae294d186d840eaf1",
+    "docs/report/REVIEW_PARTS_4_5.md": "9c890be160da47b23746249b0dcca9a7576f1176afc466b7dcafd1291d9c0f45",
+    "docs/INTERFACES.md": "78c3bba4bebeabcff2c1c21188f13df1e545c4cccb244b3f8eb1be11db173379"
   },
-  "evidence_sha256": "2c9cb45158cd23c7ce5f9cbf97ac174ddf197edf16cc9c354992b8d288177145",
   "team_name": "Fen8FenQian",
   "members": [
     "Huang Sinan",
@@ -49,6 +107,7 @@
     "Lin Zihan"
   ],
   "pdf_author_metadata_verified": true,
-  "pages_2_to_9_text_unchanged_from_previous_review": true,
-  "signature_page_visually_reviewed": true
+  "pending": [
+    "team_review_of_full_text_and_actual_AI_disclosure"
+  ]
 }
