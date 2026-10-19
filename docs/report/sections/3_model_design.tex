@@ -1,10 +1,10 @@
 \section{Strategic Portfolios and Customer Suitability}
 \subsection{A convex allocation problem for each horizon}
-For $N$ training paths and a fixed annually restored target $w$, define the largest cumulative log loss over any contiguous interval:
+For $N$ training paths and a target $w$ restored every year, the largest cumulative log loss over any contiguous interval is
 \begin{equation}
 Y_s(w)=\max_{0\leq u\leq v\leq H}\left\{-\sum_{t=u+1}^{v}\log(1+\rho_{s,t}^{\mathsf T}w)\right\}.
 \end{equation}
-The empty interval contributes zero. Under this cost-free, fixed-target model, ordinary maximum drawdown satisfies $D_s=1-\exp(-Y_s)$. Tail expectations must still be calculated on the intended variable: transforming $\ES(Y)$ does not generally give $\ES(D)$.
+The empty interval contributes zero. On this cost-free, annually restored model an ordinary maximum drawdown equals $1-\exp(-Y_s)$, but the expectation does not commute with that transform: $\ES(Y)$ does not generally give $\ES(D)$. We therefore constrain the quantity we can compute and report the resulting drawdown afterwards.
 
 Using the variational representation of expected shortfall \cite{cvar},
 \begin{equation}
@@ -16,22 +16,22 @@ we choose the strategic anchor $w^*$ by solving
 \text{subject to}\quad &\ES_{0.90}(Y(w))\leq qR_{\rm ref},\quad w\geq0,\quad\mathbf{1}^{\mathsf T}w=1.
 \label{eq:strategy}
 \end{align}
-Conservative additionally requires $w_{\rm bill}\geq0.40$. For each horizon, $R_{\rm ref}$ is the training log-drawdown expected shortfall of a reference allocation. The equity/bond/bill references are $(.20,.30,.50)$ for Conservative, $(.50,.35,.15)$ for Balanced, and $(.75,.20,.05)$ for Growth. Thus products differ through their risk budgets as well as the Conservative liquidity floor.
 
-Negative log growth and the maximum of interval log losses are convex on the valid-return domain. Equation~\eqref{eq:strategy} is therefore a convex strategic subproblem. A Kelley cutting-plane linear-programming method uses supporting planes, a 5\% simplex grid for initialization, and lower/upper objective bounds to assess convergence. The configured optimality-gap tolerance is $10^{-6}$, risk tolerance is $10^{-8}$, and iteration cap is 300. Infeasibility is recorded rather than repaired by silently relaxing the risk budget. These certificates concern the strategic subproblem; they do not prove global optimality of the later trading and escalation system.
+For each horizon, $R_{\rm ref}$ is the training log-drawdown expected shortfall of a stated reference allocation: $(.20,.30,.50)$ for Conservative, $(.50,.35,.15)$ for Balanced and $(.75,.20,.05)$ for Growth. The multiplier $q\in\{.75,.85,.95\}$ scales the training budget and is chosen in Section~3.2, while the validation target stays at $R_{\rm ref}$. Conservative additionally requires $w_{\rm bill}\geq0.40$. The three products thus differ both in risk budget and, for Conservative, in a liquidity floor.
+
+Negative log growth and the maximum of interval log losses are convex on the valid-return domain, so \eqref{eq:strategy} is a convex subproblem. We solve it with a Kelley cutting-plane linear program: supporting hyperplanes generate objective lower bounds, feasible weights upper bounds, and the loop stops at a gap of $10^{-6}$, with risk tolerance $10^{-8}$ and at most 300 iterations, starting from a 231-point 5\% simplex grid that also supplies a comparison objective. Primal solutions and dual multipliers are saved so that feasibility and duality balance can be re-checked. An infeasible risk budget is recorded and never repaired by quietly relaxing it. These certificates cover the strategic subproblem only; they say nothing about the optimality of the trading and escalation layer.
 
 \subsection{Development selection before freezing}
-Nested validation uses five outer scenario folds and three inner folds, preserving complete paths. Outer training/validation sizes are 96/24; inner training/validation sizes are 64/32. We compare $q\in\{.75,.85,.95\}$ and execution curvature $\gamma\in\{4,12\}$, using held-out development outcomes rather than training fit alone. This separation addresses selection bias from repeated model comparisons \cite{cawley}.
+Selection happens before the holdout is touched. Nested validation uses five outer folds of complete paths, 96 scenarios to train and 24 to validate, and three inner folds of 64 and 32 inside each outer training set, so every choice is scored on data the candidate was not fitted to. Candidates pair $q\in\{.75,.85,.95\}$ with execution curvature $\gamma\in\{4,12\}$. Comparing them on held-out outcomes rather than on training fit limits the selection bias that repeated comparisons introduce \cite{cawley}.
 
-Inner feasibility checks cover strategic feasibility, pooled log-drawdown risk, growth relative to same-anchor annual rebalancing, and review frequency. The validation risk budget is fixed independently of the candidate $q$; the risk slack is 0.005. Permitted median/P10 annual-growth shortfalls are 0.001/0.002, and review incidence is capped at 10\%. Feasible candidates maximize mean $\log(1+G)$; a minimum-violation fallback is explicitly diagnostic. The selected full-development refit uses $q=0.95$ and $\gamma=4$ for all three products, then freezes the anchors and customer assignments before final evaluation.
+A candidate is feasible on validation only if four conditions hold. Pooled log-drawdown expected shortfall at 90\% must not exceed $R_{\rm ref}$ plus 0.005 in log units; that slack is fixed in advance and does not follow $q$. The median and the 10th percentile of annual real growth must not fall more than 0.001 and 0.002 below fee-paying annual rebalancing to the same anchor. Reviews, and hence the trades they permit, must be requested in at most 10\% of validation scenarios. Among feasible candidates we maximize the mean of $\log(1+G)$. If none is feasible, the least-violating candidate is retained as a diagnostic and marked unusable rather than presented as a selection. All three products selected $q=0.95$ and $\gamma=4$ on the full development set, after which the anchors and the customer assignments were frozen.
 
-\clearpage
 \subsection{Frozen allocations and an explicit refusal option}
-Table~\ref{tab:weights} shows that a product name does not imply one allocation for every customer. Shorter-horizon Balanced portfolios hold more bills, while the 30-year Growth solution reaches the boundary with zero bills. These are model outputs, not general investment prescriptions.
+Table~\ref{tab:weights} gives the frozen anchors at the five horizons that appear in the questionnaire. A product name does not imply one allocation for every customer: Conservative is nearly invariant to the horizon, holding 70--74\% in bills throughout, while Balanced and Growth move bills into bonds as the horizon lengthens, and the 30-year Growth solution reaches the boundary with no bills at all. The response is not monotone in the middle of the range, because each anchor is fitted separately at its own horizon. These are model outputs under the stated data and constraints, not general investment prescriptions.
 
 \begin{table}[h!]
 \centering
-\caption{Frozen strategic equity / bond / bill weights (\%). Rounding can make totals differ slightly from 100.}
+\caption{Frozen strategic equity / bond / bill weights (\%) from the full-development refit; rounding may make totals differ from 100.}
 \label{tab:weights}
 \begin{tabular}{rlll}\toprule
 $H$ & Conservative & Balanced & Growth\\\midrule
@@ -39,23 +39,25 @@ $H$ & Conservative & Balanced & Growth\\\midrule
 \bottomrule\end{tabular}
 \end{table}
 
-For customer horizon $H$ and tolerance $L$, we count out-of-fold development paths with $D>L$, using the complete execution policy. If $k$ of $n=120$ paths breach, the one-sided Clopper--Pearson upper bound is
+For horizon $H$ and tolerance $L$ we count out-of-fold paths whose complete execution policy breaches $D>L$; with $k$ breaches among $n=120$, the one-sided Clopper--Pearson upper bound is
 \begin{equation}
 U=\operatorname{Beta}^{-1}(1-\delta;k+1,n-k),\qquad
 \delta=0.05/440,
 \end{equation}
-with $U=1$ when $k=n$. The 440-comparison family is the prespecified service-screening budget. Automatic service requires $U\leq0.20$ under both the base cost and doubled cost. Because fitted out-of-fold policies share training observations, this is a conservative screening diagnostic; it is not a strict coverage guarantee for the final refitted policy.
+with $U=1$ when $k=n$. The family of 440 is fixed before screening and covers five profiles, 11 distinct product-or-programme choices, four liquidity conventions and two cost levels. Automatic service requires $U\leq0.20$ at the base cost and at doubled cost alike. Because the out-of-fold policies are refitted on overlapping training sets, $U$ is a conservative screening diagnostic rather than a coverage guarantee for the final refitted policy, and the 20\% ceiling is a service assumption, not a stated customer preference.
 
-High-liquidity customers require a strategic bill weight of at least 40\% in every relevant development fold. This condition is checked for any eligible product, rather than restricting high-liquidity customers to the product named Conservative. It is a target requirement, not a continuously maintained cash floor after market drift. Growth is available only for horizons of at least 15 years. We also check that P90 drawdown is ordered Conservative $\leq$ Balanced $\leq$ Growth at the relevant horizon and costs. Among eligible products, the highest out-of-fold median growth is selected; if none qualify, the customer goes to human review.
+Two further rules follow from the questionnaire. A high-liquidity profile requires a strategic bill weight of at least 40\% in every relevant development fold; the condition is checked for any eligible product, so such a profile is not forced into the product named Conservative, and the target is not a cash floor maintained after market drift. Growth is offered only from a 15-year horizon upwards, and P90 drawdown must be ordered Conservative $\leq$ Balanced $\leq$ Growth. Among the pairs that clear every rule, the one with the highest out-of-fold median growth is recommended; if none clears them, the profile goes to human review.
+
+Table~\ref{tab:suitability} applies these rules pair by pair. For A and D no product comes close, so referral is the model's answer rather than a default. B and C clear only through Conservative, and C's Balanced alternative fails the ceiling on 17 breaches. E has two qualifying pairs; Balanced wins on out-of-fold median growth, 4.22\% against 2.71\%. All three served profiles also clear the doubled-cost test.
 
 \begin{table}[h!]
 \centering
-\caption{Customer requirements and assignments frozen before final evaluation.}
-\label{tab:assignments}
-\begin{tabular}{crrll}\toprule
-Customer & $H$ & Tolerance (\%) & Liquidity & Assignment\\\midrule
-\tableinput{generated/assignments.tex}
+\caption{Screening of every profile--product pair on development data: breaching paths $k/120$ and the bound $U$ (\%). Bold marks a pair that also clears the liquidity, horizon, ordering and doubled-cost rules.}
+\label{tab:suitability}
+\begin{tabular}{lcclccccccc}\toprule
+Profile & $H$ & Tol.\,(\%) & Liquidity & \multicolumn{2}{c}{Conservative} & \multicolumn{2}{c}{Balanced} & \multicolumn{2}{c}{Growth} & Assigned\\
+\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
+ & & & & $k/120$ & $U$ & $k/120$ & $U$ & $k/120$ & $U$ & \\\midrule
+\tableinput{generated/suitability.tex}
 \bottomrule\end{tabular}
 \end{table}
-
-B and C qualify for Conservative: their base-cost breach counts are 3/120 and 0/120, with adjusted upper bounds 12.45\% and 7.29\%. C's Balanced alternative has an upper bound of 28.93\%, exceeding the service ceiling despite a raw breach rate of 14.17\%. E qualifies for Balanced at six years: its bound is 13.87\% at both costs, and its minimum fold-level bill target is 40.03\%. A and D fail even the Conservative risk screen, with base upper bounds of 39.70\% and 65.17\%. Human review is therefore a substantive outcome of the model.

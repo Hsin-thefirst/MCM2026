@@ -14,14 +14,12 @@
     "benchmark/outputs/final_submission_v1/suitability.csv": "c7ef8a7b2159d67f214a0ff80385e76c61ed42da04964a082bb44287eea9eac3",
     "benchmark/outputs/development_submission_v1/selected_suitability_risk.csv": "07eefd38464782d9d3412d26d3cf4f589b4665bd46478a4ad2737c0a2e7fc91a",
     "benchmark/outputs/final_submission_v1/severe_case.json": "e4e2c1b87e7c7d40ec51502fb8802ee8277c206a2ca26cf8c5f0fdef25110221",
-    "benchmark/outputs/final_submission_v1/decisions.csv.gz": "72a78356ae02135f17710d135d12d35e49fa5768622ba8c27d678a2e85fe17d6",
     "benchmark/outputs/final_submission_v1/saved_final_verification.json": "33b525c4029e4f4fc2292665361f8cd7812cb56c2ae0e991bbc46fdcdbab44fa",
     "2026_MCM_SafeInvest.pdf": "2ac9412ed68349d36a3fbd2c6cddc5789a81dab8acbfa08c63a3bdb34d2aa2dd"
   },
   "figures": {
     "risk_growth.pdf": "benchmark/outputs/final_submission_v1/summary.csv",
-    "cost_sensitivity.pdf": "benchmark/outputs/final_submission_v1/summary.csv",
-    "severe_path.pdf": "benchmark/outputs/final_submission_v1/decisions.csv.gz"
+    "cost_sensitivity.pdf": "benchmark/outputs/final_submission_v1/summary.csv"
   },
   "generated_files": {
     "generated/assignments.tex": "cdd7175c0fe36b22e1b40fd2fbe0bf39626f2fa5a1c12d0df50b8dace0c576f0",
@@ -31,21 +29,15 @@
     "generated/execution.tex": "49d2406f45ebda45ef55151a99f6f371a9a6bfc510dc9e7fdbc1e2e1fd92fd8f",
     "generated/numbers.tex": "8220bcaf89c5e2a1946fa907fb85ff08fe602da10cd26ad62be885b5e91e7541",
     "generated/performance.tex": "69e082ed28fa62c8cda68d06028ede53a651a4f57b31534c8419612f7eb94538",
-    "generated/risk_growth.csv": "c2bc066447009f5f671bc4c6f340b4c59b2b3adc37bcdf35f2bff45c3a02504e",
     "generated/screen.tex": "57977d80601f9502bcf3a9a84c661f7890d713d490d8cba53e5cedf401a46140",
-    "generated/severe_path.csv": "99d945fdbaac9a060bcd928ed8a2e7c19a02df4945b543d8aa1f3adb6b16c813",
+    "generated/suitability.tex": "80a985f77431775b89e7db62a5a7bb0f330f6175ee5a3023b5e8c6393a27301b",
     "generated/weights.tex": "63b18b8ea8ed3e86aeba0a07c19ace4e6ac46860d6bf136b8d3b9217445d6f01",
-    "figures/cost_sensitivity.pdf": "40b12349a139c8ac89c5d0e918cc2d3e7a7c443ba015e5f844d0918610ca2c87",
-    "figures/cost_sensitivity.png": "ec7b4bf47a0ab642662b64737f2eb623169c812d2e990ce2a7d678823d47e5f3",
-    "figures/cost_sensitivity.svg": "d679db148bf8dc400cda6de4380a8d94f5b84ede006061b609a6fd88079d25f2",
-    "figures/risk_growth.pdf": "5a445d73b3c94d6603ae866813587de684adcd6db98692c66916d3e5ddd08d87",
-    "figures/risk_growth.png": "0c4b6a6a4b907b69d74629996e25ae5c51727f24f6de8c14850ce383b3eaf07c",
-    "figures/risk_growth.svg": "3097a7c6d7c820a8ddea2a87a17ac5c0064280286e56720d5e237ef5ffe78b68",
-    "figures/severe_path.pdf": "83ef0c4e63f2b42875a3407b02884479262057fe96cf646aa75ff127442a49a3",
-    "figures/severe_path.png": "70a3b8f1974071110a251b3cf68a64353246d67a3a6cd02e48674ea91d5d3b14",
-    "figures/severe_path.svg": "d7a441c7cd92cc5b889354cb934cd7230d3f544cfd9ad050e71b2b042a540582"
+    "figures/cost_sensitivity.pdf": "7419eff3f345e415d62465cd1776f4d82d70b301ba88f7b06e1853402707bdf9",
+    "figures/cost_sensitivity.png": "bccc765292b5de1c396ba11890ccd4faeb89e8af0da4d0ed7344665333433cfc",
+    "figures/risk_growth.pdf": "aafd5c4a669687be91d9e03b470ce8c293a4f1926a86376140b27615e18f5f92",
+    "figures/risk_growth.png": "9656d8bfca663d6e8e90a8bac21f3e619b4ac862f41d5a4551aaf789e9a0109e"
   },
   "unresolved_team_members": false,
-  "compiler": "See validation.json for the verified build engine",
+  "compiler": "pdfLaTeX (XeLaTeX-compatible source)",
   "template": "5writing/templates/en/mcm-latex"
 }
