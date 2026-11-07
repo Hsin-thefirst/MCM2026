@@ -1,6 +1,9 @@
-## 此项目参与 香港科技大学(广州) FinTech Thrust 举办的 2026MCM, 组别为 Senior Track, 题目为 A 题.
-## 参赛队伍: 分8分钱. Paper 67.
-## 结果 Second Prize.
+### 此项目参与 香港科技大学(广州) FinTech Thrust 举办的 2026MCM.
+### 组别: Senior Track, 题目: A.  
+### 参赛队伍: 分8分钱. Paper 67.  
+### 结果: Second Prize.  
+
+--- 
 
 # SafeInvest
 
